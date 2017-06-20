@@ -1,0 +1,43 @@
+{
+  "name": "singleinstancebrowser",
+  "productName": "SIB",
+  "description": "A minimalist single window/single instance browser, invokable via command line.",
+  "companyname": "idesis GmbH",
+  "copyright": "©2017, idesis GmbH, ",
+  "version": "0.9.0",
+  "identifier": "de.idesis.singleinstancebrowser",
+  "darwinAppCategory": "public.app-category.productivity",
+  "win32FileDescription": "SingleInstanceBrowser",
+  "win32InternalName": "idesis SingleInstanceBrowser",
+  "win32RequestedExecutionLevel": "asInvoker",
+  "win32ApplicationManifest": "",
+  "homepage": "http://www.idesis.de/",
+  "author": {
+    "name": "Michael Nitze",
+    "email": "michael.nitze@idesis.de"
+  },
+  "bugs": {
+    "url": "https://github.com/idesis-gmbh/SingleInstanceBrowser/issues"
+  },
+  "private": false,
+  "license": "MIT",
+  "main": "./bin/MainProcess.js",
+  "dependencies": {
+    "fs-extra": "3.0.1",
+    "normalize-url": "1.9.1",
+    "mousetrap": "1.6.1"
+  },
+  "devDependencies": {
+    "typescript": "2.3.4",
+    "electron": "1.6.11",
+    "electron-packager": "8.7.1",
+    "tslint": "5.4.3",
+    "@types/fs-extra": "3.0.3",
+    "@types/normalize-url": "1.9.0",
+    "@types/mousetrap": "1.5.34"
+  },
+  "config": {
+    "arch": "all",
+    "pkgParams": "--quiet --asar.unpackDir=\"{node_modules,res}\""
+  }
+}

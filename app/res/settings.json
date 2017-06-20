@@ -1,0 +1,23 @@
+{
+    "Window": {
+        "Left": 50,
+        "Top": 50,
+        "Width": 1024,
+        "Height": 768
+    },
+    "ShortCuts": {
+        "Global": true,
+        "ToggleAddressBar": "ctrl+alt+a",
+        "ToggleInternalDevTools": "ctrl+alt+i",
+        "ToggleDevTools": "ctrl+alt+d",
+        "FocusLocationBar": "ctrl+alt+l",
+        "InternalReload": "ctrl+alt+shift+r",
+        "Reload": "ctrl+alt+r",
+        "GoBack": "ctrl+alt+left",
+        "GoForward": "ctrl+alt+right"
+    },
+    "UserAgent": "",
+    "ClearTraces": true,
+    "SingleInstance": true,
+    "FocusOnNewURL": true
+}

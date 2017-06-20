@@ -1,0 +1,6 @@
+{
+    "extends": "../app/src/tsconfig.json",
+    "files": [
+        "../app/src/MainProcess.ts"
+    ]
+}

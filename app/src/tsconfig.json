@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+        "module": "es2015",
+        "moduleResolution": "node",
+        "target": "es2015",
+        "allowSyntheticDefaultImports": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "strictNullChecks": true,
+        "sourceMap": true,
+        "noEmitOnError": true,
+        "removeComments": true,
+        "noEmitHelpers": false,
+        "listEmittedFiles": false,
+        "listFiles": false,
+        "traceResolution": false,
+        "pretty": true,
+        "outDir": "../../build/tmp/js/",
+        // 'baseUrl' and 'paths' enable the use of builtin definitions (like in Electron) and definitions from @types/*
+        "baseUrl": "../../build/tmp/",
+        "paths": {
+            "*": ["node_modules/@types/*", "node_modules/*"]
+        }
+    }
+}

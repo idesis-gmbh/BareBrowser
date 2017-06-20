@@ -1,0 +1,208 @@
+# SingleInstanceBrowser
+
+***Important notice:*** No special attempts have been made to make this browser secure 
+for web browsing. Both the host window and the loadad pages can use plugins; all other
+options are set to their default values. See also 
+[Electron BrowserWindow](https://electron.atom.io/docs/api/browser-window/)
+and
+[Electron &lt;webview&gt; Tag](https://electron.atom.io/docs/api/webview-tag/).
+Use at your own risk!
+
+## Installation
+
+Download one of the releases from the
+[releases](https://github.com/idesis-gmbh/SingleInstanceBrowser/releases) 
+page, unzip the file and copy the resulting directory to any place you like. On the Mac 
+you'd probably just copy the `SIB` app (inside the unzipped folder) to `/Applications`.
+
+## GUI Usage
+
+Just double click `SIB` (Mac) or `SIB.exe` (Windows). SingleInstanceBrowser will open 
+and show a blank window with an address bar. The address bar is very primitive, don't 
+expect the same features you get from regular browsers. All it does is to try to 
+auto-complete some URLs but without any sophistication.
+
+Examples:
+
+```
+www.idesis.de          =>  http://www.idesis.de  (ok)
+HttP://www.idesis.de   =>  http://www.idesis.de  (ok)
+http:/www.idesis.de    =>  http:/www.idesis.de   (wrong)
+
+Users/doe/Desktop/SomePDF.pdf   =>  http://users/doe/Desktop/SomePDF.pdf   (wrong)
+/Users/doe/Desktop/SomePDF.pdf  =>  file:///Users/doe/Desktop/SomePDF.pdf  (ok)
+
+c:\somedir\SomePDF.pdf          =>  http://c/somedir/SomePDF.pdf    (wrong)
+/c:\somedir\SomePDF.pdf         =>  file:///c:/somedir/SomePDF.pdf  (ok)
+```
+
+## Command line usage
+
+SingleInstanceBrowser accepts an arbitrary number of command line parameters but only 
+the last one is taken as a URL which should be opened. Any other parameters are 
+ignored.
+
+**Mac:**
+
+```bash
+/Applications/SIB.app/Contents/MacOS/SIB www.idesis.de
+/Applications/SIB.app/Contents/MacOS/SIB /Users/doe/Desktop/SomePDF.pdf
+```
+
+Starting the executable form inside the app bundle is very unusual but it is one 
+way to open multiple instances of an application. But if SingleInstanceBrowser is 
+configured to allow only one instance then even starting the executable again won't 
+create another instance, instead the URL given via command line will be opened in 
+the current running instance.
+
+The recommended way is to use the `open` command:
+
+```bash
+open http://www.heise.de -b de.idesis.singleinstancebrowser
+open /Users/doe/Desktop/SomePDF.pdf -b de.idesis.singleinstancebrowser
+```
+
+If you use `open` to navigate to a *web page* you have to enter a complete vaild URL 
+(prefixed with `http://` or `https://` but `file://` will also work) otherwise `open` will 
+treat the argument as a file name and tell you that it doesn't exist.
+
+The default behaviour of `open` is to prevent multiple instances of an application, but
+if you really need it then you can use `open` with `-n`:
+
+```bash
+open http://www.heise.de -n -b de.idesis.singleinstancebrowser
+```
+
+However, if SingleInstanceBrowser is configured to prevent multiple instances then the 
+behaviour is the same like described above.
+
+**Windows:**
+
+The behaviour is the same like on the Mac, but starting SingleInstanceBrowser from 
+the command line is straight forward:
+
+```bash
+SIB.exe www.idesis.de
+SIB.exe /c:\somedir\SomePDF.pdf
+```
+
+## Configuration
+
+There is only one configuration file:
+
+**Mac:**
+
+```bash
+/Applications/SIB.app/Contents/Resources/app.asar.unpacked/res/settings.json
+```
+
+**Windows\*:**
+
+```bash
+c:\Program Files\SIB-1.0.0-win32-x64\resources\app.asar.unpacked\res\settings.json
+```
+
+\*Assuming a standard installation in `%ProgramFiles%`.
+
+The default configuration looks like this:
+
+```json
+{
+    "Window": {
+        "Left": 50,
+        "Top": 50,
+        "Width": 1024,
+        "Height": 768
+    },
+    "ShortCuts": {
+        "Global": true,
+        "ToggleAddressBar": "ctrl+alt+a",
+        "ToggleInternalDevTools": "ctrl+alt+i",
+        "ToggleDevTools": "ctrl+alt+d",
+        "FocusLocationBar": "ctrl+alt+l",
+        "InternalReload": "ctrl+alt+shift+r",
+        "Reload": "ctrl+alt+r",
+        "GoBack": "ctrl+alt+left",
+        "GoForward": "ctrl+alt+right"
+    },
+    "UserAgent": "",
+    "ClearTraces": true,
+    "SingleInstance": true,
+    "FocusOnNewURL": true
+}
+```
+
+These are also the default values for every property in case of a malformed JSON file 
+or if any of the values is invalid or missing.
+
+- The `Window` object configures the initial window position and size when 
+  SingleInstanceBrowser is started. 
+
+- The `ShortCuts` object configures the available keyboard shortcuts. The value of the `Global` 
+  key controls how keyboard shortcuts are enabled/disabled. With `false` all shortcuts are 
+  disabled if the URL field in the address bar is focused. With `true` shortcuts are enabled 
+  even if the URL field is focused. 
+
+  The term *host window* below means the native window (`Electron.BrowserWindow`), which effectively 
+  is also a web page but only contains the `webview` tag which itself contains the actual page. 
+  You can open the Chrome developer tools to debug the SingleInstanceBrowser window itself 
+  (`ctrl+alt+i`). To debug the actual web page you'd use `ctrl+alt+d` instead. 
+
+  | Key                      | ShortCut (default) | Action                                          |
+  | ------------------------ | ------------------ | ----------------------------------------------- |
+  | `ToggleAddressBar`       | `ctrl+alt+a`       | Show/hide the addressbar.                       |
+  | `ToggleInternalDevTools` | `ctrl+alt+i`       | Show/hide developer tools for the host window.  |
+  | `ToggleDevTools`         | `ctrl+alt+d`       | Show/hide developer tools for the current page. |
+  | `FocusLocationBar`       | `ctrl+alt+l`       | Show addressbar and focus the URL entry field.  |
+  | `InternalReload`         | `ctrl+alt+shift+r` | Reload the host window.                         |
+  | `Reload`                 | `ctrl+alt+r`       | Reload the current page.                        |
+  | `GoBack`                 | `ctrl+alt+left`    | Go one step back in the browser history.        |
+  | `GoForward`              | `ctrl+alt+right`   | Go one step forward in the browser history.     |
+
+  If a key is completely missing then the default value is used. If you want to disable a
+  keyboard shortcut set its value to `null` or an empty string (`""`). You can assign your own 
+  keyboard shortcuts to any of the keys above. For available key combinations please see the
+  documentation of [Mousetrap](https://craig.is/killing/mice).
+
+- `UserAgent` will be used to set `navigator.userAgent` in the browser window. If this 
+  value is missing or an empty string (`""`), the default `navigator.userAgent` from the 
+  builtin Chromium engine will be used. You can set this value to any string you like. If 
+  you want to prevent a user agent to be sent then set this value to a single space (`" "`).
+
+- If `ClearTraces` is set to `true` then any temporary data like caches, local storage, 
+  cookies etc. will be deleted when SingleInstanceBrowser is closed. Deleting means
+  the complete removal of the following directory:
+
+  **Mac:**
+
+  ```
+  /Users/mn/Library/Application Support/de.idesis.singleinstancebrowser
+  ```
+
+  **Windows:**
+
+  ```
+  %APPDATA%\de.idesis.singleinstancebrowser
+
+  eg.
+
+  c:\Users\doe\AppData\Roaming\de.idesis.singleinstancebrowser
+  ```
+  *Please note*: on Windows this currently fails silently due to a bug in the Node.js 
+  component of the Electron framework.
+
+- If `SingleInstance` is set to `true` then only one instance of SingleInstanceBrowser
+  is allowed (lets call it *A*). If you try to start another instance (*B*), the already 
+  running instance *A* will be given the command line parameters from *B* and *B* will
+  quit immediately.
+
+- If `FocusOnNewURL` is set to `true` and `SingleInstance` is also `true` then starting
+  another instance will cause the already running instance to activate its window and
+  make it the forground window (regardless of a given command line URL). Setting this
+  value to `false` opens the given URL (if any) in the current instances window (*A*) 
+  but it won't be activated.
+
+
+## License
+
+MIT © [idesis GmbH](http://www.idesis.de), Rellinghauser Straße 334F, D-45136 Essen
