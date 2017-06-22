@@ -10,7 +10,7 @@ Use at your own risk!
 
 ## Installation
 
-Download one of the releases from the [releases](releases) page, unzip the file and 
+Download one of the releases from the [releases](../../../../releases) page, unzip the file and 
 copy the resulting directory to any place you like. On the Mac you'd probably just 
 copy the `SIB` app (inside the unzipped folder) to `/Applications`.
 
