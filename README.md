@@ -40,6 +40,11 @@ frequent commands you can use.
 
 You only need [Node.js](https://nodejs.org) to be installed on your machine.
 
+If you want to build Windows releases on the Mac you also need to install 
+[Wine](https://www.winehq.org) with version 1.6 or later. One easy way to 
+install Wine on the Mac is to use [Homebrew](https://brew.sh). Building Mac 
+releases on Windows currently isn't possibe.
+
 
 ## Setup
 
@@ -107,76 +112,6 @@ npm start
 | `npm`&nbsp;`run`&nbsp;`clean:all` | Like `npm run clean` but including also all release builds in `./release/`. |
 | `npm run watch`     | Start file system watchers for *everything* below `./app/`. Frees you from manually running `build` and `compile` commands. Modifying code or resources will trigger the appropriate build commands and keep a `npm start`-able / `npm run make`-able application up to date in `./out/`. |
 | `npm run lint`      | Check the complete source code with [TSLint](https://palantir.github.io/tslint/). |
-
-
-## Visual Studio Code settings
-
-If you work with 
-[Visual Studio Code](https://code.visualstudio.com) 
-you can add automatic linting and some useful tasks to this project. For both you first need to create
-a folder named `.vscode` at the root level of the project folder.
-
-
-### TSLint
-
-Install the 
-[TSLint](https://marketplace.visualstudio.com/items?itemName=eg2.tslint)
-extension in Visual Studio Code and create the file `settings.json` in the `.vscode` 
-folder. The file should have the following content:
-
-```json
-{
-    // The path to the rules configuration file
-    "tslint.configFile": "./app/src/tslint.json",
-
-    // A path added to NODE_PATH when resolving the tslint module.
-    "tslint.nodePath": "./build/tmp/"
-}
-```
-
-*Please note:* the current TSLint settings are quite strict, you can change them in 
-[tslint.json](app/src/tslint.json).
-
-### Tasks
-
-Create a file named `tasks.json` in the `.vscode` folder. The file should have the 
-following content:
-
-```json
-{
-    // See https://go.microsoft.com/fwlink/?LinkId=733558
-    // for the documentation about the tasks.json format
-    "version": "0.1.0",
-    "command": "npm",
-    "isShellCommand": true,
-    "args": [],
-    "showOutput": "always",
-    "echoCommand": true,
-    "suppressTaskName": true,
-    "tasks": [
-        {
-            "taskName": "clean",
-            "args": ["run", "clean"]
-        },
-        {
-            "taskName": "build",
-            "args": ["run", "build"]
-        },
-        {
-            "taskName": "compile",
-            "args": ["run", "compile"]
-        },
-        {
-            "taskName": "start",
-            "args": ["start"]
-        },
-        {
-            "taskName": "make",
-            "args": ["run", "make"]
-        }
-    ]
-}
-````
 
 
 ## License
