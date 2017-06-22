@@ -17,7 +17,8 @@
     "email": "michael.nitze@idesis.de"
   },
   "bugs": {
-    "url": "https://github.com/idesis-gmbh/SingleInstanceBrowser/issues"
+    "url": "https://github.com/idesis-gmbh/SingleInstanceBrowser/issues",
+    "email": "produktion@idesis.de"
   },
   "private": false,
   "license": "MIT",
@@ -38,7 +39,7 @@
     "@types/mousetrap": "1.5.34"
   },
   "config": {
-    "arch": "all",
+    "arch": "x64",
     "pkgParams": "--quiet --asar.unpackDir=\"{node_modules,res}\""
   }
 }
