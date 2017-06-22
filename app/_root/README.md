@@ -10,10 +10,9 @@ Use at your own risk!
 
 ## Installation
 
-Download one of the releases from the
-[releases](https://github.com/idesis-gmbh/SingleInstanceBrowser/releases) 
-page, unzip the file and copy the resulting directory to any place you like. On the Mac 
-you'd probably just copy the `SIB` app (inside the unzipped folder) to `/Applications`.
+Download one of the releases from the [releases](releases) page, unzip the file and 
+copy the resulting directory to any place you like. On the Mac you'd probably just 
+copy the `SIB` app (inside the unzipped folder) to `/Applications`.
 
 ## GUI Usage
 
@@ -58,7 +57,7 @@ the current running instance.
 The recommended way is to use the `open` command:
 
 ```bash
-open http://www.heise.de -b de.idesis.singleinstancebrowser
+open http://www.idesis.de -b de.idesis.singleinstancebrowser
 open /Users/doe/Desktop/SomePDF.pdf -b de.idesis.singleinstancebrowser
 ```
 
@@ -70,7 +69,7 @@ The default behaviour of `open` is to prevent multiple instances of an applicati
 if you really need it then you can use `open` with `-n`:
 
 ```bash
-open http://www.heise.de -n -b de.idesis.singleinstancebrowser
+open http://www.idesis.de -n -b de.idesis.singleinstancebrowser
 ```
 
 However, if SingleInstanceBrowser is configured to prevent multiple instances then the 
