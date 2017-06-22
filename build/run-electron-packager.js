@@ -17,33 +17,39 @@ const fse = require("fs-extra");
 const path = require("path");
 
 // package.json of ./app/
-var apppj = fse.readJsonSync(process.argv[2]);
+const apppj = fse.readJsonSync(process.argv[2]);
 // package.json
-var pj = fse.readJsonSync(process.argv[3]);
+const pj = fse.readJsonSync(process.argv[3]);
 
 // Default params
-var packagerParams = apppj.config.pkgParams.split(" ");
-packagerParams.push("./out/");
-packagerParams.push("--out=./release/");
-packagerParams.push("--no-prune");
-packagerParams.push("--download.cache=./build/tmp/.electron-download");
-packagerParams.push("--overwrite");
-packagerParams.push(`--appname="${apppj.productName}"`);
-packagerParams.push(`--app-version="${apppj.version}"`);
-packagerParams.push(`--electron-version="${apppj.devDependencies.electron}"`);
-packagerParams.push(`--arch="${apppj.config.arch}"`);
+const packagerParams = apppj.config.pkgParams.split(" ");
+packagerParams.push(
+    "./out/",
+    "--out=./release/",
+    "--no-prune",
+    "--download.cache=./build/tmp/.electron-download",
+    "--overwrite",
+    `--appname="${apppj.productName}"`,
+    `--app-version="${apppj.version}"`,
+    `--electron-version="${apppj.devDependencies.electron}"`,
+    `--arch="${apppj.config.arch}"`
+);
 apppj.copyright ? packagerParams.push(`--app-copyright="${apppj.copyright}"`): null;
 
 // Platform specific params
 if (process.argv[4] == "darwin") {
-    packagerParams.push("--platform=darwin");
-    packagerParams.push("--icon=./build/tmp/appicon.icns");
+    packagerParams.push(
+        "--platform=darwin", 
+        "--icon=./build/tmp/appicon.icns"
+    );
     apppj.identifier ? packagerParams.push(`--app-bundle-id="${apppj.identifier}"`): null;
     apppj.darwinAppCategory ? packagerParams.push(`--app-category-type="${apppj.darwinAppCategory}"`): null;
     console.log(`///// Making darwin x64 release of ${apppj.productName}...`);
 } else if (process.argv[4] == "win32") {
-    packagerParams.push("--platform=win32");
-    packagerParams.push("--icon=./build/tmp/appicon.ico");
+    packagerParams.push(
+        "--platform=win32",
+        "--icon=./build/tmp/appicon.ico"
+    );
     apppj.companyname ? packagerParams.push(`--win32metadata.CompanyName="${apppj.companyname}"`): null;
     apppj.win32FileDescription ? packagerParams.push(`--win32metadata.FileDescription="${apppj.win32FileDescription}"`): null;
     apppj.productName ? packagerParams.push(`--win32metadata.OriginalFilename="${apppj.productName}.exe"`): null;
@@ -55,5 +61,10 @@ if (process.argv[4] == "darwin") {
 }
 //console.log(packagerParams);
 
-var packager = path.join(__dirname, "tmp", "node_modules", ".bin", (process.platform == "win32") ? "electron-packager.cmd" : "electron-packager");
-proc.spawnSync(packager, packagerParams, { shell: true, stdio: "inherit" });
+process.exit(
+    proc.spawnSync(
+        path.join(__dirname, "tmp", "node_modules", ".bin", (process.platform == "win32") ? "electron-packager.cmd" : "electron-packager"),
+        packagerParams, 
+        { shell: true, stdio: "inherit" }
+    )
+);
