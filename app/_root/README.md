@@ -123,6 +123,7 @@ The default configuration looks like this:
         "Reload": "ctrl+alt+r",
         "GoBack": "ctrl+alt+left",
         "GoForward": "ctrl+alt+right"
+        "ExitHTMLFullscreen": "esc"
     },
     "UserAgent": "",
     "ClearTraces": true,
@@ -147,21 +148,21 @@ or if any of the values is invalid or missing.
   You can open the Chrome developer tools to debug the SingleInstanceBrowser window itself 
   (`ctrl+alt+i`). To debug the actual web page you'd use `ctrl+alt+d` instead. 
 
-  | Key                      | ShortCut (default) | Action                                          |
-  | ------------------------ | ------------------ | ----------------------------------------------- |
-  | `ToggleAddressBar`       | `ctrl+alt+a`       | Show/hide the addressbar.                       |
-  | `ToggleInternalDevTools` | `ctrl+alt+i`       | Show/hide developer tools for the host window.  |
-  | `ToggleDevTools`         | `ctrl+alt+d`       | Show/hide developer tools for the current page. |
-  | `FocusLocationBar`       | `ctrl+alt+l`       | Show addressbar and focus the URL entry field.  |
-  | `InternalReload`         | `ctrl+alt+shift+r` | Reload the host window.                         |
-  | `Reload`                 | `ctrl+alt+r`       | Reload the current page.                        |
-  | `GoBack`                 | `ctrl+alt+left`    | Go one step back in the browser history.        |
-  | `GoForward`              | `ctrl+alt+right`   | Go one step forward in the browser history.     |
+  | Key                      | ShortCut (default) | Action                                                    |
+  | ------------------------ | ------------------ | --------------------------------------------------------- |
+  | `ToggleAddressBar`       | `ctrl+alt+a`       | Show/hide the addressbar.                                 |
+  | `ToggleInternalDevTools` | `ctrl+alt+i`       | Show/hide developer tools for the host window.            |
+  | `ToggleDevTools`         | `ctrl+alt+d`       | Show/hide developer tools for the current page.           |
+  | `FocusLocationBar`       | `ctrl+alt+l`       | Show addressbar and focus the URL entry field.            |
+  | `InternalReload`         | `ctrl+alt+shift+r` | Reload the host window.                                   |
+  | `Reload`                 | `ctrl+alt+r`       | Reload the current page.                                  |
+  | `GoBack`                 | `ctrl+alt+left`    | Go one step back in the browser history.                  |
+  | `GoForward`              | `ctrl+alt+right`   | Go one step forward in the browser history.               |
+  | `ExitHTMLFullscreen`     | `esc`              | Leave HTML fullscreen (for example from YouTube videos).  |
 
-  If a key is completely missing then the default value is used. If you want to disable a
-  keyboard shortcut set its value to `null` or an empty string (`""`). You can assign your own 
-  keyboard shortcuts to any of the keys above. For available key combinations please see the
-  documentation of [Mousetrap](https://craig.is/killing/mice).
+  If you want to disable a keyboard shortcut set its value to `null` or an empty string (`""`). 
+  You can assign your own keyboard shortcuts to any of the keys above. For available key 
+  combinations please see the documentation of [Mousetrap](https://craig.is/killing/mice).
 
 - `UserAgent` will be used to set `navigator.userAgent` in the browser window. If this 
   value is missing or an empty string (`""`), the default `navigator.userAgent` from the 

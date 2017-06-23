@@ -92,6 +92,9 @@ export class CRendererApplication {
         this.bindShortCut(this.settings.ShortCuts.GoForward, () => {
             this.webView.goForward();
         });
+        this.bindShortCut(this.settings.ShortCuts.ExitHTMLFullscreen, () => {
+            this.webView.executeJavaScript("document.webkitExitFullscreen();", true);
+        });
     }
 
     /**
