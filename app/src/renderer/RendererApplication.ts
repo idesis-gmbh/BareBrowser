@@ -191,35 +191,6 @@ export class CRendererApplication {
                 }
                 break;
 
-            case "toggleAddressBar":
-                this.addressBar.style.display === "none" ? this.addressBar.style.display = "" : this.addressBar.style.display = "none";
-                break;
-
-            case "toggleInternalDevTools":
-                const devToolsOpened = remote.getCurrentWindow().webContents.isDevToolsOpened();
-                devToolsOpened ? remote.getCurrentWindow().webContents.closeDevTools() : remote.getCurrentWindow().webContents.openDevTools({mode: "detach"});
-                break;
-
-            case "toggleDevTools":
-                this.webView.isDevToolsOpened() ? this.webView.closeDevTools() : this.webView.openDevTools();
-                break;
-
-            case "internalReload":
-                remote.getCurrentWindow().webContents.reload();
-                break;
-
-            case "reload":
-                this.webView.reload();
-                break;
-
-            case "goBack":
-                this.webView.goBack();
-                break;
-
-            case "goForward":
-                this.webView.goForward();
-                break;
-
             default:
                 break;
         }
