@@ -14,7 +14,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git+https://github.com/idesis-gmbh/SingleInstanceBrowser.git"
+  },
+  "readme": "README.md",
+  "bugs": {
+    "url": "https://github.com/idesis-gmbh/SingleInstanceBrowser/issues",
+    "email": "produktion@idesis.de"
   },
   "license": "MIT",
   "scripts": {
