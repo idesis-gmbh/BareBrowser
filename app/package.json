@@ -4,7 +4,7 @@
   "description": "A minimalist single window/single instance browser, invokable via command line.",
   "companyname": "idesis GmbH",
   "copyright": "©2017, idesis GmbH, ",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "identifier": "de.idesis.singleinstancebrowser",
   "darwinAppCategory": "public.app-category.productivity",
   "win32FileDescription": "SingleInstanceBrowser",
