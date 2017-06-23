@@ -158,17 +158,6 @@ export class CMainApplication {
     }
 
     /**
-     *
-     * @param _webContents
-     * @param permission
-     * @param callback
-     */
-    private permissionRequestHandler(_webContents: Electron.WebContents, permission: string, callback: (permissionGranted: boolean) => void): void {
-        console.info("Permission requested (denying all):", permission);
-        callback(false);
-    }
-
-    /**
      * Create a browser window.
      */
     private createWindow(): void {
@@ -202,7 +191,6 @@ export class CMainApplication {
             throws: true,
         };
         this.mainWindow.setTitle($FSE.readJsonSync($Path.join(__dirname, "..", "package.json"), readOptions).productName);
-        this.mainWindow.webContents.session.setPermissionRequestHandler(this.permissionRequestHandler.bind(this));
     }
 
     /**

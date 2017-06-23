@@ -26,6 +26,7 @@ export class CRendererApplication {
         fragment.appendChild(this.addressBar);
         fragment.appendChild(this.webView);
         document.body.appendChild(fragment);
+        remote.getCurrentWindow().webContents.session.setPermissionRequestHandler(this.onPermissionRequest.bind(this));
         ipcRenderer.on("IPC", this.onIPC.bind(this));
         this.queryInitialURLItem();
         this.bindShortCuts();
@@ -159,6 +160,17 @@ export class CRendererApplication {
         //$FSE.
     }
 
+    /**
+     *
+     * @param _webContents
+     * @param permission
+     * @param callback
+     */
+    private onPermissionRequest(_webContents: Electron.WebContents, permission: string, callback: (permissionGranted: boolean) => void): void {
+        const grant = (this.settings.Permissions.indexOf(permission) > -1);
+        console.info(`Permission '${permission}' requested, ${grant ? "granting." : "denying."}`);
+        callback(grant);
+    }
 
     /**
      *
