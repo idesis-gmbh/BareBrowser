@@ -57,8 +57,8 @@ the current running instance.
 The recommended way is to use the `open` command:
 
 ```bash
-open http://www.idesis.de -b de.idesis.singleinstancebrowser
-open /Users/doe/Desktop/SomePDF.pdf -b de.idesis.singleinstancebrowser
+open -g -b de.idesis.singleinstancebrowser http://www.idesis.de
+open -g -b de.idesis.singleinstancebrowser /Users/doe/Desktop/SomePDF.pdf
 ```
 
 If you use `open` to navigate to a *web page* you have to enter a complete vaild URL 
@@ -69,11 +69,11 @@ The default behaviour of `open` is to prevent multiple instances of an applicati
 if you really need it then you can use `open` with `-n`:
 
 ```bash
-open http://www.idesis.de -n -b de.idesis.singleinstancebrowser
+open -n -b de.idesis.singleinstancebrowser http://www.idesis.de
 ```
 
-However, if SingleInstanceBrowser is configured to prevent multiple instances then the 
-behaviour is the same like described above.
+However, this does only work, if `SingleInstance` is set to `false` (see below). If it is 
+set to `true` the given URL won't be passed to the already running instance.
 
 **Windows:**
 
