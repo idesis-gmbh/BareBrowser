@@ -78,6 +78,7 @@ export class CRendererApplication {
                 this.addressBar.style.display = "";
             }
             this.urlField.focus();
+            this.urlField.select();
         });
         this.bindShortCut(this.settings.ShortCuts.InternalReload, () => {
             remote.getCurrentWindow().webContents.reload();
