@@ -21,8 +21,10 @@ export interface Settings {
         Reload: string,
         GoBack: string,
         GoForward: string,
+        ExitHTMLFullscreen: string;
     };
     UserAgent: string;
+    Permissions: string[];
     ClearTraces: boolean;
     SingleInstance: boolean;
     FocusOnNewURL: boolean;
@@ -37,8 +39,8 @@ export function getDefaultSettings(): Settings {
         Window: {
             Left: 50,
             Top: 50,
-            Width: 1000,
-            Height: 1000,
+            Width: 1024,
+            Height: 768,
         },
         ShortCuts: {
             Global: true,
@@ -50,8 +52,10 @@ export function getDefaultSettings(): Settings {
             Reload: "ctrl+alt+r",
             GoBack: "ctrl+alt+left",
             GoForward: "ctrl+alt+right",
+            ExitHTMLFullscreen: "esc",
         },
         UserAgent: typeof navigator === "undefined" ? "" : navigator.userAgent,
+        Permissions: ["fullscreen"],
         ClearTraces: true,
         SingleInstance: true,
         FocusOnNewURL: true,
@@ -71,28 +75,37 @@ export function getSettings(configFile: string): Settings {
         console.error("Could't read configuration file", configFile, error);
         return getDefaultSettings();
     }
+    let userAgent: string;
+    // tslint:disable-next-line:prefer-conditional-expression
+    if (typeof settings.UserAgent !== "string") {
+        userAgent = (typeof navigator === "undefined" ? "" : navigator.userAgent);
+    } else {
+        userAgent = settings.UserAgent;
+    }
     settings = {
         Window: {
-            Left: settings.Window.Left || 50,
-            Top: settings.Window.Top || 50,
-            Width: settings.Window.Width || 1000,
-            Height: settings.Window.Height || 1000,
+            Left: $Utils.normalize(settings.Window.Left, 50),
+            Top: $Utils.normalize(settings.Window.Top, 50),
+            Width: $Utils.normalize(settings.Window.Width, 1024),
+            Height: $Utils.normalize(settings.Window.Height, 768),
         },
         ShortCuts: {
-            Global: settings.ShortCuts.Global !== undefined ? settings.ShortCuts.Global: true,
-            ToggleAddressBar: $Utils.normalizeString(settings.ShortCuts.ToggleAddressBar, "ctrl+alt+a"),
-            ToggleInternalDevTools: $Utils.normalizeString(settings.ShortCuts.ToggleInternalDevTools, "ctrl+alt+i"),
-            ToggleDevTools: $Utils.normalizeString(settings.ShortCuts.ToggleDevTools, "ctrl+alt+dx"),
-            FocusLocationBar: $Utils.normalizeString(settings.ShortCuts.FocusLocationBar, "ctrl+alt+l"),
-            InternalReload: $Utils.normalizeString(settings.ShortCuts.InternalReload, "ctrl+alt+shift+r"),
-            Reload: $Utils.normalizeString(settings.ShortCuts.Reload, "ctrl+alt+r"),
-            GoBack: $Utils.normalizeString(settings.ShortCuts.GoBack, "ctrl+alt+left"),
-            GoForward: $Utils.normalizeString(settings.ShortCuts.GoForward, "ctrl+alt+right"),
+            Global: $Utils.normalize(settings.ShortCuts.Global, true),
+            ToggleAddressBar: $Utils.normalize(settings.ShortCuts.ToggleAddressBar, "ctrl+alt+a"),
+            ToggleInternalDevTools: $Utils.normalize(settings.ShortCuts.ToggleInternalDevTools, "ctrl+alt+i"),
+            ToggleDevTools: $Utils.normalize(settings.ShortCuts.ToggleDevTools, "ctrl+alt+dx"),
+            FocusLocationBar: $Utils.normalize(settings.ShortCuts.FocusLocationBar, "ctrl+alt+l"),
+            InternalReload: $Utils.normalize(settings.ShortCuts.InternalReload, "ctrl+alt+shift+r"),
+            Reload: $Utils.normalize(settings.ShortCuts.Reload, "ctrl+alt+r"),
+            GoBack: $Utils.normalize(settings.ShortCuts.GoBack, "ctrl+alt+left"),
+            GoForward: $Utils.normalize(settings.ShortCuts.GoForward, "ctrl+alt+right"),
+            ExitHTMLFullscreen: $Utils.normalize(settings.ShortCuts.ExitHTMLFullscreen, "esc"),
         },
-        UserAgent: settings.UserAgent || (typeof navigator === "undefined" ? "" : navigator.userAgent),
-        ClearTraces: settings.ClearTraces !== undefined ? settings.ClearTraces: true,
-        SingleInstance: settings.SingleInstance !== undefined ? settings.SingleInstance: true,
-        FocusOnNewURL: settings.FocusOnNewURL !== undefined ? settings.FocusOnNewURL: true,
+        UserAgent: userAgent,
+        Permissions: $Utils.normalize(settings.Permissions, ["fullscreen"]),
+        ClearTraces: $Utils.normalize(settings.ClearTraces, true),
+        SingleInstance: $Utils.normalize(settings.SingleInstance, true),
+        FocusOnNewURL: $Utils.normalize(settings.FocusOnNewURL, true),
     };
     return settings;
 }

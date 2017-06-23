@@ -122,10 +122,11 @@ The default configuration looks like this:
         "InternalReload": "ctrl+alt+shift+r",
         "Reload": "ctrl+alt+r",
         "GoBack": "ctrl+alt+left",
-        "GoForward": "ctrl+alt+right"
+        "GoForward": "ctrl+alt+right",
         "ExitHTMLFullscreen": "esc"
     },
     "UserAgent": "",
+    "Permissions": ["fullscreen"],
     "ClearTraces": true,
     "SingleInstance": true,
     "FocusOnNewURL": true
@@ -133,7 +134,7 @@ The default configuration looks like this:
 ```
 
 These are also the default values for every property in case of a malformed JSON file 
-or if any of the values is invalid or missing.
+or if any of the values is invalid, missing or has the wrong type.
 
 - The `Window` object configures the initial window position and size when 
   SingleInstanceBrowser is started. 
@@ -168,6 +169,10 @@ or if any of the values is invalid or missing.
   value is missing or an empty string (`""`), the default `navigator.userAgent` from the 
   builtin Chromium engine will be used. You can set this value to any string you like. If 
   you want to prevent a user agent to be sent then set this value to a single space (`" "`).
+
+- `Permissions` is an array of strings which controls the behaviour when a web page asks 
+  for a specific permission. The default is to allow fullscreen requests. If you also want
+  to allow notifications from web pages the value would be `["fullscreen", "notifications"]`.
 
 - If `ClearTraces` is set to `true` then any temporary data like caches, local storage, 
   cookies etc. will be deleted when SingleInstanceBrowser is closed. Deleting means

@@ -14,9 +14,11 @@
         "InternalReload": "ctrl+alt+shift+r",
         "Reload": "ctrl+alt+r",
         "GoBack": "ctrl+alt+left",
-        "GoForward": "ctrl+alt+right"
+        "GoForward": "ctrl+alt+right",
+        "ExitHTMLFullscreen": "esc"
     },
     "UserAgent": "",
+    "Permissions": ["fullscreen"],
     "ClearTraces": true,
     "SingleInstance": true,
     "FocusOnNewURL": true
