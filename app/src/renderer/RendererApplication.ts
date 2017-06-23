@@ -153,11 +153,9 @@ export class CRendererApplication {
      * @param event
      */
     private onConsoleMessage(event: Electron.ConsoleMessageEvent): void {
-        //console.log(`LOG from ${this.webView.getURL()}: [Level ${event.level}] ${event.message} (Line ${event.line} in ${event.sourceId})`);
         console.log("LOG from %s: [Level %d] %s (Line %d in %s)", this.webView.getURL(), event.level, event.message, event.line, event.sourceId);
         event.preventDefault();
         event.stopImmediatePropagation();
-        //$FSE.
     }
 
     /**

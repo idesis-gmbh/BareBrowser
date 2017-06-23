@@ -169,10 +169,6 @@ export class CMainApplication {
             y: this.settings.Window.Top,
             width: this.settings.Window.Width,
             height: this.settings.Window.Height,
-            // webPreferences: {
-            //     plugins: true,
-            //     nodeIntegration: true,
-            // },
         };
         // Create the browser window ...
         this.mainWindow = new BrowserWindow(bwOptions);
@@ -207,8 +203,8 @@ export class CMainApplication {
      * On activating the app.
      * On darwin it's common to re-create a window in the app when the
      * dock icon is clicked and there are no other windows open.
-     * @param _event 
-     * @param _hasVisibleWindows 
+     * @param _event
+     * @param _hasVisibleWindows
      */
     private onActivate(_event: Electron.Event, _hasVisibleWindows: boolean): void {
         if (this.mainWindow === null) {
