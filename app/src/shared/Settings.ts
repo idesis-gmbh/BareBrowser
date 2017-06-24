@@ -28,6 +28,7 @@ export interface Settings {
     ClearTraces: boolean;
     SingleInstance: boolean;
     FocusOnNewURL: boolean;
+    Homepage: string;
 }
 
 /**
@@ -59,6 +60,7 @@ export function getDefaultSettings(): Settings {
         ClearTraces: true,
         SingleInstance: true,
         FocusOnNewURL: true,
+        Homepage: "",
     };
 }
 
@@ -106,6 +108,7 @@ export function getSettings(configFile: string): Settings {
         ClearTraces: $Utils.normalize(settings.ClearTraces, true),
         SingleInstance: $Utils.normalize(settings.SingleInstance, true),
         FocusOnNewURL: $Utils.normalize(settings.FocusOnNewURL, true),
+        Homepage: $Utils.normalize(settings.Homepage, "").trim(),
     };
     return settings;
 }

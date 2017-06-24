@@ -129,7 +129,8 @@ The default configuration looks like this:
     "Permissions": ["fullscreen"],
     "ClearTraces": true,
     "SingleInstance": true,
-    "FocusOnNewURL": true
+    "FocusOnNewURL": true,
+    "Homepage": ""
 }
 ```
 
@@ -206,6 +207,9 @@ or if any of the values is invalid, missing or has the wrong type.
   make it the forground window (regardless of a given command line URL). Setting this
   value to `false` opens the given URL (if any) in the current instances window (*A*) 
   but it won't be activated.
+
+- The string in `Homepage` contains the URL to be opened by default if no URL was given
+  via command line. `Homepage` is ignored at all if it is an empty string `("")`.
 
 
 ## License

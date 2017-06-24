@@ -21,5 +21,6 @@
     "Permissions": ["fullscreen"],
     "ClearTraces": true,
     "SingleInstance": true,
-    "FocusOnNewURL": true
+    "FocusOnNewURL": true,
+    "Homepage": ""
 }

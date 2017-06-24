@@ -38,10 +38,14 @@ export class CRendererApplication {
     private queryInitialURLItem(): void {
         const urlItem = ipcRenderer.sendSync("IPC", ["queryURLItem"]);
         if ((urlItem && (urlItem as $URLItem.URLItem).DoLoad)) {
-            this.webView.setAttribute("src", (urlItem as $URLItem.URLItem).URL);
+            this.loadURL((urlItem as $URLItem.URLItem).URL);
         } else {
-            this.addressBar.style.display = "";
-            this.urlField.focus();
+            if (this.settings.Homepage !== "") {
+                this.loadURL(this.settings.Homepage);
+            } else {
+                this.addressBar.style.display = "";
+                this.urlField.focus();
+            }
        }
     }
 
@@ -99,6 +103,14 @@ export class CRendererApplication {
 
     /**
      *
+     * @param url
+     */
+    private loadURL(url: string): void {
+        this.webView.setAttribute("src", $URLItem.getURLItem(url).URL);
+    }
+
+    /**
+     *
      * @param _event
      */
     private goBack(_event: MouseEvent): void {
@@ -117,11 +129,33 @@ export class CRendererApplication {
      *
      * @param event
      */
-    private loadURLItem(event: MouseEvent | KeyboardEvent): void {
+    private loadURLItemListener(event: MouseEvent | KeyboardEvent): void {
         if ((event.type === "keypress") && ((event as KeyboardEvent).key !== "Enter")) {
             return;
         }
-        this.webView.setAttribute("src", $URLItem.getURLItem(this.urlField.value).URL);
+        this.loadURL(this.urlField.value);
+    }
+
+    /**
+     *
+     * @param _event
+     * @param args
+     */
+    // tslint:disable-next-line:no-any
+    private onIPC(_event: Electron.Event, ...args: any[]): void {
+        if ((args.length === 0) || (!this.webView)) {
+            return;
+        }
+        switch (args[0][0]) {
+            case "loadURLItem":
+                if (args[0].length === 2) {
+                    this.loadURL((args[0][1] as $URLItem.URLItem).URL);
+                }
+                break;
+
+            default:
+                break;
+        }
     }
 
     /**
@@ -176,28 +210,6 @@ export class CRendererApplication {
 
     /**
      *
-     * @param _event
-     * @param args
-     */
-    // tslint:disable-next-line:no-any
-    private onIPC(_event: Electron.Event, ...args: any[]): void {
-        if ((args.length === 0) || (!this.webView)) {
-            return;
-        }
-        switch (args[0][0]) {
-            case "loadURLItem":
-                if (args[0].length === 2) {
-                    this.webView.setAttribute("src", (args[0][1] as $URLItem.URLItem).URL);
-                }
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    /**
-     *
      * @returns HTMLDivElement
      */
     private getAddressBar(): HTMLDivElement {
@@ -237,7 +249,7 @@ export class CRendererApplication {
         goButton.setAttribute("id", "goButton");
         goButton.title = "Open URL";
         goButton.appendChild(document.createTextNode("Go"));
-        goButton.addEventListener("click", this.loadURLItem.bind(this), false);
+        goButton.addEventListener("click", this.loadURLItemListener.bind(this), false);
         navigationButtonsContainer.appendChild(goButton);
 
         return navigationButtonsContainer;
@@ -256,7 +268,7 @@ export class CRendererApplication {
         if (this.settings.ShortCuts.Global) {
             this.urlField.setAttribute("class", "mousetrap");
         }
-        this.urlField.addEventListener("keypress", this.loadURLItem.bind(this), false);
+        this.urlField.addEventListener("keypress", this.loadURLItemListener.bind(this), false);
         urlFieldContainer.appendChild(this.urlField);
         return urlFieldContainer;
     }
