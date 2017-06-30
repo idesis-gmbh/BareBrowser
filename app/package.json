@@ -30,7 +30,6 @@
   "main": "./bin/MainProcess.js",
   "dependencies": {
     "fs-extra": "3.0.1",
-    "normalize-url": "1.9.1",
     "mousetrap": "1.6.1"
   },
   "devDependencies": {
@@ -40,7 +39,6 @@
     "tslint": "5.4.3",
     "@types/fs-extra": "3.0.3",
     "@types/node": "^7.0.18",
-    "@types/normalize-url": "1.9.0",
     "@types/mousetrap": "1.5.34"
   },
   "config": {
