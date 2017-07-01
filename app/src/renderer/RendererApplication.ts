@@ -54,13 +54,11 @@ export class CRendererApplication {
      * @param shortcut
      * @param func
      */
-    private bindShortCut(shortcut: string, func: Function): void {
-        if (shortcut.trim() !== "") {
-            $ShortCuts.bind(shortcut, (_event: ExtendedKeyboardEvent, _combo: string): boolean => {
-                func.call(this);
-                return false;
-            });
-        }
+    private bindShortCut(shortcut: string | string[], func: Function): void {
+        $ShortCuts.bind(shortcut, (_event: ExtendedKeyboardEvent, _combo: string): boolean => {
+            func.call(this);
+            return false;
+        });
     }
 
     /**

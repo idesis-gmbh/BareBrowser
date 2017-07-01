@@ -115,15 +115,15 @@ The default configuration looks like this:
     },
     "ShortCuts": {
         "Global": true,
-        "ToggleAddressBar": "ctrl+alt+a",
-        "ToggleInternalDevTools": "ctrl+alt+i",
-        "ToggleDevTools": "ctrl+alt+d",
-        "FocusLocationBar": "ctrl+alt+l",
-        "InternalReload": "ctrl+alt+shift+r",
-        "Reload": "ctrl+alt+r",
-        "GoBack": "ctrl+alt+left",
-        "GoForward": "ctrl+alt+right",
-        "ExitHTMLFullscreen": "esc"
+        "ToggleAddressBar": ["mod+t"],
+        "ToggleInternalDevTools": ["mod+shift+d"],
+        "ToggleDevTools": ["mod+d"],
+        "FocusLocationBar": ["mod+l"],
+        "InternalReload": ["mod+shift+r", "shift+f5"],
+        "Reload": ["mod+r", "f5"],
+        "GoBack": ["ctrl+alt+left"],
+        "GoForward": ["ctrl+alt+right"],
+        "ExitHTMLFullscreen": ["esc"]
     },
     "UserAgent": "",
     "Permissions": ["fullscreen"],
@@ -143,24 +143,28 @@ or if any of the values is invalid, missing or has the wrong type.
 - The `ShortCuts` object configures the available keyboard shortcuts. The value of the `Global` 
   key controls how keyboard shortcuts are enabled/disabled. With `false` all shortcuts are 
   disabled if the URL field in the address bar is focused. With `true` shortcuts are enabled 
-  even if the URL field is focused. 
+  even if the URL field is focused.
+
+  Every entry is an array of strings, so you can assign multiple shortcuts to every command, 
+  (see `Reload`). The key `mod` below is mapped to the `Command`-key on the Mac and to the 
+  `Ctrl`-key on Windows.
 
   The term *host window* below means the native window (`Electron.BrowserWindow`), which effectively 
   is also a web page but only contains the `webview` tag which itself contains the actual page. 
   You can open the Chrome developer tools to debug the SingleInstanceBrowser window itself 
-  (`ctrl+alt+i`). To debug the actual web page you'd use `ctrl+alt+d` instead. 
+  with `mod+shift+d`. To debug the actual web page you'd use `mod+d` instead. 
 
-  | Key                      | ShortCut (default) | Action                                                    |
-  | ------------------------ | ------------------ | --------------------------------------------------------- |
-  | `ToggleAddressBar`       | `ctrl+alt+a`       | Show/hide the addressbar.                                 |
-  | `ToggleInternalDevTools` | `ctrl+alt+i`       | Show/hide developer tools for the host window.            |
-  | `ToggleDevTools`         | `ctrl+alt+d`       | Show/hide developer tools for the current page.           |
-  | `FocusLocationBar`       | `ctrl+alt+l`       | Show addressbar and focus the URL entry field.            |
-  | `InternalReload`         | `ctrl+alt+shift+r` | Reload the host window.                                   |
-  | `Reload`                 | `ctrl+alt+r`       | Reload the current page.                                  |
-  | `GoBack`                 | `ctrl+alt+left`    | Go one step back in the browser history.                  |
-  | `GoForward`              | `ctrl+alt+right`   | Go one step forward in the browser history.               |
-  | `ExitHTMLFullscreen`     | `esc`              | Leave HTML fullscreen (for example from YouTube videos).  |
+  | Key                      | ShortCuts (default)     | Action                                                    |
+  | ------------------------ | ----------------------- | --------------------------------------------------------- |
+  | `ToggleAddressBar`       | `mod+t`                 | Show/hide the addressbar.                                 |
+  | `ToggleInternalDevTools` | `mod+shift+d`           | Show/hide developer tools for the host window.            |
+  | `ToggleDevTools`         | `mod+d`                 | Show/hide developer tools for the current page.           |
+  | `FocusLocationBar`       | `mod+l`                 | Show addressbar and focus the URL entry field.            |
+  | `InternalReload`         | `mod+shift+r, shift+f5` | Reload the host window.                                   |
+  | `Reload`                 | `mod+r, f5`             | Reload the current page.                                  |
+  | `GoBack`                 | `ctrl+alt+left`         | Go one step back in the browser history.                  |
+  | `GoForward`              | `ctrl+alt+right`        | Go one step forward in the browser history.               |
+  | `ExitHTMLFullscreen`     | `esc`                   | Leave HTML fullscreen (for example from YouTube videos).  |
 
   If you want to disable a keyboard shortcut set its value to `null` or an empty string (`""`). 
   You can assign your own keyboard shortcuts to any of the keys above. For available key 
