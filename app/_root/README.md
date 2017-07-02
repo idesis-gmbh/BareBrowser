@@ -39,7 +39,7 @@ c:\somedir\SomePDF.pdf          =>  http://c/somedir/SomePDF.pdf    (wrong)
 
 SingleInstanceBrowser accepts an arbitrary number of command line parameters but only 
 the last one is taken as a URL which should be opened. Any other parameters are 
-ignored.
+ignored. For the URLs passed the same restrictions/rules as above apply.
 
 **Mac:**
 
@@ -124,7 +124,7 @@ There is only one configuration file:
 **Windows\*:**
 
 ```bash
-c:\Program Files\SIB-1.0.0-win32-x64\resources\app.asar.unpacked\res\settings.json
+c:\Program Files\SIB-x.y.z-win32-x64\resources\app.asar.unpacked\res\settings.json
 ```
 
 \*Assuming a standard installation in `%ProgramFiles%`.
