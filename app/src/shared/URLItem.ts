@@ -1,4 +1,5 @@
 import { $URL } from "./Modules";
+import * as $Consts from "../shared/Consts";
 
 /**
  *
@@ -18,6 +19,9 @@ export function getURLItem(url: string): URLItem {
     url = url.trim();
     if (url === "") {
         return { DoLoad: false, URL: "", IsFileURL: false };
+    }
+    if ((url === $Consts.CMD_QUIT) || ((url === $Consts.CMD_URL_QUIT))) {
+        return { DoLoad: false, URL: $Consts.CMD_QUIT, IsFileURL: false };
     }
     if (url.startsWith("/")) {
         return { DoLoad: true, URL: "file://" + url, IsFileURL: true };

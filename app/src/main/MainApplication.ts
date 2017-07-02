@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import { $FSE, $Path, $URL } from "../shared/Modules";
 import * as $Settings from "../shared/Settings";
 import * as $URLItem from "../shared/URLItem";
+import * as $Consts from "../shared/Consts";
 
 export class CMainApplication {
 
@@ -93,11 +94,16 @@ export class CMainApplication {
      */
     private onSingleInstanceCallback(args: string[], _workingDirectory: string): void {
         if (this.mainWindow) {
-            if (this.settings.FocusOnNewURL) {
+            this.urlItem = $URLItem.getURLItem(args[args.length - 1]);
+            // Quit command
+            if (this.urlItem.URL === $Consts.CMD_QUIT) {
+                this.asnycQuit();
+                return;
+            } else if (this.settings.FocusOnNewURL) {
                 this.mainWindow.focus();
             }
             if (args.length > 1) {
-                this.mainWindow.webContents.send("IPC", ["loadURLItem", $URLItem.getURLItem(args[args.length - 1])]);
+                this.mainWindow.webContents.send("IPC", ["loadURLItem", this.urlItem]);
             }
         }
     }
@@ -150,11 +156,29 @@ export class CMainApplication {
         // On Darwin yet determined by onOpen* so set it explicitly here
         this.urlItem.IsFileURL = isFile;
         if (this.mainWindow) {
+            // Quit command
+            if (this.urlItem.URL === $Consts.CMD_QUIT) {
+                this.asnycQuit();
+                return;
+            }
             if (this.settings.FocusOnNewURL) {
                 this.mainWindow.focus();
             }
             this.mainWindow.webContents.send("IPC", ["loadURLItem", this.urlItem]);
         }
+    }
+
+    /**
+     * Quitting by command line has to be done asynchronously,
+     * otherwise an UnhandledPromiseRejectionWarning will occur.
+     */
+    private asnycQuit(): void {
+        setTimeout(() => {
+            if (this.mainWindow) {
+                this.mainWindow.webContents.stop();
+                this.mainWindow.close();
+            }
+        },         200);
     }
 
     /**

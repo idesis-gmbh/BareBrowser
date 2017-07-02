@@ -85,6 +85,32 @@ SIB.exe www.idesis.de
 SIB.exe /c:\somedir\SomePDF.pdf
 ```
 
+### Quitting a running instance
+
+You can also quit a running instance via command line (if `SingleInstance` is `true`, see below).
+
+**Mac:**
+
+```bash
+/Applications/SIB.app/Contents/MacOS/SIB quit
+````
+
+or
+
+```bash
+open -g -b de.idesis.singleinstancebrowser http:quit
+````
+
+Simply using `quit` here isn't possible because it would be interpreted by the `open` command 
+as a file, therefore `http:quit` is used as a pseudo URL to "fool" the `open` command and pass
+it through to the running instance. 
+
+**Windows:**
+
+```bash
+SIB.exe quit
+```
+
 ## Configuration
 
 There is only one configuration file:
