@@ -29,7 +29,7 @@ if (process.argv[3] == "darwin") {
         path.join("release", `${apppj.productName}-darwin-x64`, `${apppj.productName}.app`).replace(/\ /g, "\\\ ")
     ];
     console.log("///// Running current darwin-x64 release of %s", apppj.productName);
-    process.exit(proc.spawnSync("open", params, { shell: true, stdio: "inherit" }).signal);
+    process.exit(proc.spawnSync("open", params, { shell: true, stdio: "inherit" }).status);
 } else if (process.argv[3] == "win32") {
     const executable = "\"" + path.join("release", `${apppj.productName}-win32-${apppj.config.archWin}`, `${apppj.productName}.exe`) + "\"";
     console.log("///// Running current win32-%s release of %s...", apppj.config.archWin, apppj.productName);

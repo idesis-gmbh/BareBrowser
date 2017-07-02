@@ -31,6 +31,7 @@ packagerParams.push(
     "--overwrite",
     `--appname="${apppj.productName}"`,
     `--app-version="${apppj.version}"`,
+    `--build-version="${apppj.version}"`,
     `--electron-version="${apppj.devDependencies.electron}"`,
     `--arch="${apppj.config.arch}"`
 );
@@ -61,10 +62,23 @@ if (process.argv[4] == "darwin") {
 }
 //console.log(packagerParams);
 
-process.exit(
-    proc.spawnSync(
-        path.join(__dirname, "tmp", "node_modules", ".bin", (process.platform == "win32") ? "electron-packager.cmd" : "electron-packager"),
-        packagerParams, 
-        { shell: true, stdio: "inherit" }
-    )
-);
+// Run packager
+const exitCode = proc.spawnSync(
+    path.join(__dirname, "tmp", "node_modules", ".bin", (process.platform == "win32") ? "electron-packager.cmd" : "electron-packager"),
+    packagerParams, 
+    { shell: true, stdio: "inherit" }
+).status;
+
+// Rename all existing release build paths to contain the version.
+if (exitCode === 0) {
+    const outputRootName = path.join(__dirname, "..", "release", apppj.productName);
+    const outputPaths = [outputRootName + "-darwin-x64", outputRootName + "-win32-x64", outputRootName + "-win32-ia32"];
+    const regexp = new RegExp(`${outputRootName}(?![\s\S]*${outputRootName})`);
+    for (var i = 0; i < outputPaths.length; i++) {
+        if (fse.existsSync(outputPaths[i])) {
+            fse.renameSync(outputPaths[i], outputPaths[i].replace(regexp, outputRootName + "-" + apppj.version));
+        }
+    }
+}
+
+process.exit(exitCode);

@@ -28,4 +28,4 @@ if (!cmd) {
     process.exit(1);
 }
 
-process.exit(proc.spawnSync(cmd, process.argv.splice(++index), { shell: true, stdio: "inherit" }).signal);
+process.exit(proc.spawnSync(cmd, process.argv.splice(++index), { shell: true, stdio: "inherit" }).status);
