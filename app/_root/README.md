@@ -156,6 +156,7 @@ The default configuration looks like this:
     "ClearTraces": true,
     "SingleInstance": true,
     "FocusOnNewURL": true,
+    "HardwareAcceleration": true,
     "Homepage": ""
 }
 ```
@@ -237,6 +238,9 @@ or if any of the values is invalid, missing or has the wrong type.
   make it the forground window (regardless of a given command line URL). Setting this
   value to `false` opens the given URL (if any) in the current instances window (*A*) 
   but it won't be activated.
+
+- On some systems you may encounter graphics artifacts in web pages, in such cases you 
+  can try to set `HardwareAcceleration` to `false`.
 
 - The string in `Homepage` contains the URL to be opened by default if no URL was given
   via command line. `Homepage` is ignored at all if it is an empty string `("")`.

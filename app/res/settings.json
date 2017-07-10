@@ -22,5 +22,6 @@
     "ClearTraces": true,
     "SingleInstance": true,
     "FocusOnNewURL": true,
+    "HardwareAcceleration": true,
     "Homepage": ""
 }

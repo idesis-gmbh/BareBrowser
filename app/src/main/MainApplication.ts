@@ -19,6 +19,9 @@ export class CMainApplication {
         this.setApplicationDirectories(); // As early as possible!
         (process.argv.length > 1) ? this.urlItem = $URLItem.getURLItem(process.argv[process.argv.length - 1]) : this.urlItem = $URLItem.getURLItem("");
         this.settings = $Settings.getSettings($Path.join(__dirname, "..", "res", "settings.json"));
+        if (!this.settings.HardwareAcceleration) {
+            app.disableHardwareAcceleration();
+        }
         if (this.settings.SingleInstance) {
             if (app.makeSingleInstance(this.onSingleInstanceCallback.bind(this))) {
                 if (process.argv.length === 1) {

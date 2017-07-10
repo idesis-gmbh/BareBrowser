@@ -28,6 +28,7 @@ export interface Settings {
     ClearTraces: boolean;
     SingleInstance: boolean;
     FocusOnNewURL: boolean;
+    HardwareAcceleration: boolean;
     Homepage: string;
 }
 
@@ -60,6 +61,7 @@ export function getDefaultSettings(): Settings {
         ClearTraces: true,
         SingleInstance: true,
         FocusOnNewURL: true,
+        HardwareAcceleration: true,
         Homepage: "",
     };
 }
@@ -108,6 +110,7 @@ export function getSettings(configFile: string): Settings {
         ClearTraces: $Utils.normalize(settings.ClearTraces, true),
         SingleInstance: $Utils.normalize(settings.SingleInstance, true),
         FocusOnNewURL: $Utils.normalize(settings.FocusOnNewURL, true),
+        HardwareAcceleration: $Utils.normalize(settings.HardwareAcceleration, true),
         Homepage: $Utils.normalize(settings.Homepage, "").trim(),
     };
     return settings;
