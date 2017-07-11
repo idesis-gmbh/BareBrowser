@@ -1,16 +1,12 @@
 // Run specified release build
 
 //Checks
-if (process.argv[3] == "darwin") {
-    if (process.platform != "darwin") {
-        console.error("%s: Cannot run darwin release on %s", process.argv[1], process.platform);
-        process.exit(1);
-    }
-} else if (process.argv[3] == "win32") {
-    if (process.platform != "win32") {
-        console.error("%s: Cannot run win32 release on %s", process.argv[1], process.platform);
-        process.exit(1);
-    }
+if ((process.argv[3] == "darwin") && (process.platform != "darwin")) {
+    console.error("%s: Cannot run darwin release on %s", process.argv[1], process.platform);
+    process.exit(1);
+} else if ((process.argv[3] == "win32") && (process.platform != "win32")) {
+    console.error("%s: Cannot run win32 release on %s", process.argv[1], process.platform);
+    process.exit(1);
 } else {
     console.error("%s: Unknown platform: %s", process.argv[1], process.argv[4]);
     process.exit(1);
