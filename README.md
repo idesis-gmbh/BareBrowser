@@ -10,7 +10,7 @@ open a new URL (given via command line) in the same window.
 SingleInstanceBrowser was developed in pure 
 [TypeScript](http://www.typescriptlang.org)
 with minimal dependencies using 
-[electron-typescript-boilerplate](https://github.com/idesis-gmbh/electron-typescript-boilerplate) 
+[electron-typescript-template](https://github.com/idesis-gmbh/electron-typescript-template) 
 and runs on the [Electron](https://electron.atom.io) platform.
 
 ***Important notice:*** No special attempts have been made to make this browser secure 
