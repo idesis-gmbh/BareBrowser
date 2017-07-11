@@ -33,9 +33,9 @@
     "mousetrap": "1.6.1"
   },
   "devDependencies": {
-    "typescript": "2.3.4",
+    "typescript": "2.4.1",
     "electron": "1.6.11",
-    "electron-packager": "8.7.1",
+    "electron-packager": "8.7.2",
     "tslint": "5.4.3",
     "@types/fs-extra": "3.0.3",
     "@types/node": "^7.0.18",
