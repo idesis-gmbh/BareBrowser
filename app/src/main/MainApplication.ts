@@ -8,6 +8,7 @@ export class CMainApplication {
 
     private settings: $Settings.Settings;
     private urlItem: $URLItem.URLItem;
+    private userDataDirectory: string;
     // Keep a global reference of the window object, if you don't, the window will
     // be closed automatically when the JavaScript object is garbage collected.
     private mainWindow: Electron.BrowserWindow | null = null;
@@ -59,20 +60,21 @@ export class CMainApplication {
      * value of 'identifier' from the apps package.json instead.
      */
     private setApplicationDirectories(): void {
-        let userDataDirectory: string;
+        let userData: string;
         try {
             const pj = require("../package.json");
             if (!pj.identifier) {
                 throw(new Error("Member 'identifier' does not exist in 'package.json'"));
             }
-            userDataDirectory = pj.identifier;
+            userData = pj.identifier;
         } catch (error) {
             // Just fail gracefully and use hard coded default
             console.error("Couldn't retrieve member 'identifier' from 'package.json', using default 'de.idesis.singleinstancebrowser' instead.", error);
-            userDataDirectory = "de.idesis.singleinstancebrowser";
+            userData = "de.idesis.singleinstancebrowser";
         }
-        app.setPath("userData", $Path.join(app.getPath("userData"), "..", userDataDirectory));
-        const tempDir = $Path.join(app.getPath("userData"), "temp");
+        this.userDataDirectory = $Path.join(app.getPath("userData"), "..", userData);
+        app.setPath("userData", this.userDataDirectory);
+        const tempDir = $Path.join(this.userDataDirectory, "temp");
         $FSE.mkdirp(tempDir);
         app.setPath("temp", tempDir);
     }
