@@ -93,13 +93,13 @@ You can also quit a running instance via command line (if `SingleInstance` is `t
 
 ```bash
 /Applications/SIB.app/Contents/MacOS/SIB quit
-````
+```
 
 or
 
 ```bash
 open -g -b de.idesis.singleinstancebrowser http:quit
-````
+```
 
 Simply using `quit` here isn't possible because it would be interpreted by the `open` command 
 as a file, therefore `http:quit` is used as a pseudo URL to "fool" the `open` command and pass
@@ -123,7 +123,7 @@ There is only one configuration file:
 
 **Windows\*:**
 
-```bash
+```
 c:\Program Files\SIB-x.y.z-win32-x64\resources\app.asar.unpacked\res\settings.json
 ```
 
@@ -203,7 +203,7 @@ or if any of the values is invalid, missing or has the wrong type.
   builtin Chromium engine will be used. You can set this value to any string you like. If 
   you want to prevent a user agent to be sent then set this value to a single space (`" "`).
 
-- `Permissions` is an array of strings which controls the behaviour when a web page asks 
+- `Permissions` is an array of strings which controls the behaviour if a web page asks 
   for a specific permission. The default is to allow fullscreen requests. If you also want
   to allow notifications from web pages the value would be `["fullscreen", "notifications"]`.
 
