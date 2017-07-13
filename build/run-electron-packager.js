@@ -76,7 +76,11 @@ if (exitCode === 0) {
     const regexp = new RegExp(`${outputRootName}(?![\s\S]*${outputRootName})`);
     for (var i = 0; i < outputPaths.length; i++) {
         if (fse.existsSync(outputPaths[i])) {
-            fse.renameSync(outputPaths[i], outputPaths[i].replace(regexp, outputRootName + "-" + apppj.version));
+            var versionedName = outputPaths[i].replace(regexp, outputRootName + "-" + apppj.version);
+            if (fse.existsSync(versionedName)) {
+                fse.removeSync(versionedName);
+            }
+            fse.renameSync(outputPaths[i], versionedName);
         }
     }
 }
