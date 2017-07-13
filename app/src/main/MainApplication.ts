@@ -201,7 +201,7 @@ export class CMainApplication {
         };
         // Create the browser window ...
         this.mainWindow = new BrowserWindow(bwOptions);
-        this.mainWindow.setContentProtection(true);
+        this.mainWindow.setContentProtection(this.settings.ContentProtection);
         // ... bind a close handler to it ...
         this.mainWindow.on("closed", this.onWindowClosed.bind(this));
         // ... and load the index.html of the app.

@@ -23,5 +23,6 @@
     "SingleInstance": true,
     "FocusOnNewURL": true,
     "HardwareAcceleration": true,
+    "ContentProtection": false,
     "Homepage": ""
 }

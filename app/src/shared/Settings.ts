@@ -29,6 +29,7 @@ export interface Settings {
     SingleInstance: boolean;
     FocusOnNewURL: boolean;
     HardwareAcceleration: boolean;
+    ContentProtection: boolean;
     Homepage: string;
 }
 
@@ -62,6 +63,7 @@ export function getDefaultSettings(): Settings {
         SingleInstance: true,
         FocusOnNewURL: true,
         HardwareAcceleration: true,
+        ContentProtection: false,
         Homepage: "",
     };
 }
@@ -111,6 +113,7 @@ export function getSettings(configFile: string): Settings {
         SingleInstance: $Utils.normalize(settings.SingleInstance, true),
         FocusOnNewURL: $Utils.normalize(settings.FocusOnNewURL, true),
         HardwareAcceleration: $Utils.normalize(settings.HardwareAcceleration, true),
+        ContentProtection: $Utils.normalize(settings.ContentProtection, false),
         Homepage: $Utils.normalize(settings.Homepage, "").trim(),
     };
     return settings;

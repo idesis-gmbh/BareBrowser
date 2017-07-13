@@ -157,6 +157,7 @@ The default configuration looks like this:
     "SingleInstance": true,
     "FocusOnNewURL": true,
     "HardwareAcceleration": true,
+    "ContentProtection": false,
     "Homepage": ""
 }
 ```
@@ -241,6 +242,12 @@ or if any of the values is invalid, missing or has the wrong type.
 
 - On some systems you may encounter graphics artifacts in web pages, in such cases you 
   can try to set `HardwareAcceleration` to `false`.
+
+- Setting `ContentProtection` to `true` prevents screenshots from the browser window. 
+  On the Mac a screenshot from the window itself will cause an error message. Even taking 
+  a screenshot of the complete desktop won't show anything from SingleInstanceBrowser. 
+  On Windows the result contains the window title and borders of SingleInstanceBrowser 
+  but the content area will be black.
 
 - The string in `Homepage` contains the URL to be opened by default if no URL was given
   via command line. `Homepage` is ignored at all if it is an empty string `("")`.
