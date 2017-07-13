@@ -145,6 +145,10 @@ export class CMainApplication {
                 event.returnValue = this.urlItem;
                 break;
 
+            case "getSettings":
+                event.returnValue = this.settings;
+                break;
+
             default:
                 event.returnValue = false;
                 break;

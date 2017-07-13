@@ -1,5 +1,4 @@
 import { ipcRenderer, remote } from "electron";
-import { $Path } from "../shared/Modules";
 import * as $Settings from "../shared/Settings";
 import * as $URLItem from "../shared/URLItem";
 import * as $ShortCuts from "mousetrap";
@@ -17,7 +16,9 @@ export class CRendererApplication {
      *
      */
     constructor() {
-        this.settings = $Settings.getSettings($Path.join(__dirname, "res", "settings.json"));
+        // Unfortunately sendSync is declared as returning void so a hacky workaround is used...
+        // tslint:disable-next-line:no-any
+        this.settings = (ipcRenderer.sendSync("IPC", ["getSettings"]) as any) as $Settings.Settings;
         const fragment: DocumentFragment = new DocumentFragment();
         this.webView = this.getWebView();
         this.addressBar = this.getAddressBar();
@@ -28,17 +29,18 @@ export class CRendererApplication {
         document.body.appendChild(fragment);
         remote.getCurrentWindow().webContents.session.setPermissionRequestHandler(this.onPermissionRequest.bind(this));
         ipcRenderer.on("IPC", this.onIPC.bind(this));
-        this.queryInitialURLItem();
         this.bindShortCuts();
+        this.queryInitialURLItem();
     }
 
     /**
      *
      */
     private queryInitialURLItem(): void {
-        const urlItem = ipcRenderer.sendSync("IPC", ["queryURLItem"]);
-        if ((urlItem && (urlItem as $URLItem.URLItem).DoLoad)) {
-            this.loadURL((urlItem as $URLItem.URLItem).URL);
+        // tslint:disable-next-line:no-any
+        const urlItem: $URLItem.URLItem = (ipcRenderer.sendSync("IPC", ["queryURLItem"]) as any) as $URLItem.URLItem;
+        if ((urlItem && urlItem.DoLoad)) {
+            this.loadURL(urlItem.URL);
         } else {
             if (this.settings.Homepage !== "") {
                 this.loadURL(this.settings.Homepage);
