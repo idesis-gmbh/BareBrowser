@@ -7,19 +7,41 @@
     },
     "ShortCuts": {
         "Global": true,
-        "ToggleAddressBar": ["mod+t"],
-        "ToggleInternalDevTools": ["mod+shift+d"],
-        "ToggleDevTools": ["mod+d"],
-        "FocusLocationBar": ["mod+l"],
-        "InternalReload": ["mod+shift+r", "shift+f5"],
-        "Reload": ["mod+r", "f5"],
-        "GoBack": ["ctrl+alt+left"],
-        "GoForward": ["ctrl+alt+right"],
-        "ExitHTMLFullscreen": ["esc"]
+        "ToggleAddressBar": [
+            "mod+t"
+        ],
+        "ToggleInternalDevTools": [
+            "mod+shift+d"
+        ],
+        "ToggleDevTools": [
+            "mod+d"
+        ],
+        "FocusLocationBar": [
+            "mod+l"
+        ],
+        "InternalReload": [
+            "mod+shift+r",
+            "shift+f5"
+        ],
+        "Reload": [
+            "mod+r",
+            "f5"
+        ],
+        "GoBack": [
+            "ctrl+alt+left"
+        ],
+        "GoForward": [
+            "ctrl+alt+right"
+        ],
+        "ExitHTMLFullscreen": [
+            "esc"
+        ]
     },
     "UserAgent": "",
-    "Permissions": ["fullscreen"],
     "ClearTraces": true,
+    "Permissions": [
+        "fullscreen"
+    ],
     "SingleInstance": true,
     "FocusOnNewURL": true,
     "HardwareAcceleration": true,
