@@ -2,46 +2,33 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import { $FSE, $Path, $URL } from "../shared/Modules";
 import * as $Settings from "../shared/Settings";
 import * as $URLItem from "../shared/URLItem";
+import * as $Utils from "../shared/Utils";
 import * as $Consts from "../shared/Consts";
 
 export class CMainApplication {
 
+    private appIdentifier: string;
+    private userDataDirectory: string;
+    private tempDir: string;
+    private settingsFile: string;
     private settings: $Settings.Settings;
     private urlItem: $URLItem.URLItem;
-    private userDataDirectory: string;
-    // Keep a global reference of the window object, if you don't, the window will
-    // be closed automatically when the JavaScript object is garbage collected.
     private mainWindow: Electron.BrowserWindow | null = null;
 
     /**
      *
      */
     constructor() {
-        this.setApplicationDirectories(); // As early as possible!
-        (process.argv.length > 1) ? this.urlItem = $URLItem.getURLItem(process.argv[process.argv.length - 1]) : this.urlItem = $URLItem.getURLItem("");
-        this.settings = $Settings.getSettings($Path.join(__dirname, "..", "res", "settings.json"));
-        if (!this.settings.HardwareAcceleration) {
-            app.disableHardwareAcceleration();
+        this.appIdentifier = this.getAppIdentifier();
+        this.setFileNames(this.appIdentifier);
+        this.setAppPaths(); // As early as possible!
+        this.settings = this.getSettings(this.settingsFile);
+        if (this.shouldQuitForSingleInstance()) {
+            app.quit();
+            return;
         }
-        if (this.settings.SingleInstance) {
-            if (app.makeSingleInstance(this.onSingleInstanceCallback.bind(this))) {
-                if (process.argv.length === 1) {
-                    console.info("Additional instance without params, quitting.");
-                } else {
-                    console.info("Additional instance, loading %s in current instance and quitting.", process.argv[process.argv.length - 1]);
-                }
-                app.quit();
-                return;
-            }
-            app.makeSingleInstance(this.onSingleInstanceCallback.bind(this));
-        }
-        app.on("ready", this.onAppReady.bind(this));
-        app.once("quit", this.onQuit.bind(this));
-        app.on("activate", this.onActivate.bind(this));
-        app.on("window-all-closed", this.onWindowAllClosed.bind(this));
-        app.on("open-url", this.onOpenURL.bind(this));
-        app.on("open-file", this.onOpenFile.bind(this));
-        ipcMain.on("IPC", this.onIPC.bind(this));
+        this.setUp();
+        this.bindEvents();
     }
 
     /**
@@ -55,40 +42,132 @@ export class CMainApplication {
     }
 
     /**
-     * An application name from 'package.json' may be too short to be unambigous and therefore
-     * could lead to conflicts in ~/Library/Application Support/ or %APPDATA%, so let's use the
-     * value of 'identifier' from the apps package.json instead.
+     *
+     * @returns
      */
-    private setApplicationDirectories(): void {
-        let userData: string;
+    private getAppIdentifier(): string {
         try {
             const pj = require("../package.json");
             if (!pj.identifier) {
                 throw(new Error("Member 'identifier' does not exist in 'package.json'"));
             }
-            userData = pj.identifier;
+            return pj.identifier;
         } catch (error) {
             // Just fail gracefully and use hard coded default
             console.error("Couldn't retrieve member 'identifier' from 'package.json', using default 'de.idesis.singleinstancebrowser' instead.", error);
-            userData = "de.idesis.singleinstancebrowser";
+            return "de.idesis.singleinstancebrowser";
         }
-        this.userDataDirectory = $Path.join(app.getPath("userData"), "..", userData);
+    }
+
+    /**
+     *
+     */
+    private setFileNames(appIdentifier: string): void {
+        // An application name from 'package.json' may be too short to be unambigous and therefore
+        // could lead to conflicts in ~/Library/Application Support/ or %APPDATA%, so let's use the
+        // value of 'identifier' from the apps package.json instead.
+        this.userDataDirectory = $Path.join(app.getPath("userData"), "..", appIdentifier);
+        this.tempDir = $Path.join(this.userDataDirectory, "temp");
+        this.settingsFile = $Path.join(this.userDataDirectory, "settings.json");
+    }
+
+    /**
+     *
+     */
+    private setAppPaths(): void {
+        // Must be available, thus synced
+        //$FSE.mkdirpSync(this.userDataDirectory); // Implicitly created by $FSEmkdirpSync(this.tempDir);
+        $FSE.mkdirpSync(this.tempDir);
         app.setPath("userData", this.userDataDirectory);
-        const tempDir = $Path.join(this.userDataDirectory, "temp");
-        $FSE.mkdirp(tempDir);
-        app.setPath("temp", tempDir);
+        app.setPath("temp", this.tempDir);
+    }
+
+    /**
+     *
+     */
+    private getSettings(settingsFile: string): $Settings.Settings {
+        // Get settings from userData directory. At the very first start this won't exist,
+        // so get initial default settings from ./res and write it to the userData directory.
+        let result: $Settings.Settings;
+        if ($FSE.existsSync(settingsFile)) {
+            result = $Settings.getSettings(settingsFile);
+        } else {
+            result = $Settings.getSettings($Path.join(__dirname, "..", "res", "settings.json"));
+            $FSE.writeJSONSync(settingsFile, result, {spaces: 4} );
+        }
+        return result;
+    }
+
+    /**
+     *
+     */
+    private shouldQuitForSingleInstance(): boolean {
+        if (this.settings.SingleInstance) {
+            // makeSingleInstance returns false if this is the first instance
+            if (app.makeSingleInstance(this.onSingleInstanceCallback.bind(this))) {
+                if (process.argv.length === 1) {
+                    console.info("Additional instance without params, quitting.");
+                } else {
+                    console.info("Additional instance, loading %s in current instance and quitting.", process.argv[process.argv.length - 1]);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     *
+     */
+    private setUp() {
+        if (!this.settings.HardwareAcceleration) {
+            app.disableHardwareAcceleration();
+        }
+        // Initial URL to be opened
+        (process.argv.length > 1) ? this.urlItem = $URLItem.getURLItem(process.argv[process.argv.length - 1]) : this.urlItem = $URLItem.getURLItem("");
+    }
+
+    /**
+     *
+     */
+    private bindEvents(): void {
+        // App events
+        app.on("ready", this.onAppReady.bind(this));
+        app.once("quit", this.onQuit.bind(this));
+        app.on("activate", this.onActivate.bind(this));
+        app.on("window-all-closed", this.onWindowAllClosed.bind(this));
+        app.on("open-url", this.onOpenURL.bind(this));
+        app.on("open-file", this.onOpenFile.bind(this));
+        ipcMain.on("IPC", this.onIPC.bind(this));
     }
 
     /**
      *
      */
     private clearTraces(): void {
-        if (this.settings.ClearTraces) {
+        const userDataFiles: $Utils.DirectoryListing = $Utils.getDirectoryListing(this.userDataDirectory, true);
+        // Exclude settings.json file and top directory
+        userDataFiles.Directories.splice(userDataFiles.Directories.indexOf(this.userDataDirectory), 1);
+        userDataFiles.Files.splice(userDataFiles.Files.indexOf(this.settingsFile), 1);
+        const leftOvers: $Utils.DirectoryListing = { Directories: [], Files: [] };
+        // First remove files...
+        for (const entry of userDataFiles.Files) {
             try {
-                $FSE.removeSync(app.getPath("userData"));
+                $FSE.removeSync(entry);
             } catch (error) {
-                // Will currently fail on win32
+                leftOvers.Files.push(entry);
             }
+        }
+        // ... then directories
+        for (const entry of userDataFiles.Directories) {
+            try {
+                $FSE.removeSync(entry);
+            } catch (error) {
+                leftOvers.Directories.push(entry);
+            }
+        }
+        if ((leftOvers.Directories.length > 0) || (leftOvers.Files.length > 0)) {
+            console.warn(`Clearing traces has the following leftovers: ${leftOvers}`);
         }
     }
 

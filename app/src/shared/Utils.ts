@@ -1,3 +1,5 @@
+import { $FSE, $Path } from "./Modules";
+
 /**
  *
  * @param value T
@@ -28,4 +30,46 @@ export function normalize<T>(value: T, defaultValue: T): T {
         return value;
     }
     return defaultValue as T;
+}
+
+/**
+ *
+ */
+export interface DirectoryListing {
+    Directories: string[];
+    Files: string[];
+}
+
+/**
+ *
+ * @param directory
+ * @param outListing
+ * @param recursive
+ */
+export function fillDirectoryListing(directory: string, outListing: DirectoryListing, recursive?: boolean): void {
+    const entries: string[] = $FSE.readdirSync(directory);
+    outListing.Directories.push(directory);
+    for (const entry of entries) {
+        const resolvedFile: string = $Path.resolve(directory, entry);
+        if ($FSE.lstatSync(resolvedFile).isDirectory()) {
+            outListing.Directories.push(resolvedFile);
+            if (recursive) {
+                fillDirectoryListing(resolvedFile, outListing, recursive);
+            }
+        } else {
+            outListing.Files.push(resolvedFile);
+        }
+    }
+}
+
+/**
+ *
+ * @param directory
+ * @param recursive
+ * @returns DirectoryListing
+ */
+export function getDirectoryListing(directory: string, recursive?: boolean): DirectoryListing {
+    const listing: DirectoryListing = { Directories: [], Files: [] };
+    fillDirectoryListing(directory, listing, recursive);
+    return listing;
 }

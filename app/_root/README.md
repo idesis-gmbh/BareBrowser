@@ -117,7 +117,23 @@ There is only one configuration file:
 
 **Mac:**
 
-```bash
+```
+~/Library/Application Support/de.idesis.singleinstancebrowser/settings.json
+```
+
+**Windows:**
+
+```
+%APPDATA%\de.idesis.singleinstancebrowser\settings.json
+```
+
+At the very first start of SingleInstanceBrowser this file is created from a template
+which resides in the following directory:
+
+
+**Mac:**
+
+```
 /Applications/SIB.app/Contents/Resources/app.asar.unpacked/res/settings.json
 ```
 
@@ -129,7 +145,7 @@ c:\Program Files\SIB-x.y.z-win32-x64\resources\app.asar.unpacked\res\settings.js
 
 \*Assuming a standard installation in `%ProgramFiles%`.
 
-The default configuration looks like this:
+This default configuration (from the application directory above) looks like this:
 
 ```json
 {
@@ -141,19 +157,41 @@ The default configuration looks like this:
     },
     "ShortCuts": {
         "Global": true,
-        "ToggleAddressBar": ["mod+t"],
-        "ToggleInternalDevTools": ["mod+shift+d"],
-        "ToggleDevTools": ["mod+d"],
-        "FocusLocationBar": ["mod+l"],
-        "InternalReload": ["mod+shift+r", "shift+f5"],
-        "Reload": ["mod+r", "f5"],
-        "GoBack": ["ctrl+alt+left"],
-        "GoForward": ["ctrl+alt+right"],
-        "ExitHTMLFullscreen": ["esc"]
+        "ToggleAddressBar": [
+            "mod+t"
+        ],
+        "ToggleInternalDevTools": [
+            "mod+shift+d"
+        ],
+        "ToggleDevTools": [
+            "mod+d"
+        ],
+        "FocusLocationBar": [
+            "mod+l"
+        ],
+        "InternalReload": [
+            "mod+shift+r",
+            "shift+f5"
+        ],
+        "Reload": [
+            "mod+r",
+            "f5"
+        ],
+        "GoBack": [
+            "ctrl+alt+left"
+        ],
+        "GoForward": [
+            "ctrl+alt+right"
+        ],
+        "ExitHTMLFullscreen": [
+            "esc"
+        ]
     },
     "UserAgent": "",
-    "Permissions": ["fullscreen"],
-    "ClearTraces": true,
+    "Permissions": [
+        "fullscreen"
+    ],
+    "ClearTraces": false,
     "SingleInstance": true,
     "FocusOnNewURL": true,
     "HardwareAcceleration": true,
@@ -164,6 +202,11 @@ The default configuration looks like this:
 
 These are also the default values for every property in case of a malformed JSON file 
 or if any of the values is invalid, missing or has the wrong type.
+
+If you want to prepare a deplyoment on multiple machines in an organization you can
+install a copy of SingleInstanceBrowser on your machine, adjust the settings to your 
+needs and then deploy this copy to the target machines. On the target machines these
+settings will be used then as the initial default settings.
 
 - The `Window` object configures the initial window position and size when 
   SingleInstanceBrowser is started. 
@@ -209,25 +252,24 @@ or if any of the values is invalid, missing or has the wrong type.
 
 - If `ClearTraces` is set to `true` then any temporary data like caches, local storage, 
   cookies etc. will be deleted when SingleInstanceBrowser is closed. Deleting means
-  the complete removal of the following directory:
+  the complete removal of the contents of the following directory:
 
   **Mac:**
 
   ```
-  /Users/mn/Library/Application Support/de.idesis.singleinstancebrowser
+  ~/Library/Application Support/de.idesis.singleinstancebrowser
   ```
 
   **Windows:**
 
   ```
   %APPDATA%\de.idesis.singleinstancebrowser
-
-  eg.
-
-  c:\Users\doe\AppData\Roaming\de.idesis.singleinstancebrowser
   ```
-  *Please note*: on Windows this currently fails silently due to a bug in the Node.js 
-  component of the Electron framework.
+
+  The only exception is the `settings.json` file which is left to keep user settings.
+
+  *Please note*: on Windows the removal of some files/directories currently fails silently 
+  due to a bug in the Electron framework.
 
 - If `SingleInstance` is set to `true` then only one instance of SingleInstanceBrowser
   is allowed (lets call it *A*). If you try to start another instance (*B*), the already 
