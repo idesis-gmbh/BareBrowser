@@ -191,6 +191,7 @@ This default configuration (from the application directory above) looks like thi
     "Permissions": [
         "fullscreen"
     ],
+    "AllowPopups": false,
     "ClearTraces": false,
     "SingleInstance": true,
     "FocusOnNewURL": true,
@@ -249,6 +250,8 @@ settings will be used then as the initial default settings.
 - `Permissions` is an array of strings which controls the behaviour if a web page asks 
   for a specific permission. The default is to allow fullscreen requests. If you also want
   to allow notifications from web pages the value would be `["fullscreen", "notifications"]`.
+
+- With `AllowPopups` set to `true` the current window can open other popup windows.
 
 - If `ClearTraces` is set to `true` then any temporary data like caches, local storage, 
   cookies etc. will be deleted when SingleInstanceBrowser is closed. Deleting means

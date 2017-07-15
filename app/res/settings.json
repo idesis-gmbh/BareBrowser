@@ -41,6 +41,7 @@
     "Permissions": [
         "fullscreen"
     ],
+    "AllowPopups": false,
     "ClearTraces": false,
     "SingleInstance": true,
     "FocusOnNewURL": true,

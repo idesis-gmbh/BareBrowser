@@ -281,6 +281,9 @@ export class CRendererApplication {
         const webView: Electron.WebviewTag = document.createElement("webview");
         webView.setAttribute("id", "webView");
         webView.setAttribute("autosize", "");
+        if (this.settings.AllowPopups) {
+            webView.setAttribute("allowpopups", "");
+        }
         webView.setAttribute("plugins", "");
         webView.setAttribute("useragent", this.settings.UserAgent);
         webView.addEventListener("load-commit", this.onLoadCommit.bind(this), false);

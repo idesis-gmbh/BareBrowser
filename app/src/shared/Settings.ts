@@ -25,6 +25,7 @@ export interface Settings {
     };
     UserAgent: string;
     Permissions: string[];
+    AllowPopups: boolean;
     ClearTraces: boolean;
     SingleInstance: boolean;
     FocusOnNewURL: boolean;
@@ -59,6 +60,7 @@ export function getDefaultSettings(): Settings {
         },
         UserAgent: typeof navigator === "undefined" ? "" : navigator.userAgent,
         Permissions: ["fullscreen"],
+        AllowPopups: false,
         ClearTraces: false,
         SingleInstance: true,
         FocusOnNewURL: true,
@@ -109,6 +111,7 @@ export function getSettings(configFile: string): Settings {
         },
         UserAgent: userAgent,
         Permissions: $Utils.normalize(settings.Permissions, ["fullscreen"]),
+        AllowPopups: $Utils.normalize(settings.AllowPopups, false),
         ClearTraces: $Utils.normalize(settings.ClearTraces, false),
         SingleInstance: $Utils.normalize(settings.SingleInstance, true),
         FocusOnNewURL: $Utils.normalize(settings.FocusOnNewURL, true),
