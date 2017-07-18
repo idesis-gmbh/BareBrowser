@@ -22,6 +22,7 @@ export interface Settings {
         GoBack: string[],
         GoForward: string[],
         ExitHTMLFullscreen: string[];
+        ToggleWin32Menu: string[];
     };
     UserAgent: string;
     Permissions: string[];
@@ -31,6 +32,7 @@ export interface Settings {
     FocusOnNewURL: boolean;
     HardwareAcceleration: boolean;
     ContentProtection: boolean;
+    Win32MenuState: number;
     Homepage: string;
 }
 
@@ -57,6 +59,7 @@ export function getDefaultSettings(): Settings {
             GoBack: ["ctrl+alt+left"],
             GoForward: ["ctrl+alt+right"],
             ExitHTMLFullscreen: ["esc"],
+            ToggleWin32Menu: ["ctrl+h"],
         },
         UserAgent: typeof navigator === "undefined" ? "" : navigator.userAgent,
         Permissions: ["fullscreen"],
@@ -66,6 +69,7 @@ export function getDefaultSettings(): Settings {
         FocusOnNewURL: true,
         HardwareAcceleration: true,
         ContentProtection: false,
+        Win32MenuState: 1,
         Homepage: "",
     };
 }
@@ -108,6 +112,7 @@ export function getSettings(configFile: string): Settings {
             GoBack: $Utils.normalize(settings.ShortCuts.GoBack, ["ctrl+alt+left"]),
             GoForward: $Utils.normalize(settings.ShortCuts.GoForward, ["ctrl+alt+right"]),
             ExitHTMLFullscreen: $Utils.normalize(settings.ShortCuts.ExitHTMLFullscreen, ["esc"]),
+            ToggleWin32Menu: $Utils.normalize(settings.ShortCuts.ToggleWin32Menu, ["ctrl+h"]),
         },
         UserAgent: userAgent,
         Permissions: $Utils.normalize(settings.Permissions, ["fullscreen"]),
@@ -117,7 +122,11 @@ export function getSettings(configFile: string): Settings {
         FocusOnNewURL: $Utils.normalize(settings.FocusOnNewURL, true),
         HardwareAcceleration: $Utils.normalize(settings.HardwareAcceleration, true),
         ContentProtection: $Utils.normalize(settings.ContentProtection, false),
+        Win32MenuState: $Utils.normalize(settings.Win32MenuState, 1),
         Homepage: $Utils.normalize(settings.Homepage, "").trim(),
     };
+    if ([0, 1, 2].indexOf(settings.Win32MenuState) === -1) {
+        settings.Win32MenuState = 1;
+    }
     return settings;
 }

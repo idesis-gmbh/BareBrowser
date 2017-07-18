@@ -35,6 +35,9 @@
         ],
         "ExitHTMLFullscreen": [
             "esc"
+        ],
+        "ToggleWin32Menu": [
+            "ctrl+h"
         ]
     },
     "UserAgent": "",
@@ -47,5 +50,6 @@
     "FocusOnNewURL": true,
     "HardwareAcceleration": true,
     "ContentProtection": false,
+    "Win32MenuState": 1,
     "Homepage": ""
 }

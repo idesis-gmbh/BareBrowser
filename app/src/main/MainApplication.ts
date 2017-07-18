@@ -1,26 +1,36 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import { $FSE, $Path, $URL } from "../shared/Modules";
 import * as $Settings from "../shared/Settings";
 import * as $URLItem from "../shared/URLItem";
 import * as $Utils from "../shared/Utils";
 import * as $Consts from "../shared/Consts";
+import { ApplicationMenu } from "./ApplicationMenu";
+import { DarwinMenu } from "./DarwinMenu";
+import { Win32Menu } from "./Win32Menu";
+
+interface AppInfo {
+    Name: string;
+    Identifier: string;
+}
 
 export class CMainApplication {
 
-    private appIdentifier: string;
+    private appInfo: AppInfo;
     private userDataDirectory: string;
     private tempDir: string;
     private settingsFile: string;
     private settings: $Settings.Settings;
     private urlItem: $URLItem.URLItem;
+    private appMenu: ApplicationMenu | null = null;
+    //private windows: Electron.BrowserWindow[];
     private mainWindow: Electron.BrowserWindow | null = null;
 
     /**
      *
      */
     constructor() {
-        this.appIdentifier = this.getAppIdentifier();
-        this.setFileNames(this.appIdentifier);
+        this.appInfo = this.getAppInfo();
+        this.setFileNames(this.appInfo.Identifier);
         this.setAppPaths(); // As early as possible!
         this.settings = this.getSettings(this.settingsFile);
         if (this.shouldQuitForSingleInstance()) {
@@ -45,18 +55,24 @@ export class CMainApplication {
      *
      * @returns
      */
-    private getAppIdentifier(): string {
+    private getAppInfo(): AppInfo {
+        const result: AppInfo = { Name: "SIB", Identifier: "de.idesis.singleinstancebrowser" };
         try {
             const pj = require("../package.json");
-            if (!pj.identifier) {
-                throw(new Error("Member 'identifier' does not exist in 'package.json'"));
+            if (!pj.productName) {
+                console.warn("Member 'productName' does not exist in 'package.json'");
+            } else {
+                result.Name = pj.productName;
             }
-            return pj.identifier;
+            if (!pj.identifier) {
+                console.warn("Member 'identifier' does not exist in 'package.json'");
+            } else {
+                result.Identifier = pj.identifier;
+            }
         } catch (error) {
-            // Just fail gracefully and use hard coded default
-            console.error("Couldn't retrieve member 'identifier' from 'package.json', using default 'de.idesis.singleinstancebrowser' instead.", error);
-            return "de.idesis.singleinstancebrowser";
+            console.error("Couldn't read 'package.json', using defaults 'SIB' and de.idesis.singleinstancebrowser' for AppInfo instead.", error);
         }
+        return result;
     }
 
     /**
@@ -80,6 +96,33 @@ export class CMainApplication {
         $FSE.mkdirpSync(this.tempDir);
         app.setPath("userData", this.userDataDirectory);
         app.setPath("temp", this.tempDir);
+    }
+
+    /**
+     *
+     */
+    private setApplicationMenu(): void {
+        if (process.platform === "darwin") {
+            this.appMenu = new DarwinMenu(this.appInfo.Name);
+            Menu.setApplicationMenu(this.appMenu.Menu);
+        } else if (process.platform === "win32") {
+            switch (this.settings.Win32MenuState) {
+                // No menu for Win32 allowed
+                case 0:
+                    break;
+
+                // Menu for Win32 allowed but initially hidden
+                case 1:
+                    this.appMenu = new Win32Menu(this.appInfo.Name);
+                    break;
+
+                // Allow and show menu for Win32
+                case 2:
+                    this.appMenu = new Win32Menu(this.appInfo.Name);
+                    Menu.setApplicationMenu(this.appMenu.Menu);
+                    break;
+            }
+        }
     }
 
     /**
@@ -228,6 +271,16 @@ export class CMainApplication {
                 event.returnValue = this.settings;
                 break;
 
+            case "toggleWin32Menu":
+                if ((process.platform === "win32") && (this.settings.Win32MenuState > 0) && (this.appMenu)) {
+                    // tslint:disable-next-line:no-any
+                    Menu.getApplicationMenu() ? Menu.setApplicationMenu(null as any) : Menu.setApplicationMenu(this.appMenu.Menu);
+                    event.returnValue = true;
+                } else {
+                    event.returnValue = false;
+                }
+                break;
+
             default:
                 event.returnValue = false;
                 break;
@@ -295,10 +348,7 @@ export class CMainApplication {
         };
         this.mainWindow.loadURL($URL.format(urlObject));
         // Set title to product name from ../package.json
-        const readOptions: $FSE.ReadOptions = {
-            throws: true,
-        };
-        this.mainWindow.setTitle($FSE.readJsonSync($Path.join(__dirname, "..", "package.json"), readOptions).productName);
+        this.mainWindow.setTitle(this.appInfo.Name);
     }
 
     /**
@@ -308,6 +358,7 @@ export class CMainApplication {
      * @param _launchInfo see Electron: App.on(event: 'ready',...
      */
     private onAppReady(_launchInfo: Object): void {
+        this.setApplicationMenu();
         this.createWindow();
     }
 

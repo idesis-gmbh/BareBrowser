@@ -99,6 +99,9 @@ export class CRendererApplication {
         this.bindShortCut(this.settings.ShortCuts.ExitHTMLFullscreen, () => {
             this.webView.executeJavaScript("document.webkitExitFullscreen();", true);
         });
+        this.bindShortCut(this.settings.ShortCuts.ToggleWin32Menu, () => {
+            ipcRenderer.send("IPC", ["toggleWin32Menu"]);
+        });
     }
 
     /**

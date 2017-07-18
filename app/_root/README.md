@@ -185,6 +185,9 @@ This default configuration (from the application directory above) looks like thi
         ],
         "ExitHTMLFullscreen": [
             "esc"
+        ],
+        "ToggleWin32Menu": [
+            "ctrl+h"
         ]
     },
     "UserAgent": "",
@@ -197,6 +200,7 @@ This default configuration (from the application directory above) looks like thi
     "FocusOnNewURL": true,
     "HardwareAcceleration": true,
     "ContentProtection": false,
+    "Win32MenuState": 1,
     "Homepage": ""
 }
 ```
@@ -221,22 +225,26 @@ settings will be used then as the initial default settings.
   (see `Reload`). The key `mod` below is mapped to the `Command`-key on the Mac and to the 
   `Ctrl`-key on Windows.
 
-  The term *host window* below means the native window (`Electron.BrowserWindow`), which effectively 
-  is also a web page but only contains the `webview` tag which itself contains the actual page. 
-  You can open the Chrome developer tools to debug the SingleInstanceBrowser window itself 
-  with `mod+shift+d`. To debug the actual web page you'd use `mod+d` instead. 
+  The term *host window* below means the native window (`Electron.BrowserWindow`), which 
+  effectively is also a web page but only contains the `webview` tag which itself contains 
+  the actual page. You can open the Chrome developer tools to debug the SingleInstanceBrowser 
+  window itself with `mod+shift+d`. To debug the actual web page you'd use `mod+d` instead. 
 
-  | Key                      | ShortCuts (default)     | Action                                                    |
-  | ------------------------ | ----------------------- | --------------------------------------------------------- |
-  | `ToggleAddressBar`       | `mod+t`                 | Show/hide the addressbar.                                 |
-  | `ToggleInternalDevTools` | `mod+shift+d`           | Show/hide developer tools for the host window.            |
-  | `ToggleDevTools`         | `mod+d`                 | Show/hide developer tools for the current page.           |
-  | `FocusLocationBar`       | `mod+l`                 | Show addressbar and focus the URL entry field.            |
-  | `InternalReload`         | `mod+shift+r, shift+f5` | Reload the host window.                                   |
-  | `Reload`                 | `mod+r, f5`             | Reload the current page.                                  |
-  | `GoBack`                 | `ctrl+alt+left`         | Go one step back in the browser history.                  |
-  | `GoForward`              | `ctrl+alt+right`        | Go one step forward in the browser history.               |
-  | `ExitHTMLFullscreen`     | `esc`                   | Leave HTML fullscreen (for example from YouTube videos).  |
+  Please note that there are also other common keyboard shortcuts in the main menu (for 
+  example for Cut, Copy, Paste etc.). Currently these menu shortcuts are not configurable.
+
+  | Key                      | ShortCuts (default)     | Action                                                                   |
+  | ------------------------ | ----------------------- | ------------------------------------------------------------------------ |
+  | `ToggleAddressBar`       | `mod+t`                 | Show/hide the addressbar.                                                |
+  | `ToggleInternalDevTools` | `mod+shift+d`           | Show/hide developer tools for the host window.                           |
+  | `ToggleDevTools`         | `mod+d`                 | Show/hide developer tools for the current page.                          |
+  | `FocusLocationBar`       | `mod+l`                 | Show addressbar and focus the URL entry field.                           |
+  | `InternalReload`         | `mod+shift+r, shift+f5` | Reload the host window.                                                  |
+  | `Reload`                 | `mod+r, f5`             | Reload the current page.                                                 |
+  | `GoBack`                 | `ctrl+alt+left`         | Go one step back in the browser history.                                 |
+  | `GoForward`              | `ctrl+alt+right`        | Go one step forward in the browser history.                              |
+  | `ExitHTMLFullscreen`     | `esc`                   | Leave HTML fullscreen (for example from YouTube videos).                 |
+  | `ToggleWin32Menu`        | `ctrl+h`                | Show/hide the main menu on Windows platforms (not available on the Mac). |
 
   If you want to disable a keyboard shortcut set its value to `null` or an empty string (`""`). 
   You can assign your own keyboard shortcuts to any of the keys above. For available key 
@@ -293,6 +301,12 @@ settings will be used then as the initial default settings.
   a screenshot of the complete desktop won't show anything from SingleInstanceBrowser. 
   On Windows the result contains the window title and borders of SingleInstanceBrowser 
   but the content area will be black.
+
+- `Win32MenuState` sets the behaviour of the main menu on Windows platforms. This
+  setting is ignored on the Mac. `0` means that the main menu isn't available at all.
+  Setting the value to `1` enables the main menu but doesn't show it on startup (see
+  respective shortcut). `2` enables the main menu and shows it on startup. Any other
+  value will cause the default setting (`1`) to be used.
 
 - The string in `Homepage` contains the URL to be opened by default if no URL was given
   via command line. `Homepage` is ignored at all if it is an empty string `("")`.
