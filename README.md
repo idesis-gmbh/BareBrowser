@@ -31,7 +31,7 @@ The documentation can be found in the [README.md](app/_root/README.md) of the ap
 # Development
 
 A complete documentation for development can be found at 
-[electron-typescript-boilerplate](https://github.com/idesis-gmbh/electron-typescript-boilerplate) 
+[electron-typescript-template](https://github.com/idesis-gmbh/electron-typescript-template) 
 (the template used to create this app). The following is only a short synopsis of the most 
 frequent commands you can use.
 
