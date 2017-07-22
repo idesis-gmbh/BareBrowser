@@ -195,6 +195,7 @@ This default configuration (from the application directory above) looks like thi
         "fullscreen"
     ],
     "AllowPopups": false,
+    "AllowNewWindows": true,
     "ClearTraces": false,
     "SingleInstance": true,
     "FocusOnNewURL": true,
@@ -261,6 +262,10 @@ settings will be used then as the initial default settings.
 
 - With `AllowPopups` set to `true` the current window can open other popup windows.
 
+- With `AllowNewWindows` set to `true` the current window can open new windows when
+  links in the current page want to be opened in new windows/tabs. Setting this to
+  `false` can significantly degrade the browsing experience.
+
 - If `ClearTraces` is set to `true` then any temporary data like caches, local storage, 
   cookies etc. will be deleted when SingleInstanceBrowser is closed. Deleting means
   the complete removal of the contents of the following directory:
@@ -279,8 +284,9 @@ settings will be used then as the initial default settings.
 
   The only exception is the `settings.json` file which is left to keep user settings.
 
-  *Please note*: on Windows the removal of some files/directories currently fails silently 
-  due to a bug in the Electron framework.
+  *Please note*: on Windows the removal of most files/directories currently fails silently 
+  due to a bug in the Electron framework. On the Mac some files can also remain, but 
+  they don't contain any private data.
 
 - If `SingleInstance` is set to `true` then only one instance of SingleInstanceBrowser
   is allowed (lets call it *A*). If you try to start another instance (*B*), the already 

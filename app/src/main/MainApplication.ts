@@ -8,11 +8,34 @@ import { ApplicationMenu } from "./ApplicationMenu";
 import { DarwinMenu } from "./DarwinMenu";
 import { Win32Menu } from "./Win32Menu";
 
+/**
+ * Holds app name and identifier.
+ * Maybe extended for future attributes.
+ */
 interface AppInfo {
     Name: string;
     Identifier: string;
 }
 
+/**
+ * Current Electron TypeScript definitions lack a proper definition for window events.
+ * See `onWindowClose` and `onBrowserWindowFocus`.
+ */
+interface BrowserWindowEvent extends Event {
+    sender: Electron.BrowserWindow;
+}
+
+/**
+ * Current Electron TypeScript definitions lack a proper definition for app events.
+ * See `onWindowAllClosed`.
+ */
+interface AppEvent extends Event {
+    sender: Electron.App;
+}
+
+/**
+ * The class for the main application part. Only one instamce will be created.
+ */
 export class CMainApplication {
 
     private appInfo: AppInfo;
@@ -20,10 +43,9 @@ export class CMainApplication {
     private tempDir: string;
     private settingsFile: string;
     private settings: $Settings.Settings;
-    private urlItem: $URLItem.URLItem;
+    private currentUrlItem: $URLItem.URLItem;
     private appMenu: ApplicationMenu | null = null;
-    //private windows: Electron.BrowserWindow[];
-    private mainWindow: Electron.BrowserWindow | null = null;
+    private windows: Array<Electron.BrowserWindow | null> = [];
 
     /**
      *
@@ -42,18 +64,61 @@ export class CMainApplication {
     }
 
     /**
-     * Quit (Electron) application.
+     * Quit (Electron) application, beforehand close all open windows.
      */
     public quit(): void {
-        if (this.mainWindow) {
-            this.mainWindow.close();
-        }
+        this.closeAllWindows();
         app.quit();
     }
 
     /**
-     *
-     * @returns
+     * Create a browser window.
+     */
+    public createWindow(): void {
+        const bwOptions: Electron.BrowserWindowConstructorOptions = {
+            width: this.settings.Window.Width,
+            height: this.settings.Window.Height,
+        };
+        // Place new window with offset to latest current window
+        const currentWindow: Electron.BrowserWindow | null = this.getCurrentWindow();
+        if (currentWindow) {
+            bwOptions.x = currentWindow.getBounds().x + 50;
+            bwOptions.y = currentWindow.getBounds().y + 50;
+        } else {
+            bwOptions.x = this.settings.Window.Left;
+            bwOptions.y = this.settings.Window.Top;
+        }
+        // Create the browser window ...
+        const window: Electron.BrowserWindow = new BrowserWindow(bwOptions);
+        window.setContentProtection(this.settings.ContentProtection);
+        // ... bind a close handler to it ...
+        window.on("close", this.onWindowClose.bind(this));
+        // ... and load index.html.
+        const urlObject: $URL.UrlObject = {
+            pathname: $Path.join(__dirname, "..", "index.html"),
+            protocol: "file:",
+            slashes: true,
+        };
+        window.loadURL($URL.format(urlObject));
+        // Set title to product name from ../package.json
+        window.setTitle(this.appInfo.Name);
+        // Register window
+        this.windows.push(window);
+    }
+
+    /**
+     * Quitting by command line has to be done asynchronously,
+     * otherwise an `UnhandledPromiseRejectionWarning` will occur.
+     */
+    private asnycQuit(): void {
+        setTimeout(() => {
+            this.closeAllWindows();
+        },         200);
+    }
+
+    /**
+     * Retrieve app name and identifier in a single operation; both are needed later.
+     * @returns AppInfo An object containg the app name and identifier.
      */
     private getAppInfo(): AppInfo {
         const result: AppInfo = { Name: "SIB", Identifier: "de.idesis.singleinstancebrowser" };
@@ -76,7 +141,8 @@ export class CMainApplication {
     }
 
     /**
-     *
+     * Make strings for user data and temp directory.
+     * @param appIdentifier The app identifier from package.json.
      */
     private setFileNames(appIdentifier: string): void {
         // An application name from 'package.json' may be too short to be unambigous and therefore
@@ -88,10 +154,10 @@ export class CMainApplication {
     }
 
     /**
-     *
+     * Create user data and temp directory.
      */
     private setAppPaths(): void {
-        // Must be available, thus synced
+        // Paths must be available, thus synced.
         //$FSE.mkdirpSync(this.userDataDirectory); // Implicitly created by $FSEmkdirpSync(this.tempDir);
         $FSE.mkdirpSync(this.tempDir);
         app.setPath("userData", this.userDataDirectory);
@@ -99,7 +165,7 @@ export class CMainApplication {
     }
 
     /**
-     *
+     * Create and install a basic menu depending on the current platform.
      */
     private setApplicationMenu(): void {
         if (process.platform === "darwin") {
@@ -126,7 +192,8 @@ export class CMainApplication {
     }
 
     /**
-     *
+     * Load app settings.
+     * @param settingsFile The full path of the settings file.
      */
     private getSettings(settingsFile: string): $Settings.Settings {
         // Get settings from userData directory. At the very first start this won't exist,
@@ -142,7 +209,10 @@ export class CMainApplication {
     }
 
     /**
-     *
+     * Checks wether another instance is already running and if
+     * not, registers *this* instance for single instance operation.
+     * @returns True if the current running instance
+     *          should quit due to another running instance.
      */
     private shouldQuitForSingleInstance(): boolean {
         if (this.settings.SingleInstance) {
@@ -160,32 +230,49 @@ export class CMainApplication {
     }
 
     /**
-     *
+     * Apply some settings. Most other settings have to be applied earlier.
+     * Also sets the initial URL to be loaded (if any).  Can probably used
+     * in the future for more settings.
      */
     private setUp() {
         if (!this.settings.HardwareAcceleration) {
             app.disableHardwareAcceleration();
         }
         // Initial URL to be opened
-        (process.argv.length > 1) ? this.urlItem = $URLItem.getURLItem(process.argv[process.argv.length - 1]) : this.urlItem = $URLItem.getURLItem("");
+        // tslint:disable-next-line:prefer-conditional-expression
+        if (process.argv.length > 1) {
+            this.currentUrlItem = $URLItem.getURLItem(process.argv[process.argv.length - 1]);
+         } else {
+             this.currentUrlItem = $URLItem.getURLItem("");
+         }
     }
 
     /**
-     *
+     * Bind event handlers.
      */
     private bindEvents(): void {
         // App events
         app.on("ready", this.onAppReady.bind(this));
         app.once("quit", this.onQuit.bind(this));
         app.on("activate", this.onActivate.bind(this));
-        app.on("window-all-closed", this.onWindowAllClosed.bind(this));
         app.on("open-url", this.onOpenURL.bind(this));
         app.on("open-file", this.onOpenFile.bind(this));
+        app.on("browser-window-focus", this.onBrowserWindowFocus.bind(this));
+        app.on("window-all-closed", this.onWindowAllClosed.bind(this));
         ipcMain.on("IPC", this.onIPC.bind(this));
     }
 
     /**
-     *
+     * Depending on the settings remove all temporary data like caches, cookies etc.
+     * but keep the settings file.
+     * So far this isn't 100% percent reliable on Darwin platforms. For example, if
+     * you close the inital window too fast a file named `Preferences` can be written
+     * to the user data directory even *after* the last window has been closed.
+     * Although this file contains no private data, this is undesireable.
+     * The same is true for the directory `Service Worker`, it won't be deleted.
+     * On Windows it's even worse, most of the files and directories remain. This
+     * seems to be a bug in either the Node.js runtime or the Chromium engine which
+     * don't free file handles correctly (just guessing).
      */
     private clearTraces(): void {
         const userDataFiles: $Utils.DirectoryListing = $Utils.getDirectoryListing(this.userDataDirectory, true);
@@ -215,30 +302,77 @@ export class CMainApplication {
     }
 
     /**
-     *
-     * @param args
-     * @param _workingDirectory
+     * Get (last) focused window from the internal window list.
+     * @returns The focused window or last focused window or null (should never happen).
      */
-    private onSingleInstanceCallback(args: string[], _workingDirectory: string): void {
-        if (this.mainWindow) {
-            this.urlItem = $URLItem.getURLItem(args[args.length - 1]);
-            // Quit command
-            if (this.urlItem.URL === $Consts.CMD_QUIT) {
-                this.asnycQuit();
-                return;
-            } else if (this.settings.FocusOnNewURL) {
-                this.mainWindow.focus();
-            }
-            if (args.length > 1) {
-                this.mainWindow.webContents.send("IPC", ["loadURLItem", this.urlItem]);
+    private getCurrentWindow(): Electron.BrowserWindow | null {
+        return (this.windows.length > 0) ? this.windows[this.windows.length-1] : null;
+    }
+
+    /**
+     * Close all existing browser windows (also stopping any content loading).
+     */
+    private closeAllWindows(): void {
+        for (const window of this.windows) {
+            if (window) {
+                window.webContents.stop();
+                window.close();
             }
         }
     }
 
     /**
-     * Called on darwin when the app is started with 'open' and specifying a URL.
-     * @param event
-     * @param url
+     * Called by the two `onOpen` events. Gets the current window and loads the given URL in it.
+     * @param fileOrURL The URL (or file) to be loaded.
+     * @param isFile Indicates whether the given URL is a local file or not.
+     */
+    private openFileOrURL(fileOrURL: string, isFile: boolean): void {
+        this.currentUrlItem = $URLItem.getURLItem(fileOrURL);
+        // On Darwin yet determined by onOpen* so set it explicitly here
+        this.currentUrlItem.IsFileURL = isFile;
+        const currentWindow: Electron.BrowserWindow | null = this.getCurrentWindow();
+        if (currentWindow) {
+            // Quit command
+            if (this.currentUrlItem.URL === $Consts.CMD_QUIT) {
+                this.asnycQuit();
+                return;
+            }
+            if (this.settings.FocusOnNewURL) {
+                currentWindow.focus();
+            }
+            currentWindow.webContents.send("IPC", ["loadURLItem", this.currentUrlItem]);
+        }
+    }
+
+    /**
+     * Called by Electron app if another instance was started. This either loads the given URL
+     * in the current instance or quits the running instance by the special `http:quit` URL.
+     * @param args The arguments passed to the instance started elsewhere.
+     * @param _workingDirectory The working directory of the instance started elsewhere.
+     */
+    private onSingleInstanceCallback(args: string[], _workingDirectory: string): void {
+        this.currentUrlItem = $URLItem.getURLItem(args[args.length - 1]);
+        // Quit command received
+        if (this.currentUrlItem.URL === $Consts.CMD_QUIT) {
+            this.asnycQuit();
+            return;
+        }
+        // Open the given URL in current window
+        const currentWindow: Electron.BrowserWindow | null = this.getCurrentWindow();
+        if (currentWindow) {
+            if (this.settings.FocusOnNewURL) {
+                currentWindow.focus();
+            }
+            if (args.length > 1) {
+                currentWindow.webContents.send("IPC", ["loadURLItem", this.currentUrlItem]);
+            }
+        }
+    }
+
+    /**
+     * Called on Darwin when the app is started with 'open' and specifying a URL.
+     * @param event An Electron event
+     * @param url The URL to be opened.
      */
     private onOpenURL(event: Electron.Event, url: string): void {
         event.preventDefault();
@@ -246,9 +380,9 @@ export class CMainApplication {
     }
 
     /**
-     * Called on darwin when the app is started with 'open' and specifying a file.
-     * @param event
-     * @param file
+     * Called on Darwin when the app is started with 'open' and specifying a file.
+     * @param event An Electron event
+     * @param file The file to be loaded.
      */
     private onOpenFile(event: Electron.Event, file: string): void {
         event.preventDefault();
@@ -256,26 +390,42 @@ export class CMainApplication {
     }
 
     /**
-     *
-     * @param event
-     * @param args
+     * Handles all IPC calls from renderer processes.
+     * @param event The Electron event. Used to return values/objects back to the calling renderer process.
+     * @param args The arguments sent by the calling renderer process.
      */
     // tslint:disable-next-line:no-any
     private onIPC(event: Electron.Event, ...args: any[]): void {
         switch (args[0][0]) {
+            // Return the current (last) URLItem
             case "queryURLItem":
-                event.returnValue = this.urlItem;
+                event.returnValue = this.currentUrlItem;
                 break;
 
+            // Return app settings
             case "getSettings":
                 event.returnValue = this.settings;
                 break;
 
+            // Toggle main menu on Win32 platforms
             case "toggleWin32Menu":
                 if ((process.platform === "win32") && (this.settings.Win32MenuState > 0) && (this.appMenu)) {
                     // tslint:disable-next-line:no-any
                     Menu.getApplicationMenu() ? Menu.setApplicationMenu(null as any) : Menu.setApplicationMenu(this.appMenu.Menu);
                     event.returnValue = true;
+                } else {
+                    event.returnValue = false;
+                }
+                break;
+
+            // Create and open a new window. The calling renderer process will
+            // request the (new) URLItem to be opened with another IPC call.
+            case "openWindow":
+                const url: string = args[0][1];
+                if (url) {
+                    event.returnValue = true;
+                    this.currentUrlItem = $URLItem.getURLItem(url);
+                    this.createWindow();
                 } else {
                     event.returnValue = false;
                 }
@@ -288,73 +438,9 @@ export class CMainApplication {
     }
 
     /**
-     *
-     * @param fileOrURL
-     * @param isFile
-     */
-    private openFileOrURL(fileOrURL: string, isFile: boolean): void {
-        this.urlItem = $URLItem.getURLItem(fileOrURL);
-        // On Darwin yet determined by onOpen* so set it explicitly here
-        this.urlItem.IsFileURL = isFile;
-        if (this.mainWindow) {
-            // Quit command
-            if (this.urlItem.URL === $Consts.CMD_QUIT) {
-                this.asnycQuit();
-                return;
-            }
-            if (this.settings.FocusOnNewURL) {
-                this.mainWindow.focus();
-            }
-            this.mainWindow.webContents.send("IPC", ["loadURLItem", this.urlItem]);
-        }
-    }
-
-    /**
-     * Quitting by command line has to be done asynchronously,
-     * otherwise an UnhandledPromiseRejectionWarning will occur.
-     */
-    private asnycQuit(): void {
-        setTimeout(() => {
-            if (this.mainWindow) {
-                this.mainWindow.webContents.stop();
-                this.mainWindow.close();
-            }
-        },         200);
-    }
-
-    /**
-     * Create a browser window.
-     */
-    private createWindow(): void {
-        if (this.mainWindow) {
-            return;
-        }
-        const bwOptions: Electron.BrowserWindowConstructorOptions = {
-            x: this.settings.Window.Left,
-            y: this.settings.Window.Top,
-            width: this.settings.Window.Width,
-            height: this.settings.Window.Height,
-        };
-        // Create the browser window ...
-        this.mainWindow = new BrowserWindow(bwOptions);
-        this.mainWindow.setContentProtection(this.settings.ContentProtection);
-        // ... bind a close handler to it ...
-        this.mainWindow.on("closed", this.onWindowClosed.bind(this));
-        // ... and load the index.html of the app.
-        const urlObject: $URL.UrlObject = {
-            pathname: $Path.join(__dirname, "..", "index.html"),
-            protocol: "file:",
-            slashes: true,
-        };
-        this.mainWindow.loadURL($URL.format(urlObject));
-        // Set title to product name from ../package.json
-        this.mainWindow.setTitle(this.appInfo.Name);
-    }
-
-    /**
-     * This method will be called when Electron has finished
-     * initialization and is ready to create browser windows.
-     * Some APIs can only be used after this event occurs.
+     * This method will be called when Electron has finished initialization and
+     * is ready to create browser windows. Some APIs like setting a menu can only
+     * be used after this event occurs.
      * @param _launchInfo see Electron: App.on(event: 'ready',...
      */
     private onAppReady(_launchInfo: Object): void {
@@ -366,36 +452,57 @@ export class CMainApplication {
      * On activating the app.
      * On darwin it's common to re-create a window in the app when the
      * dock icon is clicked and there are no other windows open.
-     * @param _event
-     * @param _hasVisibleWindows
+     * *Note:* This is left here only for completeness.
+     * SingleInstanceBrowser currently quits if the last browser window is closed
+     * (see `onWindowAllClosed`) so this event never gets called.
+     * @param _event An Electron event
+     * @param _hasVisibleWindows True if there are existing visible windows.
      */
     private onActivate(_event: Electron.Event, _hasVisibleWindows: boolean): void {
-        if (this.mainWindow === null) {
+        if (this.windows.length === 0) {
             this.createWindow();
         }
     }
 
     /**
-     * Emitted when the window is closed.
-     * Dereference the window object, usually you would store windows
-     * in an array if your app supports multi windows, this is the time
-     * when you should delete the corresponding element.
+     * Called when the window is focused.
+     * Used to move the calling window to the end of the internal window list.
+     * @param event The event containing the calling BrowserWindow (`sender`).
      */
-    private onWindowClosed(): void {
-        this.mainWindow = null;
+    private onBrowserWindowFocus(event: BrowserWindowEvent): void {
+        const index: number = this.windows.indexOf(event.sender);
+        if (index !== -1) {
+            this.windows.push(this.windows.splice(index, 1)[0]);
+        }
     }
 
     /**
-     * Quit when all windows are closed.
+     * Called when the window is going to be closed.
+     * Remove the respective window object from the internal array and set it to
+     * null to avoid leaks. Since preventDefault is never used it's ok to do the
+     * removal already here (before the window actually is `closed`)
+     * @param event The event containing the calling BrowserWindow (`sender`).
      */
-    private onWindowAllClosed(): void {
+    private onWindowClose(event: BrowserWindowEvent): void {
+        const index: number = this.windows.indexOf(event.sender);
+        if (index !== -1) {
+            const window: Array<Electron.BrowserWindow | null> = this.windows.splice(index, 1);
+            window[0] = null;
+        }
+    }
+
+    /**
+     * Called when all windows are closed => quit app.
+     * @param event The event containing the App (`sender`).
+     */
+    private onWindowAllClosed(_event: AppEvent): void {
         app.quit();
     }
 
     /**
-     *
-     * @param _event
-     * @param _exitCode
+     * Try to remove all temporary data on quitting the app.
+     * @param _event An Electron event.
+     * @param _exitCode App exit code.
      */
     private onQuit(_event: Electron.Event, _exitCode: number): void {
         this.clearTraces();

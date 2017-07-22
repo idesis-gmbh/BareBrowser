@@ -3,6 +3,9 @@ import * as $Settings from "../shared/Settings";
 import * as $URLItem from "../shared/URLItem";
 import * as $ShortCuts from "mousetrap";
 
+/**
+ * The class for the renderer application part. Each window will have only one instamce.
+ */
 export class CRendererApplication {
 
     private settings: $Settings.Settings;
@@ -13,7 +16,7 @@ export class CRendererApplication {
     private webView: Electron.WebviewTag;
 
     /**
-     *
+     * Creates the user interface, the web content part and handles all events.
      */
     constructor() {
         // Unfortunately sendSync is declared as returning void so a hacky workaround is used...
@@ -34,7 +37,7 @@ export class CRendererApplication {
     }
 
     /**
-     *
+     * Get the initial URL to be loaded via an IPC call from the main process.
      */
     private queryInitialURLItem(): void {
         // tslint:disable-next-line:no-any
@@ -52,9 +55,9 @@ export class CRendererApplication {
     }
 
     /**
-     *
-     * @param shortcut
-     * @param func
+     * Bind keyboard shortcut(s) to a function.
+     * @param shortcut A single keyboard shortcut ar on array of shortcuts.
+     * @param func The function to be executed if the given keyboard shortcut(s) is used.
      */
     private bindShortCut(shortcut: string | string[], func: Function): void {
         $ShortCuts.bind(shortcut, (_event: ExtendedKeyboardEvent, _combo: string): boolean => {
@@ -64,7 +67,7 @@ export class CRendererApplication {
     }
 
     /**
-     *
+     * Bind all keyboard shortcut(s) from the app settings to the respective function.
      */
     private bindShortCuts(): void {
         this.bindShortCut(this.settings.ShortCuts.ToggleAddressBar, () => {
@@ -105,32 +108,32 @@ export class CRendererApplication {
     }
 
     /**
-     *
-     * @param url
+     * Load a URL in the webview tag.
+     * @param url The URL string to be loaded.
      */
     private loadURL(url: string): void {
         this.webView.setAttribute("src", $URLItem.getURLItem(url).URL);
     }
 
     /**
-     *
-     * @param _event
+     * Go back one step in the browser history.
+     * @param _event A mouse event.
      */
     private goBack(_event: MouseEvent): void {
         this.webView.goBack();
     }
 
     /**
-     *
-     * @param _event
+     * Go forward one step in the browser history.
+     * @param _event A mouse event.
      */
     private goForward(_event: MouseEvent): void {
         this.webView.goForward();
     }
 
     /**
-     *
-     * @param event
+     * Called when the user clicks the Go button or presses Enter in the URL field.
+     * @param event A mouse or keyboard event.
      */
     private loadURLItemListener(event: MouseEvent | KeyboardEvent): void {
         if ((event.type === "keypress") && ((event as KeyboardEvent).key !== "Enter")) {
@@ -140,9 +143,9 @@ export class CRendererApplication {
     }
 
     /**
-     *
-     * @param _event
-     * @param args
+     * Handles all IPC calls from the main process.
+     * @param event An Electron event.
+     * @param args The arguments sent by the calling main process.
      */
     // tslint:disable-next-line:no-any
     private onIPC(_event: Electron.Event, ...args: any[]): void {
@@ -162,36 +165,30 @@ export class CRendererApplication {
     }
 
     /**
-     *
-     * @param _event
-     */
-    private onLoadCommit(_event: Electron.LoadCommitEvent): void {
-        this.goBackButton.disabled = !this.webView.canGoBack();
-        this.goForwardButton.disabled = !this.webView.canGoForward();
-    }
-
-    /**
-     *
-     * @param _event
+     * Called when the page has finished loading.
+     * Sets the focus to the webview tag to enable keyboard navigation in the page.
+     * @param _event An Electron event.
      */
     private onDidFinishLoad(_event: Electron.Event): void {
-        this.urlField.value = this.webView.getURL();
         if (!this.webView.getWebContents().isFocused()) {
             this.webView.focus();
         }
     }
 
     /**
-     *
-     * @param event
+     * Called when the title of the current page has been updated.
+     * @param event An Electron PageTitleUpdatedEvent.
      */
     private onPageTitleUpdated(event: Electron.PageTitleUpdatedEvent): void {
         remote.getCurrentWindow().setTitle(event.title);
     }
 
     /**
-     *
-     * @param event
+     * Called when a web page logs something to the browser console.
+     * Default handling for the event is prevented, enhanced with additional
+     * infos and again written to the console. In future versions this should
+     * be redirected/copied to a log file.
+     * @param event An Electron ConsoleMessageEvent.
      */
     private onConsoleMessage(event: Electron.ConsoleMessageEvent): void {
         console.log("LOG from %s: [Level %d] %s (Line %d in %s)", this.webView.getURL(), event.level, event.message, event.line, event.sourceId);
@@ -200,10 +197,11 @@ export class CRendererApplication {
     }
 
     /**
-     *
-     * @param _webContents
-     * @param permission
-     * @param callback
+     * Handles permission requests from web pages.
+     * Permissions are granted based on app settings.
+     * @param _webContents The calling Electron webContents.
+     * @param permission The requested permission.
+     * @param callback A callback called with the result of the permission check.
      */
     private onPermissionRequest(_webContents: Electron.WebContents, permission: string, callback: (permissionGranted: boolean) => void): void {
         const grant = (this.settings.Permissions.indexOf(permission) > -1);
@@ -212,8 +210,36 @@ export class CRendererApplication {
     }
 
     /**
-     *
-     * @returns HTMLDivElement
+     * Called when the navigaion to a URL has finished.
+     * Used to update parts of the user interface.
+     * @param _event An Electron DidNavigateEvent.
+     */
+    private onDidNavigate(_event: Electron.DidNavigateEvent) {
+        this.urlField.value = this.webView.getURL();
+        this.goBackButton.disabled = !this.webView.canGoBack();
+        this.goForwardButton.disabled = !this.webView.canGoForward();
+    }
+
+    /**
+     * Called when the user clicks on a link in a page which should be opened in another window/tab.
+     * @param event An Electron NewWindowEvent.
+     */
+    private onNewWindow(event: Electron.NewWindowEvent) {
+        if (this.settings.AllowNewWindows) {
+            // Excluding `save-to-disk` for now
+            if (["default",
+                "foreground-tab",
+                "background-tab",
+                "new-window",
+                "other"].indexOf(event.disposition) !== -1) {
+                ipcRenderer.send("IPC", ["openWindow", event.url]);
+            }
+        }
+    }
+
+    /**
+     * Build the address bar.
+     * @returns The DOM element(s) for the address bar.
      */
     private getAddressBar(): HTMLDivElement {
         const addressBar: HTMLDivElement = document.createElement("div");
@@ -224,8 +250,8 @@ export class CRendererApplication {
     }
 
     /**
-     *
-     * @returns HTMLDivElement
+     * Build the navigation buttons.
+     * @returns The DOM element(s) for the navigation buttons.
      */
     private getNavigationButtons(): HTMLDivElement {
         const navigationButtonsContainer: HTMLDivElement = document.createElement("div");
@@ -259,8 +285,8 @@ export class CRendererApplication {
     }
 
     /**
-     *
-     * @returns HTMLDivElement
+     * Build the URL text field.
+     * @returns The DOM element(s) for the URL text field.
      */
     private getURLField(): HTMLDivElement {
         const urlFieldContainer: HTMLDivElement = document.createElement("div");
@@ -277,8 +303,8 @@ export class CRendererApplication {
     }
 
     /**
-     *
-     * @returns Electron.WebviewTag
+     * Build the webview tag.
+     * @returns A completely configured Electron.WebviewTag.
      */
     private getWebView(): Electron.WebviewTag {
         const webView: Electron.WebviewTag = document.createElement("webview");
@@ -289,10 +315,11 @@ export class CRendererApplication {
         }
         webView.setAttribute("plugins", "");
         webView.setAttribute("useragent", this.settings.UserAgent);
-        webView.addEventListener("load-commit", this.onLoadCommit.bind(this), false);
+        webView.addEventListener("did-navigate", this.onDidNavigate.bind(this), false);
         webView.addEventListener("did-finish-load", this.onDidFinishLoad.bind(this), false);
         webView.addEventListener("page-title-updated", this.onPageTitleUpdated.bind(this), false);
         webView.addEventListener("console-message", this.onConsoleMessage.bind(this), false);
+        webView.addEventListener("new-window", this.onNewWindow.bind(this), false);
         return webView;
     }
 

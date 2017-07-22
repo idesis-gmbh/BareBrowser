@@ -45,6 +45,7 @@
         "fullscreen"
     ],
     "AllowPopups": false,
+    "AllowNewWindows": true,
     "ClearTraces": false,
     "SingleInstance": true,
     "FocusOnNewURL": true,
