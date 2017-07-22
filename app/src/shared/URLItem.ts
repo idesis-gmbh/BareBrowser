@@ -2,18 +2,19 @@ import { $URL } from "./Modules";
 import * as $Consts from "../shared/Consts";
 
 /**
- *
+ * Interface for URL items.
  */
 export interface URLItem {
-    DoLoad: boolean;
+    DoLoad: boolean; // Should this item be loaded or not?
     URL: string;
     IsFileURL: boolean;
 }
 
 /**
- *
- * @param url
- * @returns URLItem
+ * Creates a URLItem object from a given string.
+ * This can result in either a URL for the web (http://) or a file (file://).
+ * @param url The URL string to be parsed.
+ * @returns A URLItem object.
  */
 export function getURLItem(url: string): URLItem {
     url = url.trim();

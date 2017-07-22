@@ -2,7 +2,7 @@ import { $FSE } from "./Modules";
 import * as $Utils from "./Utils";
 
 /**
- *
+ * Interface for app settings.
  */
 export interface Settings {
     Window: {
@@ -37,8 +37,8 @@ export interface Settings {
 }
 
 /**
- *
- * @returns Settings
+ * Get settings with default values.
+ * @returns A Settings object.
  */
 export function getDefaultSettings(): Settings {
     return {
@@ -76,8 +76,10 @@ export function getDefaultSettings(): Settings {
 
 /**
  *
- * @param configFile
- * @returns Settings
+ * Get current app settings.
+ * If reading from file fails, default settings are returned.
+ * @param configFile Full path of the settings file.
+ * @returns The current app settings obtained from `configFile` or default settings.
  */
 export function getSettings(configFile: string): Settings {
     let settings: Settings;

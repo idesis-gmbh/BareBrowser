@@ -15,7 +15,7 @@ export class DarwinMenu extends ApplicationMenu {
     /**
      * Build the main menu for Darwin platforms.
      * appName is used for the help menu item label name.
-     * @param appName The name of the application
+     * @param appName The name of the application.
      */
     constructor(protected appName: string) {
         super(appName);
@@ -27,16 +27,16 @@ export class DarwinMenu extends ApplicationMenu {
 	}
 
     /**
-     * Get the PasteAndMatchStyle menu item
-     * @property MenuItem The Paste menu
+     * Get the PasteAndMatchStyle menu item.
+     * @property The Paste menu.
      */
     public get PasteAndMatchStyleMenu(): MenuItem {
         return this.pasteAndMatchStyleMenu;
     }
 
     /**
-     * Build Application sub menu
-     * @returns MenuItem The Application menu item/submenu items
+     * Build Application sub menu.
+     * @returns The Application menu item/submenu items.
      */
     private buildAppMenu(): MenuItem {
         const appMenu = new Menu();
@@ -74,8 +74,8 @@ export class DarwinMenu extends ApplicationMenu {
     }
 
     /**
-     * Build Edit sub menu
-     * @returns MenuItem The Edit menu item/submenu items
+     * Build Edit sub menu.
+     * @returns The Edit menu item/submenu items.
      */
     private buildEditMenu(): MenuItem {
         const editMenu: Menu = super.getEditMenu();
@@ -90,8 +90,8 @@ export class DarwinMenu extends ApplicationMenu {
     }
 
     /**
-     * Build Window sub menu
-     * @returns MenuItem The Window menu item/submenu items
+     * Build Window sub menu.
+     * @returns The Window menu item/submenu items.
      */
     private buildWindowMenu(): MenuItem {
         const windowMenu = new Menu();
@@ -128,8 +128,8 @@ export class DarwinMenu extends ApplicationMenu {
     }
 
     /**
-     * Build Edit sub menu
-     * @returns MenuItem The Edit menu item/submenu items
+     * Build Edit sub menu.
+     * @returns The Edit menu item/submenu items.
      */
     // private buildHelpMenu(): MenuItem {
     //     const helpMenu: Menu = super.getHelpMenu("Cmd+?");
