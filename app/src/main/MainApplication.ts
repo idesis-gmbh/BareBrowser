@@ -48,7 +48,7 @@ export class CMainApplication {
     private windows: Array<Electron.BrowserWindow | null> = [];
 
     /**
-     *
+     * Boot and set up Electron app.
      */
     constructor() {
         this.appInfo = this.getAppInfo();
@@ -118,7 +118,7 @@ export class CMainApplication {
 
     /**
      * Retrieve app name and identifier in a single operation; both are needed later.
-     * @returns AppInfo An object containg the app name and identifier.
+     * @returns An object containg the app name and identifier.
      */
     private getAppInfo(): AppInfo {
         const result: AppInfo = { Name: "SIB", Identifier: "de.idesis.singleinstancebrowser" };

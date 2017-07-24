@@ -2,8 +2,8 @@
  * Newer versions of Electron come with their own TypeScript definitions, so @types/electron no
  * longer needs to be used. Unfortunately these definitions require @types/node ^7.0.18, which
  * lacks a definition for on("uncaughtException") which causes a compile error when used. This
- * happens at least with Electron 1.6.10, newer versions may require a more up to date version
- * of @types/node which contains the missing definitions. Then this file can simply be removed.
+ * happens at least with Electron 1.6.10, newer versions may contain a more up to date version
+ * of the definitions. Then this file can simply be removed.
  * See https://nodejs.org/api/process.html#process_event_rejectionhandled and
  * https://nodejs.org/api/process.html
  */

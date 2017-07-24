@@ -38,7 +38,7 @@ export interface Settings {
 }
 
 /**
- * Get settings with default values.
+ * Get settings object with default values.
  * @returns A Settings object.
  */
 export function getDefaultSettings(): Settings {
@@ -78,7 +78,7 @@ export function getDefaultSettings(): Settings {
 
 /**
  *
- * Get current app settings.
+ * Get current app settings object.
  * If reading from file fails, default settings are returned.
  * @param configFile Full path of the settings file.
  * @returns The current app settings obtained from `configFile` or default settings.

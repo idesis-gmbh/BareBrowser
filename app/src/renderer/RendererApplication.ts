@@ -57,7 +57,7 @@ export class CRendererApplication {
     /**
      * Bind keyboard shortcut(s) to a function.
      * @param shortcut A single keyboard shortcut ar on array of shortcuts.
-     * @param func The function to be executed if the given keyboard shortcut(s) is used.
+     * @param func The function to be executed if the given keyboard shortcut is used.
      */
     private bindShortCut(shortcut: string | string[], func: Function): void {
         $ShortCuts.bind(shortcut, (_event: ExtendedKeyboardEvent, _combo: string): boolean => {
@@ -201,7 +201,7 @@ export class CRendererApplication {
      * Permissions are granted based on app settings.
      * @param _webContents The calling Electron webContents.
      * @param permission The requested permission.
-     * @param callback A callback called with the result of the permission check.
+     * @param callback A callback called with the boolean result of the permission check.
      */
     private onPermissionRequest(_webContents: Electron.WebContents, permission: string, callback: (permissionGranted: boolean) => void): void {
         const grant = (this.settings.Permissions.indexOf(permission) > -1);
@@ -231,6 +231,7 @@ export class CRendererApplication {
                 "foreground-tab",
                 "background-tab",
                 "new-window",
+                //"save-to-disk",
                 "other"].indexOf(event.disposition) !== -1) {
                 ipcRenderer.send("IPC", ["openWindow", event.url]);
             }
