@@ -93,12 +93,12 @@
     "start": "npm run cmd --  electron ./out/",
     "//##### Make and package darwin": "#####",
     "m:darwin:checkwin32": "node -e \"if (process.platform == 'win32') {console.log('Packaging darwin on win32 creates unusable files, please use \"\"npm run make\"\" only.'); process.exit(1);}\"",
-    "m:darwin:icns": "shx mkdir -p ./build/tmp/ && npm run cmd --  -f ./app/_root/appicon.png png2icns ./app/_root/appicon.png -o ./build/tmp/appicon.icns -s 16,32,64,128,256,512",
+    "m:darwin:icns": "shx mkdir -p ./build/tmp/ && npm run cmd --  -f ./app/_root/appicon.png png2icons ./app/_root/appicon.png ./build/tmp/appicon -icns",
     "m:darwin:pkg": "node ./build/run-electron-packager.js ./app/package.json ./package.json darwin",
     "prem:darwin": "npm run m:darwin:checkwin32 && echo ///// Making darwin release...",
     "m:darwin": "npm-run-all -p clean clean:darwinrelease -s build compile compress m:darwin:icns m:darwin:pkg",
     "//##### Make and package win32": "#####",
-    "m:win32:ico": "shx mkdir -p ./build/tmp/ && npm run cmd --  -f ./app/_root/appicon.png png-to-ico \"./app/_root/appicon.png > ./build/tmp/appicon.ico\"",
+    "m:win32:ico": "shx mkdir -p ./build/tmp/ && npm run cmd --  -f ./app/_root/appicon.png png2icons ./app/_root/appicon.png ./build/tmp/appicon -icop",
     "m:win32:pkg": "node ./build/run-electron-packager.js ./app/package.json ./package.json win32",
     "prem:win32": "echo ///// Making win32 release...",
     "m:win32": "npm-run-all -p clean clean:win32release -s build compile compress m:win32:ico m:win32:pkg",
@@ -114,7 +114,6 @@
     "onchange": "3.2.1",
     "rollup": "0.43.0",
     "babili": "0.1.4",
-    "uglify-es": "3.0.25",
     "shx": "0.2.2",
     "png2icons": "0.9.1"
   }
