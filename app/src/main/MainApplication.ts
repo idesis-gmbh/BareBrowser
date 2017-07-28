@@ -505,6 +505,8 @@ export class CMainApplication {
      * @param _exitCode App exit code.
      */
     private onQuit(_event: Electron.Event, _exitCode: number): void {
-        this.clearTraces();
+        if (this.settings.ClearTraces) {
+            this.clearTraces();
+        }
     }
 }
