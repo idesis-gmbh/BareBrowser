@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "typescript": "2.4.1",
-    "electron": "1.6.11",
+    "electron": "1.6.16",
     "electron-packager": "8.7.2",
     "tslint": "5.4.3",
     "@types/fs-extra": "3.0.3",
