@@ -4,7 +4,7 @@
   "description": "A minimalist single window/single instance browser, invokable via command line.",
   "companyname": "idesis GmbH",
   "copyright": "©2017, 2018, idesis GmbH",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "identifier": "de.idesis.singleinstancebrowser",
   "darwinAppCategory": "public.app-category.productivity",
   "win32FileDescription": "SingleInstanceBrowser",
@@ -29,20 +29,19 @@
   "license": "MIT",
   "main": "./bin/MainProcess.js",
   "dependencies": {
-    "fs-extra": "3.0.1",
+    "fs-extra": "5.0.0",
     "mousetrap": "1.6.1"
   },
   "devDependencies": {
-    "typescript": "2.4.1",
-    "electron": "1.6.16",
-    "electron-packager": "8.7.2",
-    "tslint": "5.4.3",
-    "@types/fs-extra": "3.0.3",
-    "@types/node": "^7.0.18",
-    "@types/mousetrap": "1.5.34"
+    "typescript": "2.8.1",
+    "electron": "1.8.4",
+    "tslint": "5.9.1",
+    "@types/fs-extra": "5.0.2",
+    "@types/node": "8.10.0",
+    "@types/mousetrap": "1.6.0"
   },
   "config": {
-    "arch": "x64",
+    "arch": "all",
     "pkgParams": "--quiet --asar.unpackDir=\"{node_modules,res}\""
   }
 }

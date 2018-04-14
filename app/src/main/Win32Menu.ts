@@ -1,9 +1,6 @@
 import { Menu, MenuItem } from "electron";
 import { ApplicationMenu } from "./ApplicationMenu";
 
-type Menu = Electron.Menu;
-type MenuItem = Electron.MenuItem;
-
 /**
  * The menu for the application on Win32 platforms.
  */

@@ -1,8 +1,5 @@
 import { Menu, MenuItem } from "electron";
 
-type Menu = Electron.Menu;
-type MenuItem = Electron.MenuItem;
-
 /**
  * General application menu (items) on all platforms
  */

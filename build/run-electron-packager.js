@@ -29,6 +29,7 @@ packagerParams.push(
     "--no-prune",
     "--download.cache=./build/tmp/.electron-download",
     "--overwrite",
+    //`--executable-name="${apppj.productName}"`,
     `--appname="${apppj.productName}"`,
     `--app-version="${apppj.version}"`,
     `--build-version="${apppj.version}"`,
@@ -64,7 +65,11 @@ if (process.argv[4] == "darwin") {
 
 // Run packager
 const exitCode = proc.spawnSync(
-    path.join(__dirname, "tmp", "node_modules", ".bin", (process.platform == "win32") ? "electron-packager.cmd" : "electron-packager"),
+    // If you want to make electron-packager a development dependency then move the
+    // dependency from packagae.json to devDependencies in ./app/package.json and swap
+    // the comments on the following two lines.
+    //path.join(__dirname, "tmp", "node_modules", ".bin", (process.platform == "win32") ? "electron-packager.cmd" : "electron-packager"),
+    path.join(__dirname, "..", "node_modules", ".bin", (process.platform == "win32") ? "electron-packager.cmd" : "electron-packager"),
     packagerParams, 
     { shell: true, stdio: "inherit" }
 ).status;
