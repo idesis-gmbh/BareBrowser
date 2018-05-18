@@ -14,8 +14,8 @@ with minimal dependencies using
 and runs on the [Electron](https://electron.atom.io) platform.
 
 ***Important notice:*** No special attempts have been made to make this browser secure 
-for web browsing. Both the host window and the loadad pages can use plugins; all other
-options are set to their default values. See also 
+for web browsing. Loaded pages can open new windows by default; all other options are 
+set to their default values. See also 
 [Electron BrowserWindow](https://electron.atom.io/docs/api/browser-window/)
 and
 [Electron &lt;webview&gt; Tag](https://electron.atom.io/docs/api/webview-tag/).
