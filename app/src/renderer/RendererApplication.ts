@@ -14,6 +14,8 @@ export class CRendererApplication {
     private goForwardButton: HTMLButtonElement;
     private urlField: HTMLInputElement;
     private webView: Electron.WebviewTag;
+    private webViewScrollOffset: Point = {x: 0, y: 0};
+    private reloadIssued: boolean = false;
 
     /**
      * Creates the user interface, the web content part and handles all events.
@@ -91,6 +93,11 @@ export class CRendererApplication {
             remote.getCurrentWindow().webContents.reload();
         });
         this.bindShortCut(this.settings.ShortCuts.Reload, () => {
+            // Get the current scroll offset from the web view.
+            this.webView.send("FromRenderer", "getScrollOffset");
+            // Flag to ensure that DOMReady (see below) only does something
+            // when the event was caused by a reload.
+            this.reloadIssued = true;
             this.webView.reload();
         });
         this.bindShortCut(this.settings.ShortCuts.GoBack, () => {
@@ -144,8 +151,8 @@ export class CRendererApplication {
 
     /**
      * Handles all IPC calls from the main process.
-     * @param event An Electron event.
-     * @param args The arguments sent by the calling main process.
+     * @param {event} - An Electron event.
+     * @param {args} - The arguments sent by the calling main process.
      */
     // tslint:disable-next-line:no-any
     private onIPC(_event: Electron.Event, ...args: any[]): void {
@@ -167,11 +174,23 @@ export class CRendererApplication {
     /**
      * Called when the page has finished loading.
      * Sets the focus to the webview tag to enable keyboard navigation in the page.
-     * @param _event An Electron event.
+     * @param {_event} - An Electron event.
      */
     private onDidFinishLoad(_event: Electron.Event): void {
         if (!this.webView.getWebContents().isFocused()) {
             this.webView.focus();
+        }
+    }
+
+    /**
+     * Called when the DOM in the web view is ready. Tries to scroll to the last
+     * offset but only if the event occurs during a page *reload*.
+     * @param {_event} - An Electron event.
+     */
+    private onDOMReady(_event: Electron.Event): void {
+        if (this.reloadIssued) {
+            this.reloadIssued = false;
+            this.webView.send("FromRenderer", "scrollToOffset", this.webViewScrollOffset);
         }
     }
 
@@ -234,6 +253,20 @@ export class CRendererApplication {
                 //"save-to-disk",
                 "other"].indexOf(event.disposition) !== -1) {
                 ipcRenderer.send("IPC", ["openWindow", event.url]);
+            }
+        }
+    }
+
+    /**
+     * This function stores the current scroll offset from the web view.
+     * Called from the web view; this is the result from sending "getScrollOffset" to the web view.
+     * @param {event} - An Electron IpcMessageEvent.
+     */
+    private onWebViewIPCMessage(event: Electron.IpcMessageEvent) {
+        if (event.channel === "FromWebView") {
+            if (event.args[0] === "setScrollOffset") {
+                this.webViewScrollOffset.x = event.args[1];
+                this.webViewScrollOffset.y = event.args[2];
             }
         }
     }
@@ -318,11 +351,14 @@ export class CRendererApplication {
             webView.setAttribute("allowpopups", "");
         }
         webView.setAttribute("useragent", this.settings.UserAgent);
+        webView.setAttribute("preload", "./lib/preload.js");
         webView.addEventListener("did-navigate", this.onDidNavigate.bind(this), false);
         webView.addEventListener("did-finish-load", this.onDidFinishLoad.bind(this), false);
+        webView.addEventListener("dom-ready", this.onDOMReady.bind(this), false);
         webView.addEventListener("page-title-updated", this.onPageTitleUpdated.bind(this), false);
         webView.addEventListener("console-message", this.onConsoleMessage.bind(this), false);
         webView.addEventListener("new-window", this.onNewWindow.bind(this), false);
+        webView.addEventListener("ipc-message", this.onWebViewIPCMessage.bind(this), false);
         return webView;
     }
 
