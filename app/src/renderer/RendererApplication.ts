@@ -311,10 +311,12 @@ export class CRendererApplication {
         const webView: Electron.WebviewTag = document.createElement("webview");
         webView.setAttribute("id", "webView");
         webView.setAttribute("autosize", "");
+        if (this.settings.AllowPlugins) {
+            webView.setAttribute("plugins", "");
+        }
         if (this.settings.AllowPopups) {
             webView.setAttribute("allowpopups", "");
         }
-        webView.setAttribute("plugins", "");
         webView.setAttribute("useragent", this.settings.UserAgent);
         webView.addEventListener("did-navigate", this.onDidNavigate.bind(this), false);
         webView.addEventListener("did-finish-load", this.onDidFinishLoad.bind(this), false);

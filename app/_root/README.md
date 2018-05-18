@@ -1,8 +1,8 @@
 # SingleInstanceBrowser
 
 ***Important notice:*** No special attempts have been made to make this browser secure 
-for web browsing. Both the host window and the loadad pages can use plugins; all other
-options are set to their default values. See also 
+for web browsing. Loaded pages can open new windows by default; all other options are 
+set to their default values. See also 
 [Electron BrowserWindow](https://electron.atom.io/docs/api/browser-window/)
 and
 [Electron &lt;webview&gt; Tag](https://electron.atom.io/docs/api/webview-tag/).
@@ -194,6 +194,7 @@ This default configuration (from the application directory above) looks like thi
     "Permissions": [
         "fullscreen"
     ],
+    "AllowPlugins": false,
     "AllowPopups": false,
     "AllowNewWindows": true,
     "ClearTraces": false,
@@ -259,6 +260,8 @@ settings will be used then as the initial default settings.
 - `Permissions` is an array of strings which controls the behaviour if a web page asks 
   for a specific permission. The default is to allow fullscreen requests. If you also want
   to allow notifications from web pages the value would be `["fullscreen", "notifications"]`.
+
+- With `AllowPlugins` set to `true` the current page can load plugins.
 
 - With `AllowPopups` set to `true` the current window can open other popup windows.
 

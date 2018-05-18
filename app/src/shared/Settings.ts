@@ -26,6 +26,7 @@ export interface Settings {
     };
     UserAgent: string;
     Permissions: string[];
+    AllowPlugins: boolean;
     AllowPopups: boolean;
     AllowNewWindows: boolean;
     ClearTraces: boolean;
@@ -64,6 +65,7 @@ export function getDefaultSettings(): Settings {
         },
         UserAgent: typeof navigator === "undefined" ? "" : navigator.userAgent,
         Permissions: ["fullscreen"],
+        AllowPlugins: false,
         AllowPopups: false,
         AllowNewWindows: true,
         ClearTraces: false,
@@ -120,6 +122,7 @@ export function getSettings(configFile: string): Settings {
         },
         UserAgent: userAgent,
         Permissions: $Utils.normalize(settings.Permissions, ["fullscreen"]),
+        AllowPlugins: $Utils.normalize(settings.AllowPlugins, false),
         AllowPopups: $Utils.normalize(settings.AllowPopups, false),
         AllowNewWindows: $Utils.normalize(settings.AllowNewWindows, true),
         ClearTraces: $Utils.normalize(settings.ClearTraces, false),
