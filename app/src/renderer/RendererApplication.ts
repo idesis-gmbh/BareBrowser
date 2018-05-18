@@ -1,7 +1,7 @@
-import { ipcRenderer, remote } from "electron";
+import { Point, ipcRenderer, remote } from "electron";
+import * as $ShortCuts from "mousetrap";
 import * as $Settings from "../shared/Settings";
 import * as $URLItem from "../shared/URLItem";
-import * as $ShortCuts from "mousetrap";
 
 /**
  * The class for the renderer application part. Each window will have only one instamce.

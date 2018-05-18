@@ -1,9 +1,9 @@
-import { app, BrowserWindow, ipcMain, Menu } from "electron";
+import { BrowserWindow, Menu, app, ipcMain } from "electron";
+import * as $Consts from "../shared/Consts";
 import { $FSE, $Path, $URL } from "../shared/Modules";
 import * as $Settings from "../shared/Settings";
 import * as $URLItem from "../shared/URLItem";
 import * as $Utils from "../shared/Utils";
-import * as $Consts from "../shared/Consts";
 import { ApplicationMenu } from "./ApplicationMenu";
 import { DarwinMenu } from "./DarwinMenu";
 import { Win32Menu } from "./Win32Menu";

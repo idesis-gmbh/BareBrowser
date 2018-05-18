@@ -1,5 +1,5 @@
-import { $URL } from "./Modules";
 import * as $Consts from "../shared/Consts";
+import { $URL } from "./Modules";
 
 /**
  * Interface for URL items.

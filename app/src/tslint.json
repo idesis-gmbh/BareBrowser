@@ -149,11 +149,10 @@
             "allow-named-functions"
         ],
         "ordered-imports": [
-            false,
-//            true,
+            true,
             {
-                "import-sources-order": "case-insensitive",
-                "named-imports-order": "case-insensitive"
+                "import-sources-order": "lowercase-last",
+                "named-imports-order": "lowercase-last"
             }
         ],
         "prefer-const": true,
