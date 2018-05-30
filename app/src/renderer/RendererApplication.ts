@@ -1,14 +1,14 @@
 import { Point, ipcRenderer, remote } from "electron";
 import * as $ShortCuts from "mousetrap";
-import * as $Settings from "../shared/Settings";
-import * as $URLItem from "../shared/URLItem";
+import { Settings } from "../shared/Settings";
+import { URLItem, getURLItem } from "../shared/URLItem";
 
 /**
  * The class for the renderer application part. Creates a browser window and handles anything else.
  */
 export class CRendererApplication {
 
-    private settings: $Settings.Settings;
+    private settings: Settings;
     private addressBar: HTMLDivElement;
     private goBackButton: HTMLButtonElement;
     private goForwardButton: HTMLButtonElement;
@@ -23,7 +23,7 @@ export class CRendererApplication {
     constructor() {
         // Unfortunately sendSync is declared as returning void so a hacky workaround is used...
         // tslint:disable-next-line:no-any
-        this.settings = (ipcRenderer.sendSync("IPC", ["getSettings"]) as any) as $Settings.Settings;
+        this.settings = (ipcRenderer.sendSync("IPC", ["getSettings"]) as any) as Settings;
         const fragment: DocumentFragment = new DocumentFragment();
         this.webView = this.getWebView();
         this.addressBar = this.getAddressBar();
@@ -43,7 +43,7 @@ export class CRendererApplication {
      */
     private queryInitialURLItem(): void {
         // tslint:disable-next-line:no-any
-        const urlItem: $URLItem.URLItem = (ipcRenderer.sendSync("IPC", ["queryURLItem"]) as any) as $URLItem.URLItem;
+        const urlItem: URLItem = (ipcRenderer.sendSync("IPC", ["queryURLItem"]) as any) as URLItem;
         if ((urlItem && urlItem.DoLoad)) {
             this.loadURL(urlItem.URL);
         } else {
@@ -233,7 +233,7 @@ export class CRendererApplication {
      * Used to update parts of the user interface.
      * @param {Electron.DidNavigateEvent} _event An Electron DidNavigateEvent.
      */
-    private onDidNavigate(_event: Electron.DidNavigateEvent) {
+    private onDidNavigate(_event: Electron.DidNavigateEvent): void {
         this.urlField.value = this.webView.getURL();
         this.goBackButton.disabled = !this.webView.canGoBack();
         this.goForwardButton.disabled = !this.webView.canGoForward();
@@ -243,7 +243,7 @@ export class CRendererApplication {
      * Called when the user clicks on a link in a page which should be opened in another window/tab.
      * @param {Electron.NewWindowEvent} event An Electron NewWindowEvent.
      */
-    private onNewWindow(event: Electron.NewWindowEvent) {
+    private onNewWindow(event: Electron.NewWindowEvent): void {
         if (this.settings.AllowNewWindows) {
             // Excluding `save-to-disk` for now
             if (["default",
@@ -262,7 +262,7 @@ export class CRendererApplication {
      * Called from the web view; this is the result from sending "getScrollOffset" to the web view.
      * @param {Electron IpcMessageEvent} event An Electron IpcMessageEvent.
      */
-    private onWebViewIPCMessage(event: Electron.IpcMessageEvent) {
+    private onWebViewIPCMessage(event: Electron.IpcMessageEvent): void {
         if (event.channel === "FromWebView") {
             if (event.args[0] === "setScrollOffset") {
                 this.webViewScrollOffset.x = event.args[1];

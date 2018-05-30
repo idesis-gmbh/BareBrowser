@@ -2,8 +2,8 @@ import { BrowserWindow, Menu, app, ipcMain } from "electron";
 import * as $Consts from "../shared/Consts";
 import { $FSE, $Path, $URL } from "../shared/Modules";
 import * as $Settings from "../shared/Settings";
-import * as $URLItem from "../shared/URLItem";
-import * as $Utils from "../shared/Utils";
+import { URLItem, getURLItem } from "../shared/URLItem";
+import { DirectoryListing, getDirectoryListing } from "../shared/Utils";
 import { ApplicationMenu } from "./ApplicationMenu";
 import { DarwinMenu } from "./DarwinMenu";
 import { Win32Menu } from "./Win32Menu";
@@ -43,7 +43,7 @@ export class CMainApplication {
     private tempDir: string;
     private settingsFile: string;
     private settings: $Settings.Settings;
-    private currentUrlItem: $URLItem.URLItem;
+    private currentUrlItem: URLItem;
     private appMenu: ApplicationMenu | null = null;
     private windows: Array<Electron.BrowserWindow | null> = [];
 
@@ -234,16 +234,16 @@ export class CMainApplication {
      * Also sets the initial URL to be loaded (if any).  Can probably used
      * in the future for more settings.
      */
-    private setUp() {
+    private setUp(): void {
         if (!this.settings.HardwareAcceleration) {
             app.disableHardwareAcceleration();
         }
         // Initial URL to be opened
         // tslint:disable-next-line:prefer-conditional-expression
         if (process.argv.length > 1) {
-            this.currentUrlItem = $URLItem.getURLItem(process.argv[process.argv.length - 1]);
+            this.currentUrlItem = getURLItem(process.argv[process.argv.length - 1]);
          } else {
-             this.currentUrlItem = $URLItem.getURLItem("");
+             this.currentUrlItem = getURLItem("");
          }
     }
 
@@ -275,11 +275,11 @@ export class CMainApplication {
      * don't free file handles correctly (just guessing).
      */
     private clearTraces(): void {
-        const userDataFiles: $Utils.DirectoryListing = $Utils.getDirectoryListing(this.userDataDirectory, true);
+        const userDataFiles: DirectoryListing = getDirectoryListing(this.userDataDirectory, true);
         // Exclude settings.json file and top directory
         userDataFiles.Directories.splice(userDataFiles.Directories.indexOf(this.userDataDirectory), 1);
         userDataFiles.Files.splice(userDataFiles.Files.indexOf(this.settingsFile), 1);
-        const leftOvers: $Utils.DirectoryListing = { Directories: [], Files: [] };
+        const leftOvers: DirectoryListing = { Directories: [], Files: [] };
         // First remove files...
         for (const entry of userDataFiles.Files) {
             try {
@@ -327,7 +327,7 @@ export class CMainApplication {
      * @param {boolean} isFile Indicates whether the given URL is a local file or not.
      */
     private openFileOrURL(fileOrURL: string, isFile: boolean): void {
-        this.currentUrlItem = $URLItem.getURLItem(fileOrURL);
+        this.currentUrlItem = getURLItem(fileOrURL);
         // On Darwin yet determined by onOpen* so set it explicitly here
         this.currentUrlItem.IsFileURL = isFile;
         const currentWindow: Electron.BrowserWindow | null = this.getCurrentWindow();
@@ -351,7 +351,7 @@ export class CMainApplication {
      * @param {string} _workingDirectory The working directory of the instance started elsewhere.
      */
     private onSingleInstanceCallback(args: string[], _workingDirectory: string): void {
-        this.currentUrlItem = $URLItem.getURLItem(args[args.length - 1]);
+        this.currentUrlItem = getURLItem(args[args.length - 1]);
         // Quit command received
         if (this.currentUrlItem.URL === $Consts.CMD_QUIT) {
             this.asnycQuit();
@@ -424,7 +424,7 @@ export class CMainApplication {
                 const url: string = args[0][1];
                 if (url) {
                     event.returnValue = true;
-                    this.currentUrlItem = $URLItem.getURLItem(url);
+                    this.currentUrlItem = getURLItem(url);
                     this.createWindow();
                 } else {
                     event.returnValue = false;
