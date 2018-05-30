@@ -9,7 +9,7 @@ export class Win32Menu extends ApplicationMenu {
     /**
      * Build the main menu for Win32 platforms.
      * appName is used for the help menu item label name.
-     * @param appName The name of the application.
+     * @param {string} appName The name of the application.
      */
     constructor(protected appName: string) {
         super(appName);
@@ -22,7 +22,7 @@ export class Win32Menu extends ApplicationMenu {
 
     /**
      * Build File sub menu.
-     * @returns The File menu item/submenu items.
+     * @returns {MenuItem} The File menu item/submenu items.
      */
     private buildFileMenu(): MenuItem {
         const fileMenu = new Menu();
@@ -43,7 +43,7 @@ export class Win32Menu extends ApplicationMenu {
 
     /**
      * Build Edit sub menu.
-     * @returns The Edit menu item/submenu items.
+     * @returns {MenuItem} The Edit menu item/submenu items.
      */
     private buildEditMenu(): MenuItem {
         const editMenu: Menu = super.getEditMenu();
@@ -55,7 +55,7 @@ export class Win32Menu extends ApplicationMenu {
 
     /**
      * Build Window sub menu.
-     * @returns The Window menu item/submenu items.
+     * @returns {MenuItem} The Window menu item/submenu items.
      */
     private buildWindowMenu(): MenuItem {
         const windowMenu = new Menu();
@@ -86,7 +86,7 @@ export class Win32Menu extends ApplicationMenu {
 
     /**
      * Build Edit sub menu.
-     * @returns The Edit menu item/submenu items.
+     * @returns {MenuItem} The Edit menu item/submenu items.
      */
     // private buildHelpMenu(): MenuItem {
     //     const helpMenu: Menu = super.getHelpMenu("F1");

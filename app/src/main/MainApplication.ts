@@ -118,7 +118,7 @@ export class CMainApplication {
 
     /**
      * Retrieve app name and identifier in a single operation; both are needed later.
-     * @returns An object containg the app name and identifier.
+     * @returns {AppInfo} An object containg the app name and identifier.
      */
     private getAppInfo(): AppInfo {
         const result: AppInfo = { Name: "SIB", Identifier: "de.idesis.singleinstancebrowser" };
@@ -142,7 +142,7 @@ export class CMainApplication {
 
     /**
      * Make strings for user data and temp directory.
-     * @param appIdentifier The app identifier from package.json.
+     * @param {string} appIdentifier The app identifier from package.json.
      */
     private setFileNames(appIdentifier: string): void {
         // An application name from 'package.json' may be too short to be unambigous and therefore
@@ -193,7 +193,8 @@ export class CMainApplication {
 
     /**
      * Load app settings.
-     * @param settingsFile The full path of the settings file.
+     * @param {string} settingsFile The full path of the settings file.
+     * @returns {Settings} The loaded app settings.
      */
     private getSettings(settingsFile: string): $Settings.Settings {
         // Get settings from userData directory. At the very first start this won't exist,
@@ -211,8 +212,7 @@ export class CMainApplication {
     /**
      * Checks wether another instance is already running and if
      * not, registers *this* instance for single instance operation.
-     * @returns True if the current running instance
-     *          should quit due to another running instance.
+     * @returns {boolean} True if the current running instance should quit due to another running instance.
      */
     private shouldQuitForSingleInstance(): boolean {
         if (this.settings.SingleInstance) {
@@ -303,7 +303,7 @@ export class CMainApplication {
 
     /**
      * Get (last) focused window from the internal window list.
-     * @returns The focused window or last focused window or null (should never happen).
+     * @returns {Electron.BrowserWindow | null} The focused window or last focused window or null (should never happen).
      */
     private getCurrentWindow(): Electron.BrowserWindow | null {
         return (this.windows.length > 0) ? this.windows[this.windows.length-1] : null;
@@ -323,8 +323,8 @@ export class CMainApplication {
 
     /**
      * Called by the two `onOpen` events. Gets the current window and loads the given URL in it.
-     * @param fileOrURL The URL (or file) to be loaded.
-     * @param isFile Indicates whether the given URL is a local file or not.
+     * @param {string} fileOrURL The URL (or file) to be loaded.
+     * @param {boolean} isFile Indicates whether the given URL is a local file or not.
      */
     private openFileOrURL(fileOrURL: string, isFile: boolean): void {
         this.currentUrlItem = $URLItem.getURLItem(fileOrURL);
@@ -347,8 +347,8 @@ export class CMainApplication {
     /**
      * Called by Electron app if another instance was started. This either loads the given URL
      * in the current instance or quits the running instance by the special `http:quit` URL.
-     * @param args The arguments passed to the instance started elsewhere.
-     * @param _workingDirectory The working directory of the instance started elsewhere.
+     * @param {string[]} args The arguments passed to the instance started elsewhere.
+     * @param {string} _workingDirectory The working directory of the instance started elsewhere.
      */
     private onSingleInstanceCallback(args: string[], _workingDirectory: string): void {
         this.currentUrlItem = $URLItem.getURLItem(args[args.length - 1]);
@@ -371,8 +371,8 @@ export class CMainApplication {
 
     /**
      * Called on Darwin when the app is started with 'open' and specifying a URL.
-     * @param event An Electron event
-     * @param url The URL to be opened.
+     * @param {Electron.Event} event An Electron event
+     * @param {string} url The URL to be opened.
      */
     private onOpenURL(event: Electron.Event, url: string): void {
         event.preventDefault();
@@ -381,18 +381,18 @@ export class CMainApplication {
 
     /**
      * Called on Darwin when the app is started with 'open' and specifying a file.
-     * @param event An Electron event
-     * @param file The file to be loaded.
+     * @param {Electron.Event} event An Electron event
+     * @param {string} fileName The file to be loaded.
      */
-    private onOpenFile(event: Electron.Event, file: string): void {
+    private onOpenFile(event: Electron.Event, fileName: string): void {
         event.preventDefault();
-        this.openFileOrURL(file, true);
+        this.openFileOrURL(fileName, true);
     }
 
     /**
      * Handles all IPC calls from renderer processes.
-     * @param event The Electron event. Used to return values/objects back to the calling renderer process.
-     * @param args The arguments sent by the calling renderer process.
+     * @param {Electron.Event} event The Electron event. Used to return values/objects back to the calling renderer process.
+     * @param {any[]} args The arguments sent by the calling renderer process.
      */
     // tslint:disable-next-line:no-any
     private onIPC(event: Electron.Event, ...args: any[]): void {
@@ -441,7 +441,7 @@ export class CMainApplication {
      * This method will be called when Electron has finished initialization and
      * is ready to create browser windows. Some APIs like setting a menu can only
      * be used after this event occurs.
-     * @param _launchInfo see Electron: App.on(event: 'ready',...
+     * @param {Object} _launchInfo see Electron: App.on(event: 'ready',...
      */
     private onAppReady(_launchInfo: Object): void {
         this.setApplicationMenu();
@@ -455,8 +455,8 @@ export class CMainApplication {
      * *Note:* This is left here only for completeness.
      * SingleInstanceBrowser currently quits if the last browser window is closed
      * (see `onWindowAllClosed`) so this event never gets called.
-     * @param _event An Electron event
-     * @param _hasVisibleWindows True if there are existing visible windows.
+     * @param {Electron.Event} _event An Electron event
+     * @param {boolean} _hasVisibleWindows True if there are existing visible windows.
      */
     private onActivate(_event: Electron.Event, _hasVisibleWindows: boolean): void {
         if (this.windows.length === 0) {
@@ -467,7 +467,7 @@ export class CMainApplication {
     /**
      * Called when the window is focused.
      * Used to move the calling window to the end of the internal window list.
-     * @param event The event containing the calling BrowserWindow (`sender`).
+     * @param {BrowserWindowEvent} event The event containing the calling BrowserWindow (`sender`).
      */
     private onBrowserWindowFocus(event: BrowserWindowEvent): void {
         const index: number = this.windows.indexOf(event.sender);
@@ -481,7 +481,7 @@ export class CMainApplication {
      * Remove the respective window object from the internal array and set it to
      * null to avoid leaks. Since preventDefault is never used it's ok to do the
      * removal already here (before the window actually is `closed`)
-     * @param event The event containing the calling BrowserWindow (`sender`).
+     * @param {BrowserWindowEvent} event The event containing the calling BrowserWindow (`sender`).
      */
     private onWindowClose(event: BrowserWindowEvent): void {
         const index: number = this.windows.indexOf(event.sender);
@@ -493,7 +493,7 @@ export class CMainApplication {
 
     /**
      * Called when all windows are closed => quit app.
-     * @param event The event containing the App (`sender`).
+     * @param {AppEvent} event The event containing the App (`sender`).
      */
     private onWindowAllClosed(_event: AppEvent): void {
         app.quit();
@@ -501,8 +501,8 @@ export class CMainApplication {
 
     /**
      * Try to remove all temporary data on quitting the app.
-     * @param _event An Electron event.
-     * @param _exitCode App exit code.
+     * @param {Electron.Event} _event An Electron event.
+     * @param {number} _exitCode App exit code.
      */
     private onQuit(_event: Electron.Event, _exitCode: number): void {
         if (this.settings.ClearTraces) {

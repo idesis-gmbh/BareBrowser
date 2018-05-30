@@ -40,7 +40,7 @@ export interface Settings {
 
 /**
  * Get settings object with default values.
- * @returns A Settings object.
+ * @returns {Settings} A Settings object.
  */
 export function getDefaultSettings(): Settings {
     return {
@@ -79,11 +79,10 @@ export function getDefaultSettings(): Settings {
 }
 
 /**
- *
  * Get current app settings object.
  * If reading from file fails, default settings are returned.
- * @param configFile Full path of the settings file.
- * @returns The current app settings obtained from `configFile` or default settings.
+ * @param {string} configFile Full path of the settings file.
+ * @returns {Settings} The current app settings obtained from `configFile` or default settings.
  */
 export function getSettings(configFile: string): Settings {
     let settings: Settings;

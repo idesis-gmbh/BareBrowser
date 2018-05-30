@@ -4,7 +4,7 @@ import * as $Settings from "../shared/Settings";
 import * as $URLItem from "../shared/URLItem";
 
 /**
- * The class for the renderer application part. Each window will have only one instamce.
+ * The class for the renderer application part. Creates a browser window and handles anything else.
  */
 export class CRendererApplication {
 
@@ -58,8 +58,8 @@ export class CRendererApplication {
 
     /**
      * Bind keyboard shortcut(s) to a function.
-     * @param shortcut A single keyboard shortcut ar on array of shortcuts.
-     * @param func The function to be executed if the given keyboard shortcut is used.
+     * @param {string} shortcut A single keyboard shortcut ar on array of shortcuts.
+     * @param {Function} func The function to be executed if the given keyboard shortcut is used.
      */
     private bindShortCut(shortcut: string | string[], func: Function): void {
         $ShortCuts.bind(shortcut, (_event: ExtendedKeyboardEvent, _combo: string): boolean => {
@@ -69,7 +69,7 @@ export class CRendererApplication {
     }
 
     /**
-     * Bind all keyboard shortcut(s) from the app settings to the respective function.
+     * Bind all keyboard shortcuts from the app settings to the respective function.
      */
     private bindShortCuts(): void {
         this.bindShortCut(this.settings.ShortCuts.ToggleAddressBar, () => {
@@ -124,7 +124,7 @@ export class CRendererApplication {
 
     /**
      * Go back one step in the browser history.
-     * @param _event A mouse event.
+     * @param {MouseEvent} _event A mouse event or null.
      */
     private goBack(_event: MouseEvent): void {
         this.webView.goBack();
@@ -132,7 +132,7 @@ export class CRendererApplication {
 
     /**
      * Go forward one step in the browser history.
-     * @param _event A mouse event.
+     * @param {MouseEvent} _event A mouse event or null.
      */
     private goForward(_event: MouseEvent): void {
         this.webView.goForward();
@@ -140,7 +140,7 @@ export class CRendererApplication {
 
     /**
      * Called when the user clicks the Go button or presses Enter in the URL field.
-     * @param event A mouse or keyboard event.
+     * @param {MouseEvent | KeyboardEvent} event A mouse or keyboard event.
      */
     private loadURLItemListener(event: MouseEvent | KeyboardEvent): void {
         if ((event.type === "keypress") && ((event as KeyboardEvent).key !== "Enter")) {
@@ -151,8 +151,8 @@ export class CRendererApplication {
 
     /**
      * Handles all IPC calls from the main process.
-     * @param {event} - An Electron event.
-     * @param {args} - The arguments sent by the calling main process.
+     * @param {Electron.Event} event An Electron event.
+     * @param {any[]} args The arguments sent by the calling main process.
      */
     // tslint:disable-next-line:no-any
     private onIPC(_event: Electron.Event, ...args: any[]): void {
@@ -174,7 +174,7 @@ export class CRendererApplication {
     /**
      * Called when the page has finished loading.
      * Sets the focus to the webview tag to enable keyboard navigation in the page.
-     * @param {_event} - An Electron event.
+     * @param {Electron.Event} _event An Electron event.
      */
     private onDidFinishLoad(_event: Electron.Event): void {
         if (!this.webView.getWebContents().isFocused()) {
@@ -185,7 +185,7 @@ export class CRendererApplication {
     /**
      * Called when the DOM in the web view is ready. Tries to scroll to the last
      * offset but only if the event occurs during a page *reload*.
-     * @param {_event} - An Electron event.
+     * @param {Electron.Event} _event An Electron event.
      */
     private onDOMReady(_event: Electron.Event): void {
         if (this.reloadIssued) {
@@ -196,7 +196,7 @@ export class CRendererApplication {
 
     /**
      * Called when the title of the current page has been updated.
-     * @param event An Electron PageTitleUpdatedEvent.
+     * @param {Electron.PageTitleUpdatedEvent} event An Electron PageTitleUpdatedEvent.
      */
     private onPageTitleUpdated(event: Electron.PageTitleUpdatedEvent): void {
         remote.getCurrentWindow().setTitle(event.title);
@@ -207,7 +207,7 @@ export class CRendererApplication {
      * Default handling for the event is prevented, enhanced with additional
      * infos and again written to the console. In future versions this should
      * be redirected/copied to a log file.
-     * @param event An Electron ConsoleMessageEvent.
+     * @param {Electron.ConsoleMessageEvent} event An Electron ConsoleMessageEvent.
      */
     private onConsoleMessage(event: Electron.ConsoleMessageEvent): void {
         console.log("LOG from %s: [Level %d] %s (Line %d in %s)", this.webView.getURL(), event.level, event.message, event.line, event.sourceId);
@@ -218,9 +218,9 @@ export class CRendererApplication {
     /**
      * Handles permission requests from web pages.
      * Permissions are granted based on app settings.
-     * @param _webContents The calling Electron webContents.
-     * @param permission The requested permission.
-     * @param callback A callback called with the boolean result of the permission check.
+     * @param {Electron.WebContents} _webContents The calling Electron webContents.
+     * @param {string} permission The requested permission.
+     * @param {function} callback A callback called with the boolean result of the permission check.
      */
     private onPermissionRequest(_webContents: Electron.WebContents, permission: string, callback: (permissionGranted: boolean) => void): void {
         const grant: boolean = (this.settings.Permissions.indexOf(permission) > -1);
@@ -231,7 +231,7 @@ export class CRendererApplication {
     /**
      * Called when the navigaion to a URL has finished.
      * Used to update parts of the user interface.
-     * @param _event An Electron DidNavigateEvent.
+     * @param {Electron.DidNavigateEvent} _event An Electron DidNavigateEvent.
      */
     private onDidNavigate(_event: Electron.DidNavigateEvent) {
         this.urlField.value = this.webView.getURL();
@@ -241,7 +241,7 @@ export class CRendererApplication {
 
     /**
      * Called when the user clicks on a link in a page which should be opened in another window/tab.
-     * @param event An Electron NewWindowEvent.
+     * @param {Electron.NewWindowEvent} event An Electron NewWindowEvent.
      */
     private onNewWindow(event: Electron.NewWindowEvent) {
         if (this.settings.AllowNewWindows) {
@@ -260,7 +260,7 @@ export class CRendererApplication {
     /**
      * This function stores the current scroll offset from the web view.
      * Called from the web view; this is the result from sending "getScrollOffset" to the web view.
-     * @param {event} - An Electron IpcMessageEvent.
+     * @param {Electron IpcMessageEvent} event An Electron IpcMessageEvent.
      */
     private onWebViewIPCMessage(event: Electron.IpcMessageEvent) {
         if (event.channel === "FromWebView") {
@@ -273,7 +273,7 @@ export class CRendererApplication {
 
     /**
      * Build the address bar.
-     * @returns The DOM element(s) for the address bar.
+     * @returns {HTMLDivElement} The DOM element for the address bar.
      */
     private getAddressBar(): HTMLDivElement {
         const addressBar: HTMLDivElement = document.createElement("div");
@@ -285,7 +285,7 @@ export class CRendererApplication {
 
     /**
      * Build the navigation buttons.
-     * @returns The DOM element(s) for the navigation buttons.
+     * @returns {HTMLDivElement} The DOM element(s) for the navigation buttons.
      */
     private getNavigationButtons(): HTMLDivElement {
         const navigationButtonsContainer: HTMLDivElement = document.createElement("div");
@@ -320,7 +320,7 @@ export class CRendererApplication {
 
     /**
      * Build the URL text field.
-     * @returns The DOM element(s) for the URL text field.
+     * @returns {HTMLDivElement} The DOM element(s) for the URL text field.
      */
     private getURLField(): HTMLDivElement {
         const urlFieldContainer: HTMLDivElement = document.createElement("div");
@@ -338,7 +338,7 @@ export class CRendererApplication {
 
     /**
      * Build the webview tag.
-     * @returns A completely configured Electron.WebviewTag.
+     * @returns {Electron.WebviewTag} A completely configured Electron.WebviewTag.
      */
     private getWebView(): Electron.WebviewTag {
         const webView: Electron.WebviewTag = document.createElement("webview");

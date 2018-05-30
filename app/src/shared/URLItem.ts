@@ -6,15 +6,15 @@ import { $URL } from "./Modules";
  */
 export interface URLItem {
     DoLoad: boolean; // Should this item be loaded or not?
-    URL: string;
+    URL: string; // Fully expanded URL string.
     IsFileURL: boolean;
 }
 
 /**
  * Creates a URLItem object from a given string.
  * This can result in either a URL for the web (http://) or a file (file://).
- * @param url The URL string to be parsed.
- * @returns A URLItem object.
+ * @param {string} url The URL string to be parsed.
+ * @returns {URLItem} A URLItem object.
  */
 export function getURLItem(url: string): URLItem {
     url = url.trim();
