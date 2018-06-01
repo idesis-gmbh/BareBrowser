@@ -11,7 +11,7 @@
   "win32InternalName": "idesis SingleInstanceBrowser",
   "win32RequestedExecutionLevel": "asInvoker",
   "win32ApplicationManifest": "",
-  "homepage": "http://www.idesis.de/",
+  "homepage": "https://github.com/idesis-gmbh/SingleInstanceBrowser",
   "author": {
     "name": "Michael Nitze",
     "email": "michael.nitze@idesis.de"
@@ -33,8 +33,8 @@
     "mousetrap": "1.6.1"
   },
   "devDependencies": {
-    "typescript": "2.8.3",
-    "electron": "1.8.6",
+    "typescript": "2.9.1",
+    "electron": "2.0.2",
     "tslint": "5.10.0",
     "@types/fs-extra": "5.0.2",
     "@types/node": "8.10.0",
