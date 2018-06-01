@@ -1,6 +1,6 @@
 import { Point, ipcRenderer, remote } from "electron";
 import * as $ShortCuts from "mousetrap";
-import { Settings } from "../shared/Settings";
+import { AppInfo, Settings } from "../shared/Settings";
 import { URLItem, getURLItem } from "../shared/URLItem";
 
 /**
@@ -9,6 +9,7 @@ import { URLItem, getURLItem } from "../shared/URLItem";
 export class CRendererApplication {
 
     private settings: Settings;
+    private appInfo: AppInfo;
     private addressBar: HTMLDivElement;
     private goBackButton: HTMLButtonElement;
     private goForwardButton: HTMLButtonElement;
@@ -21,9 +22,8 @@ export class CRendererApplication {
      * Creates the user interface, the web content part and handles all events.
      */
     constructor() {
-        // Unfortunately sendSync is declared as returning void so a hacky workaround is used...
-        // tslint:disable-next-line:no-any
-        this.settings = (ipcRenderer.sendSync("IPC", ["getSettings"]) as any) as Settings;
+        this.settings = ipcRenderer.sendSync("IPC", ["getSettings"]) as Settings;
+        this.appInfo = ipcRenderer.sendSync("IPC", ["getAppInfo"]) as AppInfo;
         const fragment: DocumentFragment = new DocumentFragment();
         this.webView = this.getWebView();
         this.addressBar = this.getAddressBar();

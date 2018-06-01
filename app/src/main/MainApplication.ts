@@ -9,15 +9,6 @@ import { DarwinMenu } from "./DarwinMenu";
 import { Win32Menu } from "./Win32Menu";
 
 /**
- * Holds app name and identifier.
- * Maybe extended for future attributes.
- */
-interface AppInfo {
-    Name: string;
-    Identifier: string;
-}
-
-/**
  * Current Electron TypeScript definitions lack a proper definition for window events.
  * See `onWindowClose` and `onBrowserWindowFocus`.
  */
@@ -38,7 +29,7 @@ interface AppEvent extends Event {
  */
 export class CMainApplication {
 
-    private appInfo: AppInfo;
+    private appInfo: $Settings.AppInfo;
     private userDataDirectory: string;
     private tempDir: string;
     private settingsFile: string;
@@ -120,8 +111,8 @@ export class CMainApplication {
      * Retrieve app name and identifier in a single operation; both are needed later.
      * @returns {AppInfo} An object containg the app name and identifier.
      */
-    private getAppInfo(): AppInfo {
-        const result: AppInfo = { Name: "SIB", Identifier: "de.idesis.singleinstancebrowser" };
+    private getAppInfo(): $Settings.AppInfo {
+        const result: $Settings.AppInfo = { Name: "SIB", Identifier: "de.idesis.singleinstancebrowser" };
         try {
             const pj = require("../package.json");
             if (!pj.productName) {
@@ -405,6 +396,11 @@ export class CMainApplication {
             // Return app settings
             case "getSettings":
                 event.returnValue = this.settings;
+                break;
+
+            // Return app info
+            case "getAppInfo":
+                event.returnValue = this.appInfo;
                 break;
 
             // Toggle main menu on Win32 platforms

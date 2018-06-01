@@ -2,6 +2,15 @@ import { $FSE } from "./Modules";
 import * as $Utils from "./Utils";
 
 /**
+ * Holds app name and identifier.
+ * Maybe extended for future attributes.
+ */
+export interface AppInfo {
+    Name: string;
+    Identifier: string;
+}
+
+/**
  * Interface for app settings.
  */
 export interface Settings {
