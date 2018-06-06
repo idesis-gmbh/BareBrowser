@@ -1,7 +1,14 @@
-import { Point, ipcRenderer, remote } from "electron";
+import { BrowserWindow, Point, ipcRenderer, remote, webContents } from "electron";
 import * as $ShortCuts from "mousetrap";
 import { AppInfo, Settings } from "../shared/Settings";
 import { URLItem, getURLItem } from "../shared/URLItem";
+import { BrowserHistory, BrowserHistoryItem } from "./BrowserHistory";
+import { HANDLE_URL_CONTINUE, HANDLE_URL_ERROR, HANDLE_URL_NONE, HANDLE_URL_STOP, URLHandler, getURLHandlerByClassName } from "./URLHandler";
+
+/**
+ * @see Funtion handleURLCallback in class `CRendererApplication`.
+ */
+export type HandleURLCallback = (handleURLResult: number, redirectURL?: string) => void;
 
 /**
  * The class for the renderer application part. Creates a browser window and handles anything else.
@@ -14,9 +21,19 @@ export class CRendererApplication {
     private goBackButton: HTMLButtonElement;
     private goForwardButton: HTMLButtonElement;
     private urlField: HTMLInputElement;
+    private window: BrowserWindow;
+    private webContents: webContents;
     private webView: Electron.WebviewTag;
     private webViewScrollOffset: Point = {x: 0, y: 0};
     private reloadIssued: boolean = false;
+    private URLHandlers: URLHandler[] = [];
+    private currentURLHandler: URLHandler;
+    private history: BrowserHistory;
+    private currentHistoryItem: BrowserHistoryItem;
+    private currentURL: string;
+    private blankPage: string = "_blank";
+    private blankPageContent: string = encodeURI("data:text/html,<html><head></head><body></body></html>");
+    private errorPage: string = "";
 
     /**
      * Creates the user interface, the web content part and handles all events.
@@ -32,23 +49,50 @@ export class CRendererApplication {
         fragment.appendChild(this.addressBar);
         fragment.appendChild(this.webView);
         document.body.appendChild(fragment);
-        remote.getCurrentWindow().webContents.session.setPermissionRequestHandler(this.onPermissionRequest.bind(this));
+        this.window = remote.getCurrentWindow();
+        this.webContents = this.window.webContents;
+        this.webContents.session.setPermissionRequestHandler(this.onPermissionRequest.bind(this));
         ipcRenderer.on("IPC", this.onIPC.bind(this));
         this.bindShortCuts();
+        this.loadURLHandlers();
+        this.history = new BrowserHistory(this.blankPage);
         this.queryInitialURLItem();
+    }
+
+    /**
+     * Load URL handlers configured in settings.
+     */
+    private loadURLHandlers(): void {
+        for (const urlHandlerEntry of this.settings.URLHandlers) {
+            if ((urlHandlerEntry.Source) && (urlHandlerEntry.Source !== "")) {
+                try {
+                    require(urlHandlerEntry.Source);
+                    const classInstance: URLHandler = getURLHandlerByClassName(
+                        urlHandlerEntry.ClassName,
+                        urlHandlerEntry.Config,
+                        this.settings,
+                        this.webView,
+                        this.window,
+                        this.handleURLCallback.bind(this),
+                    );
+                    this.URLHandlers.push(classInstance);
+                } catch (error) {
+                    console.error(`Error loading URL handler from: ${urlHandlerEntry.Source}\n${error}`);
+                }
+            }
+        }
     }
 
     /**
      * Get the initial URL to be loaded via an IPC call from the main process.
      */
     private queryInitialURLItem(): void {
-        // tslint:disable-next-line:no-any
-        const urlItem: URLItem = (ipcRenderer.sendSync("IPC", ["queryURLItem"]) as any) as URLItem;
+        const urlItem: URLItem = ipcRenderer.sendSync("IPC", ["queryURLItem"]) as URLItem;
         if ((urlItem && urlItem.DoLoad)) {
-            this.loadURL(urlItem.URL);
+            this.loadURL(urlItem);
         } else {
             if (this.settings.Homepage !== "") {
-                this.loadURL(this.settings.Homepage);
+                this.loadURL(getURLItem(this.settings.Homepage));
             } else {
                 this.addressBar.style.display = "";
                 this.urlField.focus();
@@ -76,8 +120,8 @@ export class CRendererApplication {
             this.addressBar.style.display === "none" ? this.addressBar.style.display = "" : this.addressBar.style.display = "none";
         });
         this.bindShortCut(this.settings.ShortCuts.ToggleInternalDevTools, () => {
-            const devToolsOpened = remote.getCurrentWindow().webContents.isDevToolsOpened();
-            devToolsOpened ? remote.getCurrentWindow().webContents.closeDevTools() : remote.getCurrentWindow().webContents.openDevTools();
+            const devToolsOpened = this.webContents.isDevToolsOpened();
+            devToolsOpened ? this.webContents.closeDevTools() : this.webContents.openDevTools();
         });
         this.bindShortCut(this.settings.ShortCuts.ToggleDevTools, () => {
             this.webView.isDevToolsOpened() ? this.webView.closeDevTools() : this.webView.openDevTools();
@@ -90,7 +134,7 @@ export class CRendererApplication {
             this.urlField.select();
         });
         this.bindShortCut(this.settings.ShortCuts.InternalReload, () => {
-            remote.getCurrentWindow().webContents.reload();
+            this.webContents.reload();
         });
         this.bindShortCut(this.settings.ShortCuts.Reload, () => {
             // Get the current scroll offset from the web view.
@@ -101,10 +145,10 @@ export class CRendererApplication {
             this.webView.reload();
         });
         this.bindShortCut(this.settings.ShortCuts.GoBack, () => {
-            this.webView.goBack();
+            this.goBack();
         });
         this.bindShortCut(this.settings.ShortCuts.GoForward, () => {
-            this.webView.goForward();
+            this.goForward();
         });
         this.bindShortCut(this.settings.ShortCuts.ExitHTMLFullscreen, () => {
             this.webView.executeJavaScript("document.webkitExitFullscreen();", true);
@@ -115,27 +159,107 @@ export class CRendererApplication {
     }
 
     /**
-     * Load a URL in the webview tag.
-     * @param url The URL string to be loaded.
+     * Let the first URL handler handle the given URL.
+     * @param {URLItem} urlItem The URL to be handled.
      */
-    private loadURL(url: string): void {
-        this.webView.setAttribute("src", $URLItem.getURLItem(url).URL);
+    private loadURL(urlItem: URLItem, updateHistory: boolean = true): void {
+        if (this.URLHandlers.length === 0) {
+            console.warn("loadURL: No URL handlers are configured!");
+        } else {
+            // Initial empty item in the browser history (always available).
+            if (urlItem.OriginalURL === this.blankPage) {
+                this.webView.setAttribute("src", this.blankPageContent);
+                this.window.setTitle(this.appInfo.Name);
+                return;
+            }
+            // Add new target or update existing target.
+            if (updateHistory) {
+                this.currentHistoryItem = this.history.addOrUpdateItem(urlItem.URL);
+            }
+            this.currentURLHandler = this.URLHandlers[0];
+            this.currentURL = urlItem.URL;
+            this.window.setTitle(urlItem.URL);
+            this.currentURLHandler.handleURL(this.currentURL, this.handleURLCallback);
+        }
+    }
+
+    /**
+     * Callback function which *must* be called by any URL handler after handling a URL.
+     * In future versions probably this can be done using Promises.
+     * @param {URLHandler} currentURLHandler The URL handler which is calling this function.
+     * @param {string} handleURLResult The result of handling the URL by the the URL handler.
+     * @param {string} originalURL The original URL given to the URL handler.
+     * @param {string} redirectURL Optional, if set, then this URL will be used for the following URL handler.
+     * @see Function loadURLHandlers.
+     */
+    private handleURLCallback: HandleURLCallback = (handleURLResult: number, redirectURL?: string): void => {
+        window.setTimeout(this.doHandleURLCallback.bind(this), 10, handleURLResult, redirectURL);
+    }
+
+    /**
+     * @see Function handleURLCallback.
+     */
+    private doHandleURLCallback: HandleURLCallback = (handleURLResult: number, redirectURL?: string): void => {
+        const nextHandler: URLHandler = this.URLHandlers[this.URLHandlers.indexOf(this.currentURLHandler)+1];
+        const logMsg: string = nextHandler ? "continuing with next handler" : "last handler in chain reached";
+        try {
+            switch (handleURLResult) {
+                case HANDLE_URL_ERROR:
+                    console.error(`handleURL: HANDLE_URL_ERROR: Calling URL handler ${this.currentURLHandler.ClassName} with ${this.currentURL} returned with an error, stopping.`);
+                    return;
+
+                case HANDLE_URL_NONE:
+                    console.log(`handleURL: HANDLE_URL_NON URL: handler ${this.currentURLHandler.ClassName} didn't handle URL ${this.currentURL}, ${logMsg}.`);
+                    break;
+
+                case HANDLE_URL_CONTINUE:
+                    console.log(`handleURL: HANDLE_URL_CONTINUE: Successfully called URL handler ${this.currentURLHandler.ClassName} with ${this.currentURL}, ${logMsg}.`);
+                    break;
+
+                case HANDLE_URL_STOP:
+                    console.log(`handleURL: HANDLE_URL_STOP: Successfully called URL handler ${this.currentURLHandler.ClassName} with ${this.currentURL}, stopping.`);
+                    return;
+
+                default:
+                    console.error(`handleURL: ${handleURLResult}: Calling URL handler ${this.currentURLHandler.ClassName} with ${this.currentURL} returned an unknown result (${handleURLResult}), stopping.`);
+                    return;
+            }
+            // Proceed with next handler (= implicitly HANDLE_URL_NONE or HANDLE_URL_CONTINUE)
+            if (redirectURL) {
+                console.log(`handleURL: ${this.currentURLHandler.ClassName} redirected from ${this.currentURL} to ${redirectURL}.`);
+            }
+            if (nextHandler) {
+                if (redirectURL) {
+                    this.currentURL = redirectURL;
+                }
+                this.currentURLHandler = nextHandler;
+                this.currentURLHandler.handleURL(this.currentURL, this.handleURLCallback);
+            }
+        } catch (error) {
+            console.error(`Error calling URL handler: ${this.currentURLHandler.ClassName} with ${this.currentURL}\n${error}`);
+        }
     }
 
     /**
      * Go back one step in the browser history.
      * @param {MouseEvent} _event A mouse event or null.
      */
-    private goBack(_event: MouseEvent): void {
-        this.webView.goBack();
+    private goBack(_event?: MouseEvent): void {
+        if (this.currentHistoryItem.Previous) {
+            this.currentHistoryItem = this.currentHistoryItem.Previous;
+            this.loadURL(getURLItem(this.currentHistoryItem.URL), false);
+        }
     }
 
     /**
      * Go forward one step in the browser history.
      * @param {MouseEvent} _event A mouse event or null.
      */
-    private goForward(_event: MouseEvent): void {
-        this.webView.goForward();
+    private goForward(_event?: MouseEvent): void {
+        if (this.currentHistoryItem.Next) {
+            this.currentHistoryItem = this.currentHistoryItem.Next;
+            this.loadURL(getURLItem(this.currentHistoryItem.URL), false);
+        }
     }
 
     /**
@@ -146,7 +270,7 @@ export class CRendererApplication {
         if ((event.type === "keypress") && ((event as KeyboardEvent).key !== "Enter")) {
             return;
         }
-        this.loadURL(this.urlField.value);
+        this.loadURL(getURLItem(this.urlField.value));
     }
 
     /**
@@ -162,7 +286,7 @@ export class CRendererApplication {
         switch (args[0][0]) {
             case "loadURLItem":
                 if (args[0].length === 2) {
-                    this.loadURL((args[0][1] as $URLItem.URLItem).URL);
+                    this.loadURL((args[0][1] as URLItem));
                 }
                 break;
 
@@ -183,6 +307,21 @@ export class CRendererApplication {
     }
 
     /**
+     * Called when loading the page failed.
+     * @param {Electron.Event} _event An Electron event.
+     */
+    private onDidFailLoad(_event: Electron.DidFailLoadEvent): void {
+        this.errorPage = encodeURI(
+            "data:text/html,<html><head></head><body>"
+            + "<p>Error loading page: <em>" + _event.validatedURL + "</em></p>"
+            + "<p>Code: <code>" + _event.errorCode + "</code></p>"
+            + "<p>Description: <code>" + _event.errorDescription + "</code></p>"
+            + "</body></html>",
+        );
+        this.webView.setAttribute("src", this.errorPage);
+    }
+
+    /**
      * Called when the DOM in the web view is ready. Tries to scroll to the last
      * offset but only if the event occurs during a page *reload*.
      * @param {Electron.Event} _event An Electron event.
@@ -199,7 +338,7 @@ export class CRendererApplication {
      * @param {Electron.PageTitleUpdatedEvent} event An Electron PageTitleUpdatedEvent.
      */
     private onPageTitleUpdated(event: Electron.PageTitleUpdatedEvent): void {
-        remote.getCurrentWindow().setTitle(event.title);
+        this.window.setTitle(event.title);
     }
 
     /**
@@ -233,10 +372,28 @@ export class CRendererApplication {
      * Used to update parts of the user interface.
      * @param {Electron.DidNavigateEvent} _event An Electron DidNavigateEvent.
      */
-    private onDidNavigate(_event: Electron.DidNavigateEvent): void {
-        this.urlField.value = this.webView.getURL();
-        this.goBackButton.disabled = !this.webView.canGoBack();
-        this.goForwardButton.disabled = !this.webView.canGoForward();
+    private onDidNavigate(event: Electron.DidNavigateEvent): void {
+        if (event.url === this.blankPageContent) {
+            this.urlField.value = "";
+        } else if (event.url === this.errorPage) {
+            this.urlField.value = this.currentURL;
+        } else {
+            this.urlField.value = event.url;
+        }
+        this.goBackButton.disabled = (this.history.Size < 2 || this.currentHistoryItem === null || this.currentHistoryItem.Previous === undefined);
+        this.goForwardButton.disabled = (this.history.Size < 2 || this.currentHistoryItem === null || this.currentHistoryItem.Next === undefined);
+    }
+
+    /**
+     * Called when the navigaion to a URL has finished.
+     * Used to update parts of the user interface.
+     * @param {Electron.DidNavigateEvent} _event An Electron DidNavigateEvent.
+     */
+    private onDidNavigateInPage(event: Electron.DidNavigateInPageEvent): void {
+        this.currentHistoryItem = this.history.addOrUpdateItem(getURLItem(event.url).URL);
+        this.urlField.value = event.url;
+        this.goBackButton.disabled = (this.history.Size < 2 || this.currentHistoryItem === null || this.currentHistoryItem.Previous === undefined);
+        this.goForwardButton.disabled = (this.history.Size < 2 || this.currentHistoryItem === null || this.currentHistoryItem.Next === undefined);
     }
 
     /**
@@ -353,7 +510,9 @@ export class CRendererApplication {
         webView.setAttribute("useragent", this.settings.UserAgent);
         webView.setAttribute("preload", "./lib/preload.js");
         webView.addEventListener("did-navigate", this.onDidNavigate.bind(this), false);
+        webView.addEventListener("did-navigate-in-page", this.onDidNavigateInPage.bind(this), false);
         webView.addEventListener("did-finish-load", this.onDidFinishLoad.bind(this), false);
+        webView.addEventListener("did-fail-load", this.onDidFailLoad.bind(this), false);
         webView.addEventListener("dom-ready", this.onDOMReady.bind(this), false);
         webView.addEventListener("page-title-updated", this.onPageTitleUpdated.bind(this), false);
         webView.addEventListener("console-message", this.onConsoleMessage.bind(this), false);

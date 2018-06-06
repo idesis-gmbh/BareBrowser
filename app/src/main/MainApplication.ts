@@ -248,6 +248,7 @@ export class CMainApplication {
         app.on("activate", this.onActivate.bind(this));
         app.on("open-url", this.onOpenURL.bind(this));
         app.on("open-file", this.onOpenFile.bind(this));
+        app.on("web-contents-created", this.onWebContentsCreated.bind(this));
         app.on("browser-window-focus", this.onBrowserWindowFocus.bind(this));
         app.on("window-all-closed", this.onWindowAllClosed.bind(this));
         ipcMain.on("IPC", this.onIPC.bind(this));
@@ -317,21 +318,21 @@ export class CMainApplication {
      * @param {string} fileOrURL The URL (or file) to be loaded.
      * @param {boolean} isFile Indicates whether the given URL is a local file or not.
      */
-    private openFileOrURL(fileOrURL: string, isFile: boolean): void {
+    private openFileOrURL(fileOrURL: string, isFile: boolean, browserWindow?: BrowserWindow): void {
         this.currentUrlItem = getURLItem(fileOrURL);
         // On Darwin yet determined by onOpen* so set it explicitly here
         this.currentUrlItem.IsFileURL = isFile;
-        const currentWindow: Electron.BrowserWindow | null = this.getCurrentWindow();
-        if (currentWindow) {
+        const targetWindow: Electron.BrowserWindow | null = browserWindow ? browserWindow : this.getCurrentWindow();
+        if (targetWindow) {
             // Quit command
             if (this.currentUrlItem.URL === $Consts.CMD_QUIT) {
                 this.asnycQuit();
                 return;
             }
             if (this.settings.FocusOnNewURL) {
-                currentWindow.focus();
+                targetWindow.focus();
             }
-            currentWindow.webContents.send("IPC", ["loadURLItem", this.currentUrlItem]);
+            targetWindow.webContents.send("IPC", ["loadURLItem", this.currentUrlItem]);
         }
     }
 
@@ -378,6 +379,20 @@ export class CMainApplication {
     private onOpenFile(event: Electron.Event, fileName: string): void {
         event.preventDefault();
         this.openFileOrURL(fileName, true);
+    }
+
+    /**
+     * The event `will-navigate` cannot be prevented in the renderer process so it has to
+     * be done here in the main process.
+     * @param {Electron.Event} _event An Electron event.
+     * @param {Electron.WebContents} webContents The web contents which will be created.
+     * @see https://github.com/electron/electron/issues/1378#issuecomment-265207386
+     */
+    private onWebContentsCreated(_event: Electron.Event, webContents: Electron.WebContents): void {
+        webContents.on("will-navigate", (willNavigateEvent: Electron.Event, url: string) => {
+            willNavigateEvent.preventDefault();
+            this.openFileOrURL(url, url.startsWith("file://"), BrowserWindow.fromWebContents(willNavigateEvent.sender));
+        });
     }
 
     /**

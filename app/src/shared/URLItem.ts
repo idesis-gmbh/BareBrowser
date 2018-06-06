@@ -6,6 +6,7 @@ import { $URL } from "./Modules";
  */
 export interface URLItem {
     DoLoad: boolean; // Should this item be loaded or not?
+    OriginalURL: string; // The original given URL.
     URL: string; // Fully expanded URL string.
     IsFileURL: boolean;
 }
@@ -19,13 +20,13 @@ export interface URLItem {
 export function getURLItem(url: string): URLItem {
     url = url.trim();
     if (url === "") {
-        return { DoLoad: false, URL: "", IsFileURL: false };
+        return { DoLoad: false, OriginalURL: url, URL: "", IsFileURL: false };
     }
     if ((url === $Consts.CMD_QUIT) || ((url === $Consts.CMD_URL_QUIT))) {
-        return { DoLoad: false, URL: $Consts.CMD_QUIT, IsFileURL: false };
+        return { DoLoad: false, OriginalURL: url, URL: $Consts.CMD_QUIT, IsFileURL: false };
     }
     if (url.startsWith("/")) {
-        return { DoLoad: true, URL: "file://" + url, IsFileURL: true };
+        return { DoLoad: true, OriginalURL: url, URL: "file://" + url, IsFileURL: true };
     }
     const urlLower: string = url.toLowerCase();
     if (urlLower.startsWith("https://") ||
@@ -34,13 +35,12 @@ export function getURLItem(url: string): URLItem {
         urlLower.startsWith("file://")) {
         try {
             const parsedUrl: $URL.URL = new $URL.URL(url);
-            url = parsedUrl.toString();
-            return { DoLoad: true, URL: url, IsFileURL: url.startsWith("file://") };
+            return { DoLoad: true, OriginalURL: url, URL: parsedUrl.toString(), IsFileURL: url.startsWith("file://") };
         } catch (error) {
             console.error(`Invalid URL: ${error}`);
-            return { DoLoad: false, URL: "", IsFileURL: false };
+            return { DoLoad: false, OriginalURL: url, URL: "", IsFileURL: false };
         }
     }
     // Simplistic fallback
-    return { DoLoad: true, URL: "http://" + url, IsFileURL: false };
+    return { DoLoad: true, OriginalURL: url, URL: "http://" + url, IsFileURL: false };
 }

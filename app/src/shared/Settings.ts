@@ -33,6 +33,11 @@ export interface Settings {
         ExitHTMLFullscreen: string[];
         ToggleWin32Menu: string[];
     };
+    URLHandlers: {
+        ClassName: string;
+        Source: string;
+        Config?: {};
+    }[];
     UserAgent: string;
     Permissions: string[];
     AllowPlugins: boolean;
@@ -72,6 +77,7 @@ export function getDefaultSettings(): Settings {
             ExitHTMLFullscreen: ["esc"],
             ToggleWin32Menu: ["ctrl+h"],
         },
+        URLHandlers: [],
         UserAgent: typeof navigator === "undefined" ? "" : navigator.userAgent,
         Permissions: ["fullscreen"],
         AllowPlugins: false,
@@ -128,6 +134,7 @@ export function getSettings(configFile: string): Settings {
             ExitHTMLFullscreen: $Utils.normalize(settings.ShortCuts.ExitHTMLFullscreen, ["esc"]),
             ToggleWin32Menu: $Utils.normalize(settings.ShortCuts.ToggleWin32Menu, ["ctrl+h"]),
         },
+        URLHandlers: settings.URLHandlers,
         UserAgent: userAgent,
         Permissions: $Utils.normalize(settings.Permissions, ["fullscreen"]),
         AllowPlugins: $Utils.normalize(settings.AllowPlugins, false),
