@@ -311,14 +311,18 @@ export class CRendererApplication {
      * @param {Electron.Event} _event An Electron event.
      */
     private onDidFailLoad(_event: Electron.DidFailLoadEvent): void {
-        this.errorPage = encodeURI(
-            "data:text/html,<html><head></head><body>"
-            + "<p>Error loading page: <em>" + _event.validatedURL + "</em></p>"
-            + "<p>Code: <code>" + _event.errorCode + "</code></p>"
-            + "<p>Description: <code>" + _event.errorDescription + "</code></p>"
-            + "</body></html>",
-        );
-        this.webView.setAttribute("src", this.errorPage);
+        if (_event.isMainFrame) {
+            this.errorPage = encodeURI(
+                "data:text/html,<html><head></head><body>"
+                + "<p>Error loading page: <em>" + _event.validatedURL + "</em></p>"
+                + "<p>Code: <code>" + _event.errorCode + "</code></p>"
+                + "<p>Description: <code>" + _event.errorDescription + "</code></p>"
+                + "</body></html>",
+            );
+            this.webView.setAttribute("src", this.errorPage);
+        } else {
+            console.error("Error loading page: " + _event.validatedURL + "\nCode: " + _event.errorCode + "\nDescription: " + _event.errorDescription);
+        }
     }
 
     /**
