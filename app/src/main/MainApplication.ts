@@ -33,6 +33,7 @@ export class CMainApplication {
     private userDataDirectory: string;
     private tempDir: string;
     private settingsFile: string;
+    private settingsTemplateFile: string;
     private settings: $Settings.Settings;
     private currentUrlItem: URLItem;
     private appMenu: ApplicationMenu | null = null;
@@ -45,7 +46,7 @@ export class CMainApplication {
         this.appInfo = this.getAppInfo();
         this.setFileNames(this.appInfo.Identifier);
         this.setAppPaths(); // As early as possible!
-        this.settings = this.getSettings(this.settingsFile);
+        this.settings = this.getSettings();
         if (this.shouldQuitForSingleInstance()) {
             app.quit();
             return;
@@ -142,6 +143,7 @@ export class CMainApplication {
         this.userDataDirectory = $Path.join(app.getPath("userData"), "..", appIdentifier);
         this.tempDir = $Path.join(this.userDataDirectory, "temp");
         this.settingsFile = $Path.join(this.userDataDirectory, "settings.json");
+        this.settingsTemplateFile = $Path.join(__dirname, "..", "res", "settings.json");
     }
 
     /**
@@ -184,18 +186,31 @@ export class CMainApplication {
 
     /**
      * Load app settings.
-     * @param {string} settingsFile The full path of the settings file.
      * @returns {Settings} The loaded app settings.
      */
-    private getSettings(settingsFile: string): $Settings.Settings {
-        // Get settings from userData directory. At the very first start this won't exist,
-        // so get initial default settings from ./res and write it to the userData directory.
-        let result: $Settings.Settings;
-        if ($FSE.existsSync(settingsFile)) {
-            result = $Settings.getSettings(settingsFile);
-        } else {
-            result = $Settings.getSettings($Path.join(__dirname, "..", "res", "settings.json"));
-            $FSE.writeJSONSync(settingsFile, result, {spaces: 4} );
+    private getSettings(): $Settings.Settings {
+        let result: $Settings.Settings = $Settings.getDefaultSettings();
+        let hasUserSettings: boolean = false;
+        try {
+            // First, update existing user settings from the template or create
+            // them, if they don't exist. Only possible, if a template exists.
+            if ($FSE.existsSync(this.settingsTemplateFile)) {
+                // There are no user settings, create them from the template
+                if (!$FSE.existsSync(this.settingsFile)) {
+                    $FSE.copyFileSync(this.settingsTemplateFile, this.settingsFile);
+                // If the template is newer than the user settings overwrite them with the template
+                } else if ($FSE.statSync(this.settingsTemplateFile).mtime > $FSE.statSync(this.settingsFile).mtime) {
+                    $FSE.copyFileSync(this.settingsTemplateFile, this.settingsFile);
+                }
+                hasUserSettings = true;
+            }
+            if (hasUserSettings || $FSE.existsSync(this.settingsFile)) {
+                result = $Settings.getSettings(this.settingsFile);
+            } else {
+                $FSE.writeJSONSync(this.settingsFile, result, {spaces: 4} );
+            }
+        } catch (error) {
+            console.error("Could't update and/or read user settings.", error);
         }
         return result;
     }
