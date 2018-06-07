@@ -200,6 +200,14 @@ export class CMainApplication {
                     $FSE.copyFileSync(this.settingsTemplateFile, this.settingsFile);
                 // If the template is newer than the user settings overwrite them with the template
                 } else if ($FSE.statSync(this.settingsTemplateFile).mtime > $FSE.statSync(this.settingsFile).mtime) {
+                    // Make backup
+                    const backupFilename: string = $Path.join(
+                        this.userDataDirectory,
+                        "settings-"
+                        + new Date().toISOString().replace("T", "_").replace(/:/g, "-").replace(/.[0-9]{3}Z/g, "")
+                        +  ".json");
+                    $FSE.copyFileSync(this.settingsFile, backupFilename);
+                    // New settings from template
                     $FSE.copyFileSync(this.settingsTemplateFile, this.settingsFile);
                 }
                 hasUserSettings = true;
@@ -283,9 +291,13 @@ export class CMainApplication {
      */
     private clearTraces(): void {
         const userDataFiles: DirectoryListing = getDirectoryListing(this.userDataDirectory, true);
-        // Exclude settings.json file and top directory
+        // Exclude top directory
         userDataFiles.Directories.splice(userDataFiles.Directories.indexOf(this.userDataDirectory), 1);
-        userDataFiles.Files.splice(userDataFiles.Files.indexOf(this.settingsFile), 1);
+        // Exclude settings.json and backups of it
+        const regExp = new RegExp("(/settings-[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}\\.json)$");
+        userDataFiles.Files = userDataFiles.Files.filter((fileName: string): boolean => {
+            return !(fileName === this.settingsFile || regExp.test(fileName));
+        });
         const leftOvers: DirectoryListing = { Directories: [], Files: [] };
         // First remove files...
         for (const entry of userDataFiles.Files) {
