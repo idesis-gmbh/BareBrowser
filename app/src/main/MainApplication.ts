@@ -289,7 +289,7 @@ export class CMainApplication {
             }
         }
         if ((leftOvers.Directories.length > 0) || (leftOvers.Files.length > 0)) {
-            console.warn(`Clearing traces has the following leftovers: ${leftOvers}`);
+            console.warn(`Clearing traces has the following leftovers: ${JSON.stringify(leftOvers, null, 2)}`);
         }
     }
 
