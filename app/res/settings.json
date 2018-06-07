@@ -46,8 +46,8 @@
             "Note2": "For production simply delete this handler element.",
             "ClassName": "SampleURLHandler",
             "Source_": "./lib/URLHandler/SampleURLHandler/SampleURLHandler.js",
-            "Config": { 
-                "URLRegExp": "\\bhttps://github.com/idesis-gmbh/SingleInstanceBrowser/blob/master/app/_root/README.md\\b" 
+            "Config": {
+                "URLRegExp": "\\bhttps://github.com/idesis-gmbh/SingleInstanceBrowser/blob/master/app/_root/README.md\\b"
             }
         },
         {
