@@ -2,7 +2,7 @@
  * Mandatory import.
  * See file URLHandler.js for an explanation of the imported constants.
  */
-require("../URLHandler.js");
+require("./URLHandler/URLHandler.js");
 
 /**
  * You must always choose a class name which won't interfere with 

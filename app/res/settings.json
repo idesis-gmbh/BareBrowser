@@ -45,21 +45,21 @@
             "Note1": "To activate this sample URL handler rename `Source_` to 'Source'.",
             "Note2": "For production simply delete this handler element.",
             "ClassName": "SampleURLHandler",
-            "Source_": "./lib/SampleURLHandler/SampleURLHandler.js",
+            "Source_": "./lib/URLHandler/SampleURLHandler/SampleURLHandler.js",
             "Config": { 
                 "URLRegExp": "\\bhttps://github.com/idesis-gmbh/SingleInstanceBrowser/blob/master/app/_root/README.md\\b" 
             }
         },
         {
             "ClassName": "DefaultURLHandler",
-            "Source": "./lib/DefaultURLHandler/DefaultURLHandler.js"
+            "Source": "./lib/DefaultURLHandler.js"
         }
     ],
     "UserAgent": "",
     "Permissions": [
         "fullscreen"
     ],
-    "AllowPlugins": false,
+    "AllowPlugins": true,
     "AllowPopups": false,
     "AllowNewWindows": true,
     "ClearTraces": false,

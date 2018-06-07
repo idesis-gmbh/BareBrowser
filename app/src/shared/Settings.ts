@@ -77,7 +77,12 @@ export function getDefaultSettings(): Settings {
             ExitHTMLFullscreen: ["esc"],
             ToggleWin32Menu: ["ctrl+h"],
         },
-        URLHandlers: [],
+        URLHandlers: [
+            {
+                ClassName: "DefaultURLHandler",
+                Source: "./lib/DefaultURLHandler.js",
+            },
+        ],
         UserAgent: typeof navigator === "undefined" ? "" : navigator.userAgent,
         Permissions: ["fullscreen"],
         AllowPlugins: false,

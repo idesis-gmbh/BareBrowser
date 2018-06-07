@@ -42,6 +42,6 @@
   },
   "config": {
     "arch": "all",
-    "pkgParams": "--quiet --asar.unpackDir=\"{node_modules,res}\""
+    "pkgParams": "--quiet --asar.unpackDir=\"{res,lib/URLHandler}\""
   }
 }
