@@ -22,7 +22,7 @@ div {
 
 #navigationButtonsContainer {
     display: table-cell;
-    width: 6em;
+    width: 5.4em;
 }
 
 #goBack, #goForward {
@@ -40,6 +40,18 @@ div {
 #urlField {
     width: 100%;
     font-size: 9pt;
+}
+
+#spinner {
+    position: absolute;
+    right: 0.5em;
+}
+
+#spinner-img {
+    position: relative;
+    width: 1em;
+    top: 0.23em;
+    right: 0.1em;
 }
 
 #webView {

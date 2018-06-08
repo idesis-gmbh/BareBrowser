@@ -21,6 +21,7 @@ export class CRendererApplication {
     private goBackButton: HTMLButtonElement;
     private goForwardButton: HTMLButtonElement;
     private urlField: HTMLInputElement;
+    private spinner: HTMLDivElement;
     private window: BrowserWindow;
     private webContents: webContents;
     private webView: Electron.WebviewTag;
@@ -46,6 +47,8 @@ export class CRendererApplication {
         this.addressBar = this.getAddressBar();
         this.addressBar.appendChild(this.getNavigationButtons());
         this.addressBar.appendChild(this.getURLField());
+        this.spinner = this.getSpinner();
+        this.addressBar.appendChild(this.spinner);
         fragment.appendChild(this.addressBar);
         fragment.appendChild(this.webView);
         document.body.appendChild(fragment);
@@ -178,6 +181,7 @@ export class CRendererApplication {
             this.currentURLHandler = this.URLHandlers[0];
             this.currentURL = urlItem.URL;
             this.window.setTitle(urlItem.URL);
+            this.spinner.style.visibility = "";
             this.currentURLHandler.handleURL(this.currentURL, this.handleURLCallback);
         }
     }
@@ -238,6 +242,10 @@ export class CRendererApplication {
             }
         } catch (error) {
             console.error(`Error calling URL handler: ${this.currentURLHandler.ClassName} with ${this.currentURL}\n${error}`);
+        } finally {
+            if ((handleURLResult !== HANDLE_URL_NONE) && (handleURLResult !== HANDLE_URL_CONTINUE)) {
+                this.spinner.style.visibility = "hidden";
+            }
         }
     }
 
@@ -302,6 +310,7 @@ export class CRendererApplication {
      * @param {Electron.Event} _event An Electron event.
      */
     private onDidFinishLoad(_event: Electron.Event): void {
+        this.spinner.style.visibility = "hidden";
         if (!this.webView.getWebContents().isFocused()) {
             this.webView.focus();
         }
@@ -478,6 +487,21 @@ export class CRendererApplication {
         navigationButtonsContainer.appendChild(goButton);
 
         return navigationButtonsContainer;
+    }
+
+    /**
+     * Build the navigation buttons.
+     * @returns {HTMLDivElement} The DOM element(s) for the navigation buttons.
+     */
+    private getSpinner(): HTMLDivElement {
+        const spinnerContainer: HTMLDivElement = document.createElement("div");
+        spinnerContainer.setAttribute("id", "spinner");
+        const spinnerImg: HTMLImageElement = document.createElement("img");
+        spinnerContainer.style.visibility = "hidden";
+        spinnerImg.setAttribute("id", "spinner-img");
+        spinnerImg.setAttribute("src", "./res/spinner.png");
+        spinnerContainer.appendChild(spinnerImg);
+        return spinnerContainer;
     }
 
     /**
