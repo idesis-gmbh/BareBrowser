@@ -51,7 +51,6 @@ export class CRendererApplication {
         document.body.appendChild(fragment);
         this.window = remote.getCurrentWindow();
         this.webContents = this.window.webContents;
-        this.webContents.session.setPermissionRequestHandler(this.onPermissionRequest.bind(this));
         ipcRenderer.on("IPC", this.onIPC.bind(this));
         this.bindShortCuts();
         this.loadURLHandlers();
@@ -234,6 +233,8 @@ export class CRendererApplication {
                 }
                 this.currentURLHandler = nextHandler;
                 this.currentURLHandler.handleURL(this.currentURL, this.handleURLCallback);
+            } else {
+                this.webContents.session.setPermissionRequestHandler(this.onPermissionRequest.bind(this));
             }
         } catch (error) {
             console.error(`Error calling URL handler: ${this.currentURLHandler.ClassName} with ${this.currentURL}\n${error}`);
