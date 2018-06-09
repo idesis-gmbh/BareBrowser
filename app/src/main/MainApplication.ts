@@ -295,7 +295,7 @@ export class CMainApplication {
         // Exclude top directory
         userDataFiles.Directories.splice(userDataFiles.Directories.indexOf(this.userDataDirectory), 1);
         // Exclude settings.json and backups of it
-        const regExp = new RegExp("(/settings-[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}\\.json)$");
+        const regExp = new RegExp("([\\/|\\\\]{1}settings-[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}\\.json)$");
         userDataFiles.Files = userDataFiles.Files.filter((fileName: string): boolean => {
             return !(fileName === this.settingsFile || regExp.test(fileName));
         });
