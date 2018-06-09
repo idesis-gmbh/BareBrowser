@@ -500,7 +500,7 @@ export class CRendererApplication {
         const spinnerImg: HTMLImageElement = document.createElement("img");
         spinnerContainer.style.visibility = "hidden";
         spinnerImg.setAttribute("id", "spinner-img");
-        spinnerImg.setAttribute("src", "./res/spinner.png");
+        spinnerImg.setAttribute("src", "./style/spinner.png");
         spinnerContainer.appendChild(spinnerImg);
         return spinnerContainer;
     }
