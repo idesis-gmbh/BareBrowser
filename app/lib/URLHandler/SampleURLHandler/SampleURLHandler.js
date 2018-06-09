@@ -61,12 +61,12 @@ class SampleURLHandler {
             // Load URL only, if it matches the given regular expression
             if (regExp.test(this.URL)) {
                 console.log(className + ": will open URL: " + this.URL);
+                // Navigation should always be done by setting the `src` 
+                // attribute, otherwise internal history handling won't work.
                 this.WebView.setAttribute("src", this.URL);
             } else {
                 // Block URL and display an info page instead.
                 console.log(className + ": blocking URL: " + this.URL);
-                // Navigation should always be done by setting the `src` 
-                // attribute, otherwise internal history handling won't work.
                 this.WebView.setAttribute("src", encodeURI(
                     "data:text/html,<html><head></head><body>"
                     + "<h1>" + className + "</h1>"
