@@ -292,7 +292,9 @@ missing or has the wrong type.
 
 - With `AllowNewWindows` set to `true` the current window can open new windows when
   links in the current page want to be opened in new windows. Setting this to `false` 
-  can significantly degrade the browsing experience.
+  can significantly degrade the browsing experience.\
+  ***Note:*** To open a link in a new window you can click on a link while holding
+  down the `Shift` or `Cmd` key on the Mac or the `Shift` or `Ctrl` key on Windows.
 
 - If `ClearTraces` is set to `true` then any temporary data like caches, local storage, 
   cookies etc. will be deleted when SingleInstanceBrowser is closed. Deleting means
