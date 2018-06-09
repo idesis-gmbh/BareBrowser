@@ -8,7 +8,7 @@ require("../URLHandler.js");
  * You must always choose a class name which won't interfere with 
  * other builtin global objects. See below (registering the class).
  */
-const className = "SampleURLHandler"
+const className = "SampleURLHandler";
 
 /**
  * This is a sample URL Handler which will only let pass through URLs that match the regular expression
@@ -90,7 +90,7 @@ class SampleURLHandler {
     onDOMReady(event) {
         // Only do something if we are active.
         if (!this.Active) {
-            return
+            return;
         }
         this.Active = false;
         if (this.showAlertOnce) {

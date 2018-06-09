@@ -8,7 +8,7 @@ require("./URLHandler/URLHandler.js");
  * You must always choose a class name which won't interfere with 
  * other builtin global objects. See below (registering the class).
  */
-const className = "DefaultURLHandler"
+const className = "DefaultURLHandler";
 
 /**
  * This is the default URL handler which will open *any* URL. If this handler isn't 
@@ -80,11 +80,12 @@ class DefaultURLHandler {
     onDOMReady(event) {
         // The event should do nothing if this handler isn't handling a URL (this.Active).
         if (!this.Active) {
-            return
+            return;
         }
         this.Active = false;
         try {
             console.log(className + ": opened URL: " + this.URL);
+            // Check if the page has been redirected
             let newURL = this.WebView.getAttribute("src");
             if (newURL !== this.URL) {
                 console.info(className + ": " + this.URL + " was redirected to " + newURL);
