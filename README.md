@@ -7,19 +7,25 @@ instead of opening every URL in a normal browser and thus opening a new tab/wind
 every call the customer wanted to have just a simple window which does nothing more than 
 open a new URL (given via command line) in the same window.
 
+Starting with version 2.0.0 any URL is handled by a chain of URL handlers. Every handler
+is a small piece of JavaScript and can easily be developed by users. This makes the browser 
+more customizable and to some extent scriptable.
+
 SingleInstanceBrowser was developed in pure 
 [TypeScript](http://www.typescriptlang.org)
 with minimal dependencies using 
 [electron-typescript-template](https://github.com/idesis-gmbh/electron-typescript-template) 
 and runs on the [Electron](https://electron.atom.io) platform.
 
-***Important notice:*** No special attempts have been made to make this browser secure 
+***Important note:*** No special attempts have been made to make this browser secure 
 for web browsing. Loaded pages can open new windows by default; all other options are 
 set to their default values. See also 
 [Electron BrowserWindow](https://electron.atom.io/docs/api/browser-window/)
 and
 [Electron &lt;webview&gt; Tag](https://electron.atom.io/docs/api/webview-tag/).
-Use at your own risk!
+SingleInstanceBrowser is by no means a complete replacement for regular browsers, it's meant
+to be a tool for specific tasks in defined environments. For normal surfing the web it's
+probably a better idea to use a regular browser. Use at your own risk!
 
 
 ## Documentation
