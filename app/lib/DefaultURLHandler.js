@@ -104,4 +104,6 @@ class DefaultURLHandler {
 }
 
 // Register this class to enable dynamic instance creation.
-global[className] = DefaultURLHandler;
+if (!global[className]) {
+    global[className] = DefaultURLHandler;
+}

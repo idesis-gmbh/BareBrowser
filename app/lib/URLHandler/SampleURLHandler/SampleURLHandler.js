@@ -114,4 +114,6 @@ class SampleURLHandler {
 }
 
 // Register this class to enable dynamic instance creation.
-global[className] = SampleURLHandler;
+if (!global[className]) {
+    global[className] = SampleURLHandler;
+}
