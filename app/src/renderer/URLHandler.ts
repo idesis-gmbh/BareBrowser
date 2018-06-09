@@ -30,8 +30,6 @@ export const HANDLE_URL_STOP: number = 3;
  * Interface of a URL handler
  */
 export declare class URLHandler {
-    // Class name of the URL handler
-    public ClassName: string;
     /**
      * URL handler constructor.
      * @param {Object} config A configuration for this URL handler. Passed in

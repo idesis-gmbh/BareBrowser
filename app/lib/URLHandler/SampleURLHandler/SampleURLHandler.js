@@ -30,7 +30,6 @@ class SampleURLHandler {
      * @see Exported type HandleURLCallback in RendererApplication.ts.
      */
     constructor(config, settings, webView, browserWindow, handleURLCallback) {
-        this.ClassName = className;
         this.Config = config;
         this.Settings = settings;
         this.WebView = webView;

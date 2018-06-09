@@ -204,32 +204,33 @@ export class CRendererApplication {
      */
     private doHandleURLCallback: HandleURLCallback = (handleURLResult: number, redirectURL?: string): void => {
         const nextHandler: URLHandler = this.URLHandlers[this.URLHandlers.indexOf(this.currentURLHandler)+1];
+        const currentHandlerName: string = this.currentURLHandler.constructor.name;
         const logMsg: string = nextHandler ? "continuing with next handler" : "last handler in chain reached";
         try {
             switch (handleURLResult) {
                 case HANDLE_URL_ERROR:
-                    console.error(`handleURL: HANDLE_URL_ERROR: Calling URL handler ${this.currentURLHandler.ClassName} with ${this.currentURL} returned with an error, stopping.`);
+                    console.error(`handleURL: HANDLE_URL_ERROR: Calling URL handler ${currentHandlerName} with ${this.currentURL} returned with an error, stopping.`);
                     return;
 
                 case HANDLE_URL_NONE:
-                    console.log(`handleURL: HANDLE_URL_NON URL: handler ${this.currentURLHandler.ClassName} didn't handle URL ${this.currentURL}, ${logMsg}.`);
+                    console.log(`handleURL: HANDLE_URL_NON URL: handler ${currentHandlerName} didn't handle URL ${this.currentURL}, ${logMsg}.`);
                     break;
 
                 case HANDLE_URL_CONTINUE:
-                    console.log(`handleURL: HANDLE_URL_CONTINUE: Successfully called URL handler ${this.currentURLHandler.ClassName} with ${this.currentURL}, ${logMsg}.`);
+                    console.log(`handleURL: HANDLE_URL_CONTINUE: Successfully called URL handler ${currentHandlerName} with ${this.currentURL}, ${logMsg}.`);
                     break;
 
                 case HANDLE_URL_STOP:
-                    console.log(`handleURL: HANDLE_URL_STOP: Successfully called URL handler ${this.currentURLHandler.ClassName} with ${this.currentURL}, stopping.`);
+                    console.log(`handleURL: HANDLE_URL_STOP: Successfully called URL handler ${currentHandlerName} with ${this.currentURL}, stopping.`);
                     return;
 
                 default:
-                    console.error(`handleURL: ${handleURLResult}: Calling URL handler ${this.currentURLHandler.ClassName} with ${this.currentURL} returned an unknown result (${handleURLResult}), stopping.`);
+                    console.error(`handleURL: ${handleURLResult}: Calling URL handler ${currentHandlerName} with ${this.currentURL} returned an unknown result (${handleURLResult}), stopping.`);
                     return;
             }
             // Proceed with next handler (= implicitly HANDLE_URL_NONE or HANDLE_URL_CONTINUE)
             if (redirectURL) {
-                console.log(`handleURL: ${this.currentURLHandler.ClassName} redirected from ${this.currentURL} to ${redirectURL}.`);
+                console.log(`handleURL: ${currentHandlerName} redirected from ${this.currentURL} to ${redirectURL}.`);
             }
             if (nextHandler) {
                 if (redirectURL) {
@@ -241,7 +242,7 @@ export class CRendererApplication {
                 this.webContents.session.setPermissionRequestHandler(this.onPermissionRequest.bind(this));
             }
         } catch (error) {
-            console.error(`Error calling URL handler: ${this.currentURLHandler.ClassName} with ${this.currentURL}\n${error}`);
+            console.error(`Error calling URL handler: ${currentHandlerName} with ${this.currentURL}\n${error}`);
         } finally {
             if ((handleURLResult !== HANDLE_URL_NONE) && (handleURLResult !== HANDLE_URL_CONTINUE)) {
                 this.spinner.style.visibility = "hidden";
