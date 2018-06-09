@@ -143,7 +143,8 @@ export class CMainApplication {
         this.userDataDirectory = $Path.join(app.getPath("userData"), "..", appIdentifier);
         this.tempDir = $Path.join(this.userDataDirectory, "temp");
         this.settingsFile = $Path.join(this.userDataDirectory, "settings.json");
-        this.settingsTemplateFile = $Path.join(__dirname, "..", "res", "settings.json");
+        // Here we need the physical file, not just the fake link inside the ASAR file!
+        this.settingsTemplateFile = $Path.join(__dirname, "..", "..", "app.asar.unpacked", "res", "settings.json");
     }
 
     /**
