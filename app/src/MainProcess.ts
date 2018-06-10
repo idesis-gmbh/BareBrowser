@@ -1,5 +1,5 @@
-import { CMainApplication } from "./main/MainApplication";
 import { dialog } from "electron";
+import { CMainApplication } from "./main/MainApplication";
 
 /**
  * Something similar can be found in the Electron sample app, but according to
