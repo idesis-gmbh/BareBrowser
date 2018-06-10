@@ -51,10 +51,10 @@
     "compile": "npm-run-all -s c:all c:main:pack c:renderer:pack",
     "//##### Compress main": "#####",
     "prez:main": "echo ///// Compressing main...",
-    "z:main": "babili ./out/bin/MainProcess.js -d .",
+    "z:main": "minify ./out/bin/MainProcess.js -d ./out/bin/",
     "//##### Compress renderer": "#####",
     "prez:renderer": "echo ///// Compressing renderer...",
-    "z:renderer": "babili ./out/bin/RendererProcess.js -d .",
+    "z:renderer": "minify ./out/bin/RendererProcess.js -d ./out/bin/",
     "//##### Compress main and renderer": "#####",
     "precompress": "echo ///// Compressing main and renderer...",
     "compress": "npm-run-all -s z:main z:renderer",
@@ -113,9 +113,9 @@
     "electron-packager": "12.1.0",
     "fs-extra": "6.0.1",
     "onchange": "4.0.0",
-    "rollup": "0.59.4",
-    "babili": "0.1.4",
-    "shx": "0.2.2",
+    "rollup": "0.60.1",
+    "babel-minify": "0.4.3",
+    "shx": "0.3.0",
     "png2icons": "1.0.1"
   }
 }
