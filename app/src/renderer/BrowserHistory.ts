@@ -10,14 +10,13 @@ export class BrowserHistoryItem {
 
     /**
      * Ctor.
-     * @param {string} url The URL of the browser history item.
-     * @param {number} timestamp The timestamp of the browser history item.
+     * @param url The URL of the browser history item.
+     * @param timestamp The timestamp of the browser history item.
      */
     constructor(private url: string, private timestamp: number) { }
 
     /**
      * URL property.
-     * @property {string} The URL.
      */
     public get URL(): string {
         return this.url;
@@ -28,7 +27,6 @@ export class BrowserHistoryItem {
 
     /**
      * Previous property.
-     * @property {BrowserHistoryItem} The previous item.
      */
     public get Previous(): BrowserHistoryItem | undefined {
         return this.previous;
@@ -39,9 +37,8 @@ export class BrowserHistoryItem {
 
     /**
      * Next property.
-     * @property {BrowserHistoryItem} The next item.
      */
-    public get Next(): BrowserHistoryItem | undefined{
+    public get Next(): BrowserHistoryItem | undefined {
         return this.next;
     }
     public set Next(value: BrowserHistoryItem | undefined) {
@@ -50,7 +47,6 @@ export class BrowserHistoryItem {
 
     /**
      * Timestamp property.
-     * @property {number} The timestamp.
      */
     public get Timestamp(): number {
         return this.timestamp;
@@ -78,19 +74,20 @@ export class BrowserHistoryItem {
 /**
  * A primitive browser history implementation.
  */
+// tslint:disable-next-line:max-classes-per-file
 export class BrowserHistory {
 
     private first: BrowserHistoryItem;
     private last: BrowserHistoryItem;
     private rootItem: BrowserHistoryItem;
-    private items: Map<String, BrowserHistoryItem>;
+    private items: Map<string, BrowserHistoryItem>;
 
     /**
      * Ctor.
-     * @param {string} rootURL The URL of the initial item.
+     * @param rootURL The URL of the initial item.
      */
     constructor(rootURL: string) {
-        this.items = new Map<String, BrowserHistoryItem>();
+        this.items = new Map<string, BrowserHistoryItem>();
         this.rootItem = new BrowserHistoryItem(rootURL, Date.now());
         this.items.set(rootURL, this.rootItem);
         this.first = this.rootItem;
@@ -99,7 +96,6 @@ export class BrowserHistory {
 
     /**
      * Size property.
-     * @property {number} The number of entries in this history.
      */
     public get Size(): number {
         return this.items.size;
@@ -107,8 +103,8 @@ export class BrowserHistory {
 
     /**
      * Adds or updates a browser history item.
-     * @param {string} url The URL of the item to be added or updated.
-     * @returns {BrowserHistoryItem} The new or updated browser history item.
+     * @param url The URL of the item to be added or updated.
+     * @returns The new or updated browser history item.
      */
     public addOrUpdateItem(url: string): BrowserHistoryItem {
         let item: BrowserHistoryItem | undefined = this.items.get(url);
@@ -117,7 +113,7 @@ export class BrowserHistory {
           if (item.Next !== undefined) {
               item.remove();
           } else {
-              //this.logHistory();
+              // this.logHistory();
               return item;
           }
         } else {
@@ -127,7 +123,7 @@ export class BrowserHistory {
         this.last.Next = item;
         item.Previous = this.last;
         this.last = item;
-        //this.logHistory();
+        // this.logHistory();
         return item;
     }
 

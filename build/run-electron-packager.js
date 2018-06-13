@@ -5,8 +5,8 @@ if ((process.argv[4] !== "darwin") && (process.argv[4] !== "win32")) {
     console.error("%s: Unknown platform: %s", process.argv[1], process.argv[4]);
     process.exit(1);
 }
-if (process.argv[4] == "darwin") {
-    if (process.platform == "win32") {
+if (process.argv[4] === "darwin") {
+    if (process.platform === "win32") {
         console.error("%s: Packaging darwin on win32 creates unusable files, skipping...", process.argv[1]);
         process.exit(1);
     }
@@ -34,31 +34,51 @@ packagerParams.push(
     `--app-version="${apppj.version}"`,
     `--build-version="${apppj.version}"`,
     `--electron-version="${apppj.devDependencies.electron}"`,
-    `--arch="${apppj.config.arch}"`
+    `--arch="${apppj.config.arch}"`,
 );
-apppj.copyright ? packagerParams.push(`--app-copyright="${apppj.copyright}"`): null;
+if (apppj.copyright) {
+    packagerParams.push(`--app-copyright="${apppj.copyright}"`);
+}
 
 // Platform specific params
-if (process.argv[4] == "darwin") {
+if (process.argv[4] === "darwin") {
     packagerParams.push(
-        "--platform=darwin", 
-        "--icon=./build/tmp/appicon.icns"
+        "--platform=darwin",
+        "--icon=./build/tmp/appicon.icns",
     );
-    apppj.identifier ? packagerParams.push(`--app-bundle-id="${apppj.identifier}"`): null;
-    apppj.darwinAppCategory ? packagerParams.push(`--app-category-type="${apppj.darwinAppCategory}"`): null;
+    if (apppj.identifier) {
+        packagerParams.push(`--app-bundle-id="${apppj.identifier}"`);
+    }
+    if (apppj.darwinAppCategory) {
+        packagerParams.push(`--app-category-type="${apppj.darwinAppCategory}"`);
+    }
     console.log(`///// Making darwin x64 release of ${apppj.productName}...`);
-} else if (process.argv[4] == "win32") {
+} else if (process.argv[4] === "win32") {
     packagerParams.push(
         "--platform=win32",
-        "--icon=./build/tmp/appicon.ico"
+        "--icon=./build/tmp/appicon.ico",
     );
-    apppj.companyname ? packagerParams.push(`--win32metadata.CompanyName="${apppj.companyname}"`): null;
-    apppj.win32FileDescription ? packagerParams.push(`--win32metadata.FileDescription="${apppj.win32FileDescription}"`): null;
-    apppj.productName ? packagerParams.push(`--win32metadata.OriginalFilename="${apppj.productName}.exe"`): null;
-    apppj.productName ? packagerParams.push(`--win32metadata.ProductName="${apppj.productName}"`): null;
-    apppj.win32InternalName ? packagerParams.push(`--win32metadata.InternalName="${apppj.win32InternalName}"`): null;
-    apppj.win32RequestedExecutionLevel ? packagerParams.push(`--win32metadata.requestedExecutionLevel="${apppj.win32RequestedExecutionLevel}"`): null;
-    apppj.win32ApplicationManifest ? packagerParams.push(`--win32metadata.applicationManifest="${apppj.win32ApplicationManifest}"`): null;
+    if (apppj.companyname) {
+        packagerParams.push(`--win32metadata.CompanyName="${apppj.companyname}"`);
+    }
+    if (apppj.win32FileDescription) {
+        packagerParams.push(`--win32metadata.FileDescription="${apppj.win32FileDescription}"`);
+    }
+    if (apppj.productName) {
+        packagerParams.push(`--win32metadata.OriginalFilename="${apppj.productName}.exe"`);
+    }
+    if (apppj.productName) {
+        packagerParams.push(`--win32metadata.ProductName="${apppj.productName}"`);
+    }
+    if (apppj.win32InternalName) {
+        packagerParams.push(`--win32metadata.InternalName="${apppj.win32InternalName}"`);
+    }
+    if (apppj.win32RequestedExecutionLevel) {
+        packagerParams.push(`--win32metadata.requestedExecutionLevel="${apppj.win32RequestedExecutionLevel}"`);
+    }
+    if (apppj.win32ApplicationManifest) {
+        packagerParams.push(`--win32metadata.applicationManifest="${apppj.win32ApplicationManifest}"`);
+    }
     console.log(`///// Making win32 ${apppj.config.arch} release of ${apppj.productName}...`);
 }
 //console.log(packagerParams);
@@ -69,9 +89,10 @@ const exitCode = proc.spawnSync(
     // dependency from packagae.json to devDependencies in ./app/package.json and swap
     // the comments on the following two lines.
     //path.join(__dirname, "tmp", "node_modules", ".bin", (process.platform == "win32") ? "electron-packager.cmd" : "electron-packager"),
-    path.join(__dirname, "..", "node_modules", ".bin", (process.platform == "win32") ? "electron-packager.cmd" : "electron-packager"),
-    packagerParams, 
-    { shell: true, stdio: "inherit" }
+    path.join(__dirname, "..", "node_modules", ".bin",
+        (process.platform === "win32") ? "electron-packager.cmd" : "electron-packager"),
+    packagerParams,
+    { shell: true, stdio: "inherit" },
 ).status;
 
 // Rename all existing release build paths to contain the version.

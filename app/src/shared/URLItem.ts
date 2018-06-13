@@ -4,7 +4,7 @@ import { $URL } from "./Modules";
 /**
  * Interface for URL items.
  */
-export interface URLItem {
+export interface IURLItem {
     DoLoad: boolean; // Should this item be loaded or not?
     OriginalURL: string; // The original given URL.
     URL: string; // Fully expanded URL string.
@@ -14,10 +14,10 @@ export interface URLItem {
 /**
  * Creates a URLItem object from a given string.
  * This can result in either a URL for the web (http://) or a file (file://).
- * @param {string} url The URL string to be parsed.
- * @returns {URLItem} A URLItem object.
+ * @param url The URL string to be parsed.
+ * @returns A URLItem object.
  */
-export function getURLItem(url: string): URLItem {
+export function getURLItem(url: string): IURLItem {
     url = url.trim();
     if (url === "") {
         return { DoLoad: false, OriginalURL: url, URL: "", IsFileURL: false };

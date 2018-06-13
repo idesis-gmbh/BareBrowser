@@ -5,27 +5,27 @@
 require("./URLHandler/URLHandler.js");
 
 /**
- * You must always choose a class name which won't interfere with 
+ * You must always choose a class name which won't interfere with
  * other builtin global objects. See below (registering the class).
  */
 const className = "DefaultURLHandler";
 
 /**
- * This is the default URL handler which will open *any* URL. If this handler isn't 
+ * This is the default URL handler which will open *any* URL. If this handler isn't
  * active (see `settings.json`), SingleInstanceBrowser won't load anything.
  */
 class DefaultURLHandler {
 
     /**
      * URL handler constructor.
-     * @param {Object} config A configuration for this URL handler. Passed in from its own 
+     * @param {Object} config A configuration for this URL handler. Passed in from its own
      *        section in `settings.json`, can be null or undefined.
-     * @param {Object} settings The settings of SingleInstanceBrowser (`settings.json`). 
+     * @param {Object} settings The settings of SingleInstanceBrowser (`settings.json`).
      *        Can be used to override global settings for requests, for example the user agent.
      * @param {Electron.WebviewTag} webView The WebView tag in the browser page.
-     * @param {Electron.BrowserWindow} browserWindow The Electron browser window which 
+     * @param {Electron.BrowserWindow} browserWindow The Electron browser window which
      *        hosts the WebView tag.
-     * @param {Function} handleURLCallback The callback function which must be called by 
+     * @param {Function} handleURLCallback The callback function which must be called by
      *        any URL handler after handling the given URL.
      * @see Exported type HandleURLCallback in RendererApplication.ts.
      */
@@ -44,14 +44,14 @@ class DefaultURLHandler {
     /**
      * Handle/load a URL. This method can do almost anything with the browser
      * window and the web view tag. This default handler just opens *any* URL.
-     * Note: this.HandleURLCallback is executed asynchronously and calling it 
+     * Note: this.HandleURLCallback is executed asynchronously and calling it
      * should always be the last thing done in a URL handler!
      * (`see settings.json`).
-     * It is also a good idea to wait for the DOM to finish loading (see 
-     * `onDOMReady`) before calling `handleURLCallback` since otherwise the 
-     * URL handler loop in (see `RendererApplication.ts`) may call other 
+     * It is also a good idea to wait for the DOM to finish loading (see
+     * `onDOMReady`) before calling `handleURLCallback` since otherwise the
+     * URL handler loop in (see `RendererApplication.ts`) may call other
      * handlers to quickly.
-     * @param {string} url The URL which should be opened. 
+     * @param {string} url The URL which should be opened.
      */
     handleURL(url) {
         // Store the given URL for further usage in `onDOMReady`.

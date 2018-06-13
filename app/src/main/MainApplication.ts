@@ -1,9 +1,9 @@
-import { BrowserWindow, Menu, app, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import * as $Consts from "../shared/Consts";
 import { $FSE, $Path, $URL } from "../shared/Modules";
 import * as $Settings from "../shared/Settings";
-import { URLItem, getURLItem } from "../shared/URLItem";
-import { DirectoryListing, getDirectoryListing } from "../shared/Utils";
+import { getURLItem, IURLItem } from "../shared/URLItem";
+import { getDirectoryListing, IDirectoryListing } from "../shared/Utils";
 import { ApplicationMenu } from "./ApplicationMenu";
 import { DarwinMenu } from "./DarwinMenu";
 import { Win32Menu } from "./Win32Menu";
@@ -29,13 +29,13 @@ interface AppEvent extends Event {
  */
 export class CMainApplication {
 
-    private appInfo: $Settings.AppInfo;
+    private appInfo: $Settings.IAppInfo;
     private userDataDirectory: string;
     private tempDir: string;
     private settingsFile: string;
     private settingsTemplateFile: string;
-    private settings: $Settings.Settings;
-    private currentUrlItem: URLItem;
+    private settings: $Settings.ISettings;
+    private currentUrlItem: IURLItem;
     private appMenu: ApplicationMenu | null = null;
     private windows: Array<Electron.BrowserWindow | null> = [];
 
@@ -110,10 +110,10 @@ export class CMainApplication {
 
     /**
      * Retrieve app name and identifier in a single operation; both are needed later.
-     * @returns {AppInfo} An object containg the app name and identifier.
+     * @returns An object containg the app name and identifier.
      */
-    private getAppInfo(): $Settings.AppInfo {
-        const result: $Settings.AppInfo = { Name: "SIB", Identifier: "de.idesis.singleinstancebrowser" };
+    private getAppInfo(): $Settings.IAppInfo {
+        const result: $Settings.IAppInfo = { Name: "SIB", Identifier: "de.idesis.singleinstancebrowser" };
         try {
             const pj = require("../package.json");
             if (!pj.productName) {
@@ -134,7 +134,7 @@ export class CMainApplication {
 
     /**
      * Make strings for user data and temp directory.
-     * @param {string} appIdentifier The app identifier from package.json.
+     * @param appIdentifier The app identifier from package.json.
      */
     private setFileNames(appIdentifier: string): void {
         // An application name from 'package.json' may be too short to be unambigous and therefore
@@ -152,7 +152,7 @@ export class CMainApplication {
      */
     private setAppPaths(): void {
         // Paths must be available, thus synced.
-        //$FSE.mkdirpSync(this.userDataDirectory); // Implicitly created by $FSEmkdirpSync(this.tempDir);
+        // $FSE.mkdirpSync(this.userDataDirectory); // Implicitly created by $FSEmkdirpSync(this.tempDir);
         $FSE.mkdirpSync(this.tempDir);
         app.setPath("userData", this.userDataDirectory);
         app.setPath("temp", this.tempDir);
@@ -187,10 +187,10 @@ export class CMainApplication {
 
     /**
      * Load app settings.
-     * @returns {Settings} The loaded app settings.
+     * @returns The loaded app settings.
      */
-    private getSettings(): $Settings.Settings {
-        let result: $Settings.Settings = $Settings.getDefaultSettings();
+    private getSettings(): $Settings.ISettings {
+        let result: $Settings.ISettings = $Settings.getDefaultSettings();
         let hasUserSettings: boolean = false;
         try {
             // First, update existing user settings from the template or create
@@ -216,7 +216,7 @@ export class CMainApplication {
             if (hasUserSettings || $FSE.existsSync(this.settingsFile)) {
                 result = $Settings.getSettings(this.settingsFile);
             } else {
-                $FSE.writeJSONSync(this.settingsFile, result, {spaces: 4} );
+                $FSE.writeJSONSync(this.settingsFile, result, {spaces: 4});
             }
         } catch (error) {
             console.error("Could't update and/or read user settings.", error);
@@ -227,7 +227,7 @@ export class CMainApplication {
     /**
      * Checks wether another instance is already running and if
      * not, registers *this* instance for single instance operation.
-     * @returns {boolean} True if the current running instance should quit due to another running instance.
+     * @returns True if the current running instance should quit due to another running instance.
      */
     private shouldQuitForSingleInstance(): boolean {
         if (this.settings.SingleInstance) {
@@ -291,15 +291,16 @@ export class CMainApplication {
      * don't free file handles correctly (just guessing).
      */
     private clearTraces(): void {
-        const userDataFiles: DirectoryListing = getDirectoryListing(this.userDataDirectory, true);
+        const userDataFiles: IDirectoryListing = getDirectoryListing(this.userDataDirectory, true);
         // Exclude top directory
         userDataFiles.Directories.splice(userDataFiles.Directories.indexOf(this.userDataDirectory), 1);
         // Exclude settings.json and backups of it
+        // tslint:disable-next-line:max-line-length
         const regExp = new RegExp("([\\/|\\\\]{1}settings-[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}\\.json)$");
         userDataFiles.Files = userDataFiles.Files.filter((fileName: string): boolean => {
             return !(fileName === this.settingsFile || regExp.test(fileName));
         });
-        const leftOvers: DirectoryListing = { Directories: [], Files: [] };
+        const leftOvers: IDirectoryListing = { Directories: [], Files: [] };
         // First remove files...
         for (const entry of userDataFiles.Files) {
             try {
@@ -323,10 +324,10 @@ export class CMainApplication {
 
     /**
      * Get (last) focused window from the internal window list.
-     * @returns {Electron.BrowserWindow | null} The focused window or last focused window or null (should never happen).
+     * @returns The focused window or last focused window or null (should never happen).
      */
     private getCurrentWindow(): Electron.BrowserWindow | null {
-        return (this.windows.length > 0) ? this.windows[this.windows.length-1] : null;
+        return (this.windows.length > 0) ? this.windows[this.windows.length - 1] : null;
     }
 
     /**
@@ -343,8 +344,8 @@ export class CMainApplication {
 
     /**
      * Called by the two `onOpen` events. Gets the current window and loads the given URL in it.
-     * @param {string} fileOrURL The URL (or file) to be loaded.
-     * @param {boolean} isFile Indicates whether the given URL is a local file or not.
+     * @param fileOrURL The URL (or file) to be loaded.
+     * @param isFile Indicates whether the given URL is a local file or not.
      */
     private openFileOrURL(fileOrURL: string, isFile: boolean, browserWindow?: BrowserWindow): void {
         this.currentUrlItem = getURLItem(fileOrURL);
@@ -367,8 +368,8 @@ export class CMainApplication {
     /**
      * Called by Electron app if another instance was started. This either loads the given URL
      * in the current instance or quits the running instance by the special `http:quit` URL.
-     * @param {string[]} args The arguments passed to the instance started elsewhere.
-     * @param {string} _workingDirectory The working directory of the instance started elsewhere.
+     * @param args The arguments passed to the instance started elsewhere.
+     * @param _workingDirectory The working directory of the instance started elsewhere.
      */
     private onSingleInstanceCallback(args: string[], _workingDirectory: string): void {
         this.currentUrlItem = getURLItem(args[args.length - 1]);
@@ -391,8 +392,8 @@ export class CMainApplication {
 
     /**
      * Called on Darwin when the app is started with 'open' and specifying a URL.
-     * @param {Electron.Event} event An Electron event
-     * @param {string} url The URL to be opened.
+     * @param event An Electron event
+     * @param url The URL to be opened.
      */
     private onOpenURL(event: Electron.Event, url: string): void {
         event.preventDefault();
@@ -401,8 +402,8 @@ export class CMainApplication {
 
     /**
      * Called on Darwin when the app is started with 'open' and specifying a file.
-     * @param {Electron.Event} event An Electron event
-     * @param {string} fileName The file to be loaded.
+     * @param event An Electron event
+     * @param fileName The file to be loaded.
      */
     private onOpenFile(event: Electron.Event, fileName: string): void {
         event.preventDefault();
@@ -412,8 +413,8 @@ export class CMainApplication {
     /**
      * The event `will-navigate` cannot be prevented in the renderer process so it has to
      * be done here in the main process.
-     * @param {Electron.Event} _event An Electron event.
-     * @param {Electron.WebContents} webContents The web contents which will be created.
+     * @param _event An Electron event.
+     * @param webContents The web contents which will be created.
      * @see https://github.com/electron/electron/issues/1378#issuecomment-265207386
      */
     private onWebContentsCreated(_event: Electron.Event, webContents: Electron.WebContents): void {
@@ -425,8 +426,8 @@ export class CMainApplication {
 
     /**
      * Handles all IPC calls from renderer processes.
-     * @param {Electron.Event} event The Electron event. Used to return values/objects back to the calling renderer process.
-     * @param {any[]} args The arguments sent by the calling renderer process.
+     * @param event The Electron event. Used to return values/objects back to the calling renderer process.
+     * @param args The arguments sent by the calling renderer process.
      */
     // tslint:disable-next-line:no-any
     private onIPC(event: Electron.Event, ...args: any[]): void {
@@ -450,7 +451,8 @@ export class CMainApplication {
             case "toggleWin32Menu":
                 if ((process.platform === "win32") && (this.settings.Win32MenuState > 0) && (this.appMenu)) {
                     // tslint:disable-next-line:no-any
-                    Menu.getApplicationMenu() ? Menu.setApplicationMenu(null as any) : Menu.setApplicationMenu(this.appMenu.Menu);
+                    Menu.getApplicationMenu() ?
+                        Menu.setApplicationMenu(null as any) : Menu.setApplicationMenu(this.appMenu.Menu);
                     event.returnValue = true;
                 } else {
                     event.returnValue = false;
@@ -480,9 +482,9 @@ export class CMainApplication {
      * This method will be called when Electron has finished initialization and
      * is ready to create browser windows. Some APIs like setting a menu can only
      * be used after this event occurs.
-     * @param {Object} _launchInfo see Electron: App.on(event: 'ready',...
+     * @param _launchInfo see Electron: App.on(event: 'ready',...
      */
-    private onAppReady(_launchInfo: Object): void {
+    private onAppReady(_launchInfo: {}): void {
         this.setApplicationMenu();
         this.createWindow();
     }
@@ -494,8 +496,8 @@ export class CMainApplication {
      * *Note:* This is left here only for completeness.
      * SingleInstanceBrowser currently quits if the last browser window is closed
      * (see `onWindowAllClosed`) so this event never gets called.
-     * @param {Electron.Event} _event An Electron event
-     * @param {boolean} _hasVisibleWindows True if there are existing visible windows.
+     * @param _event An Electron event
+     * @param _hasVisibleWindows True if there are existing visible windows.
      */
     private onActivate(_event: Electron.Event, _hasVisibleWindows: boolean): void {
         if (this.windows.length === 0) {
@@ -540,8 +542,8 @@ export class CMainApplication {
 
     /**
      * Try to remove all temporary data on quitting the app.
-     * @param {Electron.Event} _event An Electron event.
-     * @param {number} _exitCode App exit code.
+     * @param _event An Electron event.
+     * @param _exitCode App exit code.
      */
     private onQuit(_event: Electron.Event, _exitCode: number): void {
         if (this.settings.ClearTraces) {

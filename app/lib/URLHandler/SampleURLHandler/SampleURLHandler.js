@@ -5,7 +5,7 @@
 require("../URLHandler.js");
 
 /**
- * You must always choose a class name which won't interfere with 
+ * You must always choose a class name which won't interfere with
  * other builtin global objects. See below (registering the class).
  */
 const className = "SampleURLHandler";
@@ -18,14 +18,14 @@ class SampleURLHandler {
 
     /**
      * URL handler constructor.
-     * @param {Object} config A configuration for this URL handler. Passed in from its own 
+     * @param {Object} config A configuration for this URL handler. Passed in from its own
      *        section in `settings.json`, can be null or undefined.
-     * @param {Object} settings The settings of SingleInstanceBrowser (`settings.json`). 
+     * @param {Object} settings The settings of SingleInstanceBrowser (`settings.json`).
      *        Can be used to override global settings for requests, for example the user agent.
      * @param {Electron.WebviewTag} webView The WebView tag in the browser page.
-     * @param {Electron.BrowserWindow} browserWindow The Electron browser window which 
+     * @param {Electron.BrowserWindow} browserWindow The Electron browser window which
      *        hosts the WebView tag.
-     * @param {Function} handleURLCallback The callback function which must be called by 
+     * @param {Function} handleURLCallback The callback function which must be called by
      *        any URL handler after handling the given URL.
      * @see Exported type HandleURLCallback in RendererApplication.ts.
      */
@@ -43,11 +43,11 @@ class SampleURLHandler {
     }
 
     /**
-     * Handle/load a URL. This method can do almost anything with the browser window 
+     * Handle/load a URL. This method can do almost anything with the browser window
      * and the web view tag. In this example it blocks loading any URL which doesn't
      * match the regular expression which is configured in the config object
      * (`see settings.json`).
-     * @param {string} url The URL which should be opened. 
+     * @param {string} url The URL which should be opened.
      */
     handleURL(url) {
         // Store the given URL for further usage in `onDOMReady`.
@@ -61,7 +61,7 @@ class SampleURLHandler {
             // Load URL only, if it matches the given regular expression
             if (regExp.test(this.URL)) {
                 console.log(className + ": will open URL: " + this.URL);
-                // Navigation should always be done by setting the `src` 
+                // Navigation should always be done by setting the `src`
                 // attribute, otherwise internal history handling won't work.
                 this.WebView.setAttribute("src", this.URL);
             } else {
@@ -70,10 +70,11 @@ class SampleURLHandler {
                 this.WebView.setAttribute("src", encodeURI(
                     "data:text/html,<html><head></head><body>"
                     + "<h1>" + className + "</h1>"
-                    + "<p>Sorry, this URL handler blocked the address <em>" + this.URL + "</em> you were trying to open.</p>"
+                    + "<p>Sorry, this URL handler blocked the address <em>"
+                    + this.URL + "</em> you were trying to open.</p>"
                     + "<p>For more information about URL handlers please go to "
                     + "<a href='https://github.com/idesis-gmbh/SingleInstanceBrowser/blob/master/app/_root/README.md'> this page</a>.</p>"
-                    + "</body></html>"
+                    + "</body></html>",
                 ));
             }
         } catch (error) {
@@ -100,7 +101,7 @@ class SampleURLHandler {
                     "window.alert('This example message was issued by "
                     + "'this.WebView.executeJavaScript' which is called "
                     + "on the DOM Ready event of this.WebView! "
-                    + "And it is shown only once.');"
+                    + "And it is shown only once.');",
                 );
                 // Signal stop for any further handlers
                 this.HandleURLCallback(HANDLE_URL_STOP);

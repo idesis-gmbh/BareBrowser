@@ -2,9 +2,9 @@
 const fse = require("fs-extra");
 const path = require("path");
 const apppj = fse.readJsonSync(process.argv[2]);
-if (process.argv[3] == "darwin") {
+if (process.argv[3] === "darwin") {
     fse.removeSync(path.join(process.argv[4], apppj.productName + "-darwin-x64"));
-} else if (process.argv[3] == "win32") {
+} else if (process.argv[3] === "win32") {
     fse.removeSync(path.join(process.argv[4], apppj.productName + "-win32-x64"));
     fse.removeSync(path.join(process.argv[4], apppj.productName + "-win32-ia32"));
 } else {

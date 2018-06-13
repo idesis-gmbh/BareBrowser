@@ -5,7 +5,7 @@ import * as $Utils from "./Utils";
  * Holds app name and identifier.
  * Maybe extended for future attributes.
  */
-export interface AppInfo {
+export interface IAppInfo {
     Name: string;
     Identifier: string;
 }
@@ -13,7 +13,7 @@ export interface AppInfo {
 /**
  * Interface for app settings.
  */
-export interface Settings {
+export interface ISettings {
     Window: {
         Left: number;
         Top: number;
@@ -33,11 +33,11 @@ export interface Settings {
         ExitHTMLFullscreen: string[];
         ToggleWin32Menu: string[];
     };
-    URLHandlers: {
+    URLHandlers: Array<{
         ClassName: string;
         Source: string;
         Config?: {};
-    }[];
+    }>;
     UserAgent: string;
     Permissions: string[];
     AllowPlugins: boolean;
@@ -54,9 +54,9 @@ export interface Settings {
 
 /**
  * Get settings object with default values.
- * @returns {Settings} A Settings object.
+ * @returns A Settings object.
  */
-export function getDefaultSettings(): Settings {
+export function getDefaultSettings(): ISettings {
     return {
         Window: {
             Left: 50,
@@ -101,11 +101,11 @@ export function getDefaultSettings(): Settings {
 /**
  * Get current app settings object.
  * If reading from file fails, default settings are returned.
- * @param {string} configFile Full path of the settings file.
- * @returns {Settings} The current app settings obtained from `configFile` or default settings.
+ * @param configFile Full path of the settings file.
+ * @returns The current app settings obtained from `configFile` or default settings.
  */
-export function getSettings(configFile: string): Settings {
-    let settings: Settings;
+export function getSettings(configFile: string): ISettings {
+    let settings: ISettings;
     try {
         settings = $FSE.readJsonSync(configFile);
     } catch (error) {

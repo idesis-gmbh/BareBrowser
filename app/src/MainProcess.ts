@@ -16,5 +16,7 @@ process.on("uncaughtException", (error: Error) => {
     }
 });
 
-// Start application by creating an instance of the main application class.
+/**
+ * Start application by creating an instance of the main application class.
+ */
 const mainApplication: CMainApplication = new CMainApplication();

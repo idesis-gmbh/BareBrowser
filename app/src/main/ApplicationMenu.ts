@@ -5,9 +5,12 @@ import { Menu, MenuItem } from "electron";
  */
 export abstract class ApplicationMenu {
 
-	protected mainMenu: Menu;
-    private undoMenu:  MenuItem;
-    private redoMenu:  MenuItem;
+    /**
+     * Basic menu common for all platforms.
+     */
+    protected mainMenu: Menu;
+    private undoMenu: MenuItem;
+    private redoMenu: MenuItem;
     private cutMenu: MenuItem;
     private copyMenu: MenuItem;
     private pasteMenu: MenuItem;
@@ -16,7 +19,7 @@ export abstract class ApplicationMenu {
     /**
      * Build basic main menu parts common for all platforms.
      * appName can be used for building special menu item entries.
-     * @param {string} appName The name of the application
+     * @param appName The name of the application
      */
     constructor(protected appName: string) { }
 
@@ -24,7 +27,6 @@ export abstract class ApplicationMenu {
      * Get the application menu.
      * Since it only contains items common to all platforms it has to be extended
      * with items specific for the respective platform (app menu, help menu, ...).
-     * @property {Menu} The main menu.
      */
     public get Menu(): Menu {
         return this.mainMenu;
@@ -32,7 +34,6 @@ export abstract class ApplicationMenu {
 
     /**
      * Get the Undo menu item.
-     * @property {MenuItem} The Undo menu item.
      */
     public get Undo(): MenuItem {
         return this.undoMenu;
@@ -40,7 +41,6 @@ export abstract class ApplicationMenu {
 
     /**
      * Get the Redo menu item.
-     * @property {MenuItem} The Redo menu item.
      */
     public get Redo(): MenuItem {
         return this.redoMenu;
@@ -48,7 +48,6 @@ export abstract class ApplicationMenu {
 
     /**
      * Get the Cut menu item.
-     * @property {MenuItem} The Cut menu item.
      */
     public get Cut(): MenuItem {
         return this.cutMenu;
@@ -56,7 +55,6 @@ export abstract class ApplicationMenu {
 
     /**
      * Get the Copy menu item.
-     * @property {MenuItem} The Copy menu item.
      */
     public get Copy(): MenuItem {
         return this.copyMenu;
@@ -64,7 +62,6 @@ export abstract class ApplicationMenu {
 
     /**
      * Get the Paste menu item.
-     * @property {MenuItem} The Paste menu item.
      */
     public get Paste(): MenuItem {
         return this.pasteMenu;
@@ -72,7 +69,6 @@ export abstract class ApplicationMenu {
 
     /**
      * Get the Select all menu item.
-     * @property {MenuItem} The Select all menu item.
      */
     public get SelectAll(): MenuItem {
         return this.selectAllMenu;
@@ -80,7 +76,7 @@ export abstract class ApplicationMenu {
 
     /**
      * Build Edit submenu.
-     * @returns {Menu} The Edit submenu.
+     * @returns The Edit submenu.
      */
     public getEditMenu(): Menu {
         const editMenu = new Menu();
@@ -114,7 +110,7 @@ export abstract class ApplicationMenu {
 
     /**
      * Build Help submenu.
-     * @returns {Menu} The Help submenu.
+     * @returns The Help submenu.
      */
     public getHelpMenu(acceleratorStr: string): Menu {
         const helpMenu = new Menu();
@@ -128,7 +124,7 @@ export abstract class ApplicationMenu {
 
     /**
      * Get a separator.
-     * @returns {MenuItem} A separator.
+     * @returns A separator.
      */
     protected getSeparator(): MenuItem {
         return new MenuItem({
@@ -136,4 +132,3 @@ export abstract class ApplicationMenu {
         });
     }
 }
-

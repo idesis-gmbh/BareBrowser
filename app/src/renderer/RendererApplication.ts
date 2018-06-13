@@ -1,11 +1,12 @@
-import { BrowserWindow, Point, ipcRenderer, remote, webContents } from "electron";
+import { BrowserWindow, ipcRenderer, Point, remote, webContents } from "electron";
 import * as $ShortCuts from "mousetrap";
-import { AppInfo, Settings } from "../shared/Settings";
-import { URLItem, getURLItem } from "../shared/URLItem";
+import { IAppInfo, ISettings } from "../shared/Settings";
+import { getURLItem, IURLItem } from "../shared/URLItem";
 import { BrowserHistory, BrowserHistoryItem } from "./BrowserHistory";
-import { HANDLE_URL_CONTINUE, HANDLE_URL_ERROR, HANDLE_URL_NONE, HANDLE_URL_STOP, URLHandler, getURLHandlerByClassName } from "./URLHandler";
+import { getURLHandlerByClassName, HANDLE_URL_CONTINUE, HANDLE_URL_ERROR, HANDLE_URL_NONE, HANDLE_URL_STOP, URLHandler } from "./URLHandler";
 
 /**
+ * Exported callback for handling a URL.
  * @see Funtion handleURLCallback in class `CRendererApplication`.
  */
 export type HandleURLCallback = (handleURLResult: number, redirectURL?: string) => void;
@@ -15,8 +16,8 @@ export type HandleURLCallback = (handleURLResult: number, redirectURL?: string) 
  */
 export class CRendererApplication {
 
-    private settings: Settings;
-    private appInfo: AppInfo;
+    private settings: ISettings;
+    private appInfo: IAppInfo;
     private addressBar: HTMLDivElement;
     private goBackButton: HTMLButtonElement;
     private goForwardButton: HTMLButtonElement;
@@ -25,8 +26,9 @@ export class CRendererApplication {
     private window: BrowserWindow;
     private webContents: webContents;
     private webView: Electron.WebviewTag;
-    private webViewScrollOffset: Point = {x: 0, y: 0};
+    private webViewScrollOffset: Point = { x: 0, y: 0 };
     private reloadIssued: boolean = false;
+    // tslint:disable-next-line:variable-name
     private URLHandlers: URLHandler[] = [];
     private currentURLHandler: URLHandler;
     private history: BrowserHistory;
@@ -40,8 +42,8 @@ export class CRendererApplication {
      * Creates the user interface, the web content part and handles all events.
      */
     constructor() {
-        this.settings = ipcRenderer.sendSync("IPC", ["getSettings"]) as Settings;
-        this.appInfo = ipcRenderer.sendSync("IPC", ["getAppInfo"]) as AppInfo;
+        this.settings = ipcRenderer.sendSync("IPC", ["getSettings"]) as ISettings;
+        this.appInfo = ipcRenderer.sendSync("IPC", ["getAppInfo"]) as IAppInfo;
         const fragment: DocumentFragment = new DocumentFragment();
         this.webView = this.getWebView();
         this.addressBar = this.getAddressBar();
@@ -89,7 +91,7 @@ export class CRendererApplication {
      * Get the initial URL to be loaded via an IPC call from the main process.
      */
     private queryInitialURLItem(): void {
-        const urlItem: URLItem = ipcRenderer.sendSync("IPC", ["queryURLItem"]) as URLItem;
+        const urlItem: IURLItem = ipcRenderer.sendSync("IPC", ["queryURLItem"]) as IURLItem;
         if ((urlItem && urlItem.DoLoad)) {
             this.loadURL(urlItem);
         } else {
@@ -99,15 +101,15 @@ export class CRendererApplication {
                 this.addressBar.style.display = "";
                 this.urlField.focus();
             }
-       }
+        }
     }
 
     /**
      * Bind keyboard shortcut(s) to a function.
-     * @param {string} shortcut A single keyboard shortcut ar on array of shortcuts.
-     * @param {Function} func The function to be executed if the given keyboard shortcut is used.
+     * @param shortcut A single keyboard shortcut ar on array of shortcuts.
+     * @param func The function to be executed if the given keyboard shortcut is used.
      */
-    private bindShortCut(shortcut: string | string[], func: Function): void {
+    private bindShortCut(shortcut: string | string[], func: () => void): void {
         $ShortCuts.bind(shortcut, (_event: ExtendedKeyboardEvent, _combo: string): boolean => {
             func.call(this);
             return false;
@@ -119,7 +121,8 @@ export class CRendererApplication {
      */
     private bindShortCuts(): void {
         this.bindShortCut(this.settings.ShortCuts.ToggleAddressBar, () => {
-            this.addressBar.style.display === "none" ? this.addressBar.style.display = "" : this.addressBar.style.display = "none";
+            this.addressBar.style.display === "none" ?
+                this.addressBar.style.display = "" : this.addressBar.style.display = "none";
         });
         this.bindShortCut(this.settings.ShortCuts.ToggleInternalDevTools, () => {
             const devToolsOpened = this.webContents.isDevToolsOpened();
@@ -162,9 +165,9 @@ export class CRendererApplication {
 
     /**
      * Let the first URL handler handle the given URL.
-     * @param {URLItem} urlItem The URL to be handled.
+     * @param urlItem The URL to be handled.
      */
-    private loadURL(urlItem: URLItem, updateHistory: boolean = true): void {
+    private loadURL(urlItem: IURLItem, updateHistory: boolean = true): void {
         if (this.URLHandlers.length === 0) {
             console.warn("loadURL: No URL handlers are configured!");
         } else {
@@ -189,10 +192,10 @@ export class CRendererApplication {
     /**
      * Callback function which *must* be called by any URL handler after handling a URL.
      * In future versions probably this can be done using Promises.
-     * @param {URLHandler} currentURLHandler The URL handler which is calling this function.
-     * @param {string} handleURLResult The result of handling the URL by the the URL handler.
-     * @param {string} originalURL The original URL given to the URL handler.
-     * @param {string} redirectURL Optional, if set, then this URL will be used for the following URL handler.
+     * @param currentURLHandler The URL handler which is calling this function.
+     * @param handleURLResult The result of handling the URL by the the URL handler.
+     * @param originalURL The original URL given to the URL handler.
+     * @param redirectURL Optional, if set, then this URL will be used for the following URL handler.
      * @see Function loadURLHandlers.
      */
     private handleURLCallback: HandleURLCallback = (handleURLResult: number, redirectURL?: string): void => {
@@ -203,7 +206,7 @@ export class CRendererApplication {
      * @see Function handleURLCallback.
      */
     private doHandleURLCallback: HandleURLCallback = (handleURLResult: number, redirectURL?: string): void => {
-        const nextHandler: URLHandler = this.URLHandlers[this.URLHandlers.indexOf(this.currentURLHandler)+1];
+        const nextHandler: URLHandler = this.URLHandlers[this.URLHandlers.indexOf(this.currentURLHandler) + 1];
         const currentHandlerName: string = this.currentURLHandler.constructor.name;
         const logMsg: string = nextHandler ? "continuing with next handler" : "last handler in chain reached";
         try {
@@ -252,7 +255,7 @@ export class CRendererApplication {
 
     /**
      * Go back one step in the browser history.
-     * @param {MouseEvent} _event A mouse event or null.
+     * @param _event A mouse event or null.
      */
     private goBack(_event?: MouseEvent): void {
         if (this.currentHistoryItem.Previous) {
@@ -263,7 +266,7 @@ export class CRendererApplication {
 
     /**
      * Go forward one step in the browser history.
-     * @param {MouseEvent} _event A mouse event or null.
+     * @param _event A mouse event or null.
      */
     private goForward(_event?: MouseEvent): void {
         if (this.currentHistoryItem.Next) {
@@ -274,7 +277,7 @@ export class CRendererApplication {
 
     /**
      * Called when the user clicks the Go button or presses Enter in the URL field.
-     * @param {MouseEvent | KeyboardEvent} event A mouse or keyboard event.
+     * @param event A mouse or keyboard event.
      */
     private loadURLItemListener(event: MouseEvent | KeyboardEvent): void {
         if ((event.type === "keypress") && ((event as KeyboardEvent).key !== "Enter")) {
@@ -285,8 +288,8 @@ export class CRendererApplication {
 
     /**
      * Handles all IPC calls from the main process.
-     * @param {Electron.Event} event An Electron event.
-     * @param {any[]} args The arguments sent by the calling main process.
+     * @param event An Electron event.
+     * @param args The arguments sent by the calling main process.
      */
     // tslint:disable-next-line:no-any
     private onIPC(_event: Electron.Event, ...args: any[]): void {
@@ -296,7 +299,7 @@ export class CRendererApplication {
         switch (args[0][0]) {
             case "loadURLItem":
                 if (args[0].length === 2) {
-                    this.loadURL((args[0][1] as URLItem));
+                    this.loadURL((args[0][1] as IURLItem));
                 }
                 break;
 
@@ -308,7 +311,7 @@ export class CRendererApplication {
     /**
      * Called when the page has finished loading.
      * Sets the focus to the webview tag to enable keyboard navigation in the page.
-     * @param {Electron.Event} _event An Electron event.
+     * @param _event An Electron event.
      */
     private onDidFinishLoad(_event: Electron.Event): void {
         this.spinner.style.visibility = "hidden";
@@ -319,7 +322,7 @@ export class CRendererApplication {
 
     /**
      * Called when loading the page failed.
-     * @param {Electron.Event} _event An Electron event.
+     * @param _event An Electron event.
      */
     private onDidFailLoad(_event: Electron.DidFailLoadEvent): void {
         if (_event.isMainFrame) {
@@ -339,7 +342,7 @@ export class CRendererApplication {
     /**
      * Called when the DOM in the web view is ready. Tries to scroll to the last
      * offset but only if the event occurs during a page *reload*.
-     * @param {Electron.Event} _event An Electron event.
+     * @param _event An Electron event.
      */
     private onDOMReady(_event: Electron.Event): void {
         if (this.reloadIssued) {
@@ -350,7 +353,7 @@ export class CRendererApplication {
 
     /**
      * Called when the title of the current page has been updated.
-     * @param {Electron.PageTitleUpdatedEvent} event An Electron PageTitleUpdatedEvent.
+     * @param event An Electron PageTitleUpdatedEvent.
      */
     private onPageTitleUpdated(event: Electron.PageTitleUpdatedEvent): void {
         this.window.setTitle(event.title);
@@ -361,7 +364,7 @@ export class CRendererApplication {
      * Default handling for the event is prevented, enhanced with additional
      * infos and again written to the console. In future versions this should
      * be redirected/copied to a log file.
-     * @param {Electron.ConsoleMessageEvent} event An Electron ConsoleMessageEvent.
+     * @param event An Electron ConsoleMessageEvent.
      */
     private onConsoleMessage(event: Electron.ConsoleMessageEvent): void {
         console.log("LOG from %s: [Level %d] %s (Line %d in %s)", this.webView.getURL(), event.level, event.message, event.line, event.sourceId);
@@ -372,11 +375,12 @@ export class CRendererApplication {
     /**
      * Handles permission requests from web pages.
      * Permissions are granted based on app settings.
-     * @param {Electron.WebContents} _webContents The calling Electron webContents.
-     * @param {string} permission The requested permission.
-     * @param {function} callback A callback called with the boolean result of the permission check.
+     * @param _webContents The calling Electron webContents.
+     * @param permission The requested permission.
+     * @param callback A callback called with the boolean result of the permission check.
      */
-    private onPermissionRequest(_webContents: Electron.WebContents, permission: string, callback: (permissionGranted: boolean) => void): void {
+    private onPermissionRequest(_webContents: Electron.WebContents,
+                                permission: string, callback: (permissionGranted: boolean) => void): void {
         const grant: boolean = (this.settings.Permissions.indexOf(permission) > -1);
         console.info(`Permission '${permission}' requested, ${grant ? "granting." : "denying."}`);
         callback(grant);
@@ -385,7 +389,7 @@ export class CRendererApplication {
     /**
      * Called when the navigaion to a URL has finished.
      * Used to update parts of the user interface.
-     * @param {Electron.DidNavigateEvent} _event An Electron DidNavigateEvent.
+     * @param _event An Electron DidNavigateEvent.
      */
     private onDidNavigate(event: Electron.DidNavigateEvent): void {
         if (event.url === this.blankPageContent) {
@@ -395,25 +399,33 @@ export class CRendererApplication {
         } else {
             this.urlField.value = event.url;
         }
-        this.goBackButton.disabled = (this.history.Size < 2 || this.currentHistoryItem === null || this.currentHistoryItem.Previous === undefined);
-        this.goForwardButton.disabled = (this.history.Size < 2 || this.currentHistoryItem === null || this.currentHistoryItem.Next === undefined);
+        this.goBackButton.disabled = (this.history.Size < 2
+            || this.currentHistoryItem === null
+            || this.currentHistoryItem.Previous === undefined);
+        this.goForwardButton.disabled = (this.history.Size < 2
+            || this.currentHistoryItem === null
+            || this.currentHistoryItem.Next === undefined);
     }
 
     /**
      * Called when the navigaion to a URL has finished.
      * Used to update parts of the user interface.
-     * @param {Electron.DidNavigateEvent} _event An Electron DidNavigateEvent.
+     * @param _event An Electron DidNavigateEvent.
      */
     private onDidNavigateInPage(event: Electron.DidNavigateInPageEvent): void {
         this.currentHistoryItem = this.history.addOrUpdateItem(getURLItem(event.url).URL);
         this.urlField.value = event.url;
-        this.goBackButton.disabled = (this.history.Size < 2 || this.currentHistoryItem === null || this.currentHistoryItem.Previous === undefined);
-        this.goForwardButton.disabled = (this.history.Size < 2 || this.currentHistoryItem === null || this.currentHistoryItem.Next === undefined);
+        this.goBackButton.disabled = (this.history.Size < 2
+            || this.currentHistoryItem === null
+            || this.currentHistoryItem.Previous === undefined);
+        this.goForwardButton.disabled = (this.history.Size < 2
+            || this.currentHistoryItem === null
+            || this.currentHistoryItem.Next === undefined);
     }
 
     /**
      * Called when the user clicks on a link in a page which should be opened in another window/tab.
-     * @param {Electron.NewWindowEvent} event An Electron NewWindowEvent.
+     * @param event An Electron NewWindowEvent.
      */
     private onNewWindow(event: Electron.NewWindowEvent): void {
         if (this.settings.AllowNewWindows) {
@@ -422,7 +434,7 @@ export class CRendererApplication {
                 "foreground-tab",
                 "background-tab",
                 "new-window",
-                //"save-to-disk",
+                // "save-to-disk",
                 "other"].indexOf(event.disposition) !== -1) {
                 ipcRenderer.send("IPC", ["openWindow", event.url]);
             }
@@ -432,7 +444,7 @@ export class CRendererApplication {
     /**
      * This function stores the current scroll offset from the web view.
      * Called from the web view; this is the result from sending "getScrollOffset" to the web view.
-     * @param {Electron IpcMessageEvent} event An Electron IpcMessageEvent.
+     * @param event An Electron IpcMessageEvent.
      */
     private onWebViewIPCMessage(event: Electron.IpcMessageEvent): void {
         if (event.channel === "FromWebView") {
@@ -445,7 +457,7 @@ export class CRendererApplication {
 
     /**
      * Build the address bar.
-     * @returns {HTMLDivElement} The DOM element for the address bar.
+     * @returns The DOM element for the address bar.
      */
     private getAddressBar(): HTMLDivElement {
         const addressBar: HTMLDivElement = document.createElement("div");
@@ -457,7 +469,7 @@ export class CRendererApplication {
 
     /**
      * Build the navigation buttons.
-     * @returns {HTMLDivElement} The DOM element(s) for the navigation buttons.
+     * @returns The DOM element(s) for the navigation buttons.
      */
     private getNavigationButtons(): HTMLDivElement {
         const navigationButtonsContainer: HTMLDivElement = document.createElement("div");
@@ -492,7 +504,7 @@ export class CRendererApplication {
 
     /**
      * Build the navigation buttons.
-     * @returns {HTMLDivElement} The DOM element(s) for the navigation buttons.
+     * @returns The DOM element(s) for the navigation buttons.
      */
     private getSpinner(): HTMLDivElement {
         const spinnerContainer: HTMLDivElement = document.createElement("div");
@@ -507,7 +519,7 @@ export class CRendererApplication {
 
     /**
      * Build the URL text field.
-     * @returns {HTMLDivElement} The DOM element(s) for the URL text field.
+     * @returns The DOM element(s) for the URL text field.
      */
     private getURLField(): HTMLDivElement {
         const urlFieldContainer: HTMLDivElement = document.createElement("div");
@@ -525,7 +537,7 @@ export class CRendererApplication {
 
     /**
      * Build the webview tag.
-     * @returns {Electron.WebviewTag} A completely configured Electron.WebviewTag.
+     * @returns A completely configured Electron.WebviewTag.
      */
     private getWebView(): Electron.WebviewTag {
         const webView: Electron.WebviewTag = document.createElement("webview");

@@ -6,16 +6,18 @@ const path = require("path");
 const fse = require("fs-extra");
 
 function getCmd(cmdName) {
-    let exectuable = path.join(__dirname, "tmp", "node_modules", ".bin", (process.platform == "win32") ? `${cmdName}.cmd` : cmdName);
+    let exectuable = path.join(__dirname, "tmp", "node_modules", ".bin",
+        (process.platform === "win32") ? `${cmdName}.cmd` : cmdName);
     if (fse.existsSync(exectuable)) {
         return exectuable;
     }
-    exectuable = path.join(__dirname, "..", "node_modules", ".bin", (process.platform == "win32") ? `${cmdName}.cmd` : cmdName);
+    exectuable = path.join(__dirname, "..", "node_modules", ".bin",
+        (process.platform === "win32") ? `${cmdName}.cmd` : cmdName);
     return fse.existsSync(exectuable) ? exectuable : null;
 }
 
 let index = 2;
-if (process.argv[index] == "-f") {
+if (process.argv[index] === "-f") {
     if (!fse.existsSync(process.argv[++index])) {
         process.exit(0);
     }

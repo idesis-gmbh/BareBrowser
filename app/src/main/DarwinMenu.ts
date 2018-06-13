@@ -12,7 +12,7 @@ export class DarwinMenu extends ApplicationMenu {
     /**
      * Build the main menu for Darwin platforms.
      * appName is used for the help menu item label name.
-     * @param {string} appName The name of the application.
+     * @param appName The name of the application.
      */
     constructor(protected appName: string) {
         super(appName);
@@ -20,12 +20,11 @@ export class DarwinMenu extends ApplicationMenu {
         this.mainMenu.append(this.buildAppMenu());
         this.mainMenu.append(this.buildEditMenu());
         this.mainMenu.append(this.buildWindowMenu());
-        //this.mainMenu.append(this.buildHelpMenu());
-	}
+        // this.mainMenu.append(this.buildHelpMenu());
+    }
 
     /**
      * Get the PasteAndMatchStyle menu item.
-     * @property {MenuItem} The Paste menu.
      */
     public get PasteAndMatchStyleMenu(): MenuItem {
         return this.pasteAndMatchStyleMenu;
@@ -33,7 +32,7 @@ export class DarwinMenu extends ApplicationMenu {
 
     /**
      * Build Application sub menu.
-     * @returns {MenuItem} The Application menu item/submenu items.
+     * @returns The Application menu item/submenu items.
      */
     private buildAppMenu(): MenuItem {
         const appMenu = new Menu();
@@ -72,7 +71,7 @@ export class DarwinMenu extends ApplicationMenu {
 
     /**
      * Build Edit sub menu.
-     * @returns {MenuItem} The Edit menu item/submenu items.
+     * @returns The Edit menu item/submenu items.
      */
     private buildEditMenu(): MenuItem {
         const editMenu: Menu = super.getEditMenu();
@@ -88,45 +87,45 @@ export class DarwinMenu extends ApplicationMenu {
 
     /**
      * Build Window sub menu.
-     * @returns {MenuItem} The Window menu item/submenu items.
+     * @returns The Window menu item/submenu items.
      */
     private buildWindowMenu(): MenuItem {
         const windowMenu = new Menu();
         windowMenu.append(new MenuItem({
-			role: "minimize",
+            role: "minimize",
         }));
         windowMenu.append(new MenuItem({
-			role: "close",
+            role: "close",
         }));
         windowMenu.append(new MenuItem({
-			role: "zoom",
+            role: "zoom",
         }));
         windowMenu.append(new MenuItem({
-			role: "togglefullscreen",
-        }));
-        windowMenu.append(this.getSeparator());
-        windowMenu.append(new MenuItem({
-			role: "zoomin",
-        }));
-        windowMenu.append(new MenuItem({
-		    role: "zoomout",
-        }));
-        windowMenu.append(new MenuItem({
-			role: "resetzoom",
+            role: "togglefullscreen",
         }));
         windowMenu.append(this.getSeparator());
         windowMenu.append(new MenuItem({
-			role: "front",
+            role: "zoomin",
+        }));
+        windowMenu.append(new MenuItem({
+            role: "zoomout",
+        }));
+        windowMenu.append(new MenuItem({
+            role: "resetzoom",
+        }));
+        windowMenu.append(this.getSeparator());
+        windowMenu.append(new MenuItem({
+            role: "front",
         }));
         return new MenuItem({
-            submenu: windowMenu,
             role: "window",
+            submenu: windowMenu,
         });
     }
 
     /**
      * Build Edit sub menu.
-     * @returns {MenuItem} The Edit menu item/submenu items.
+     * @returns The Edit menu item/submenu items.
      */
     // private buildHelpMenu(): MenuItem {
     //     const helpMenu: Menu = super.getHelpMenu("Cmd+?");
