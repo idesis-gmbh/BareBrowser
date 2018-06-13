@@ -3,7 +3,7 @@ import { Menu, MenuItem } from "electron";
 /**
  * General application menu (items) on all platforms
  */
-export class ApplicationMenu {
+export abstract class ApplicationMenu {
 
 	protected mainMenu: Menu;
     private undoMenu:  MenuItem;
