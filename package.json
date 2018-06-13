@@ -60,7 +60,7 @@
     "compress": "npm-run-all -s z:main z:renderer",
     "//##### TSLint": "#####",
     "prelint": "echo ///// TypeScript linting...",
-    "lint": "npm run cmd --  tslint --config ./app/src/tslint.json ./app/src/*.ts ./app/src/**/*.ts",
+    "lint": "npm run cmd --  tslint --project ./build/tsconfigall.json --config ./app/src/tslint.json",
     "//##### Build": "#####",
     "b:prep-dev-nm": "shx mkdir -p ./build/tmp/ && shx cp -rf ./app/package.json ./build/tmp/",
     "b:make-dev-nm": "cd ./build/tmp/ && npm i && npm prune",
