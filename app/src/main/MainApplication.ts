@@ -9,19 +9,12 @@ import { DarwinMenu } from "./DarwinMenu";
 import { Win32Menu } from "./Win32Menu";
 
 /**
- * Current Electron TypeScript definitions lack a proper definition for window events.
- * See `onWindowClose` and `onBrowserWindowFocus`.
+ * Current Electron TypeScript definitions lack a proper definition for on close window events.
+ *  @see onWindowClose and onWindowFocus
  */
-interface BrowserWindowEvent extends Event {
+// @ts-ignore
+interface IBrowserWindowCloseEvent extends Electron.Event {
     sender: Electron.BrowserWindow;
-}
-
-/**
- * Current Electron TypeScript definitions lack a proper definition for app events.
- * See `onWindowAllClosed`.
- */
-interface AppEvent extends Event {
-    sender: Electron.App;
 }
 
 /**
@@ -83,8 +76,9 @@ export class CMainApplication {
         // Create the browser window ...
         const window: Electron.BrowserWindow = new BrowserWindow(bwOptions);
         window.setContentProtection(this.settings.ContentProtection);
-        // ... bind a close handler to it ...
+        // ... bind close and focus handlers to it ...
         window.on("close", this.onWindowClose.bind(this));
+        window.on("focus", this.onWindowFocus.bind(this));
         // ... and load index.html.
         const urlObject: $URL.UrlObject = {
             pathname: $Path.join(__dirname, "..", "index.html"),
@@ -273,7 +267,6 @@ export class CMainApplication {
         app.on("open-url", this.onOpenURL.bind(this));
         app.on("open-file", this.onOpenFile.bind(this));
         app.on("web-contents-created", this.onWebContentsCreated.bind(this));
-        app.on("browser-window-focus", this.onBrowserWindowFocus.bind(this));
         app.on("window-all-closed", this.onWindowAllClosed.bind(this));
         ipcMain.on("IPC", this.onIPC.bind(this));
     }
@@ -508,9 +501,10 @@ export class CMainApplication {
     /**
      * Called when the window is focused.
      * Used to move the calling window to the end of the internal window list.
-     * @param {BrowserWindowEvent} event The event containing the calling BrowserWindow (`sender`).
+     * @param event The event containing the calling BrowserWindow (`sender`).
+     * @param window The browser window which got focused.
      */
-    private onBrowserWindowFocus(event: BrowserWindowEvent): void {
+    private onWindowFocus(event: IBrowserWindowCloseEvent): void {
         const index: number = this.windows.indexOf(event.sender);
         if (index !== -1) {
             this.windows.push(this.windows.splice(index, 1)[0]);
@@ -522,9 +516,10 @@ export class CMainApplication {
      * Remove the respective window object from the internal array and set it to
      * null to avoid leaks. Since preventDefault is never used it's ok to do the
      * removal already here (before the window actually is `closed`)
-     * @param {BrowserWindowEvent} event The event containing the calling BrowserWindow (`sender`).
+     * @param event The event containing the calling BrowserWindow (`sender`).
+     * @see IBrowserWindowCloseEvent;
      */
-    private onWindowClose(event: BrowserWindowEvent): void {
+    private onWindowClose(event: IBrowserWindowCloseEvent): void {
         const index: number = this.windows.indexOf(event.sender);
         if (index !== -1) {
             const window: Array<Electron.BrowserWindow | null> = this.windows.splice(index, 1);
@@ -534,9 +529,9 @@ export class CMainApplication {
 
     /**
      * Called when all windows are closed => quit app.
-     * @param {AppEvent} event The event containing the App (`sender`).
+     * @param event The event containing the App (`sender`).
      */
-    private onWindowAllClosed(_event: AppEvent): void {
+    private onWindowAllClosed(): void {
         app.quit();
     }
 
