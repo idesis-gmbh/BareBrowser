@@ -29,16 +29,15 @@
   "license": "MIT",
   "main": "./bin/MainProcess.js",
   "dependencies": {
-    "fs-extra": "6.0.1",
-    "mousetrap": "1.6.2"
+    "fs-extra": "8.1.0",
+    "mousetrap": "1.6.3"
   },
   "devDependencies": {
-    "typescript": "2.9.2",
-    "electron": "2.0.2",
-    "tslint": "5.10.0",
-    "@types/fs-extra": "5.0.3",
-    "@types/node": "8.10.0",
-    "@types/mousetrap": "1.6.0"
+    "typescript": "3.7.4",
+    "electron": "7.1.7",
+    "tslint": "5.20.1",
+    "@types/fs-extra": "8.0.1",
+    "@types/mousetrap": "1.6.3"
   },
   "config": {
     "arch": "all",
