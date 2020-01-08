@@ -27,7 +27,7 @@ packagerParams.push(
     "./out/",
     "--out=./release/",
     "--no-prune",
-    "--download.cache=./build/tmp/.electron-download",
+    "--download.cacheRoot=./build/tmp/.electron-download",
     "--overwrite",
     //`--executable-name="${apppj.productName}"`,
     `--appname="${apppj.productName}"`,
@@ -52,7 +52,7 @@ if (process.argv[4] === "darwin") {
     if (apppj.darwinAppCategory) {
         packagerParams.push(`--app-category-type="${apppj.darwinAppCategory}"`);
     }
-    console.log(`///// Making darwin x64 release of ${apppj.productName}...`);
+    console.log(`///// Making darwin x64 release of ${apppj.productName} ${apppj.version} ...`);
 } else if (process.argv[4] === "win32") {
     packagerParams.push(
         "--platform=win32",
@@ -74,12 +74,12 @@ if (process.argv[4] === "darwin") {
         packagerParams.push(`--win32metadata.InternalName="${apppj.win32InternalName}"`);
     }
     if (apppj.win32RequestedExecutionLevel) {
-        packagerParams.push(`--win32metadata.requestedExecutionLevel="${apppj.win32RequestedExecutionLevel}"`);
+        packagerParams.push(`--win32metadata.requested-execution-level="${apppj.win32RequestedExecutionLevel}"`);
     }
     if (apppj.win32ApplicationManifest) {
         packagerParams.push(`--win32metadata.applicationManifest="${apppj.win32ApplicationManifest}"`);
     }
-    console.log(`///// Making win32 ${apppj.config.arch} release of ${apppj.productName}...`);
+    console.log(`///// Making win32 ${apppj.config.arch} release of ${apppj.productName} ${apppj.version} ...`);
 }
 //console.log(packagerParams);
 
