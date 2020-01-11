@@ -70,13 +70,13 @@ export class Win32Menu extends ApplicationMenu {
         }));
         windowMenu.append(this.getSeparator());
         windowMenu.append(new MenuItem({
-            role: "zoomin",
+            role: "zoomIn",
         }));
         windowMenu.append(new MenuItem({
-            role: "zoomout",
+            role: "zoomOut",
         }));
         windowMenu.append(new MenuItem({
-            role: "resetzoom",
+            role: "resetZoom",
         }));
         return new MenuItem({
             role: "window",

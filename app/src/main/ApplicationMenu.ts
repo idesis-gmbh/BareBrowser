@@ -102,7 +102,7 @@ export abstract class ApplicationMenu {
         });
         editMenu.append(this.pasteMenu);
         this.selectAllMenu = new MenuItem({
-            role: "selectall",
+            role: "selectAll",
         });
         editMenu.append(this.selectAllMenu);
         return editMenu;

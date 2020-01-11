@@ -54,7 +54,7 @@ export class DarwinMenu extends ApplicationMenu {
             role: "hide",
         }));
         appMenu.append(new MenuItem({
-            role: "hideothers",
+            role: "hideOthers",
         }));
         appMenu.append(new MenuItem({
             role: "unhide",
@@ -76,7 +76,7 @@ export class DarwinMenu extends ApplicationMenu {
     private buildEditMenu(): MenuItem {
         const editMenu: Menu = super.getEditMenu();
         this.pasteAndMatchStyleMenu = new MenuItem({
-            role: "pasteandmatchstyle",
+            role: "pasteAndMatchStyle",
         });
         editMenu.append(this.pasteAndMatchStyleMenu);
         return new MenuItem({
@@ -105,13 +105,13 @@ export class DarwinMenu extends ApplicationMenu {
         }));
         windowMenu.append(this.getSeparator());
         windowMenu.append(new MenuItem({
-            role: "zoomin",
+            role: "zoomIn",
         }));
         windowMenu.append(new MenuItem({
-            role: "zoomout",
+            role: "zoomOut",
         }));
         windowMenu.append(new MenuItem({
-            role: "resetzoom",
+            role: "resetZoom",
         }));
         windowMenu.append(this.getSeparator());
         windowMenu.append(new MenuItem({
