@@ -424,7 +424,7 @@ export class CMainApplication {
      * @param args The arguments sent by the calling renderer process.
      */
     // tslint:disable-next-line:no-any
-    private onIPC(event: Electron.Event, ...args: any[]): void {
+    private onIPC(event: Electron.IpcMainEvent, ...args: any[]): void {
         switch (args[0][0]) {
             // Return the current (last) URLItem
             case "queryURLItem":
