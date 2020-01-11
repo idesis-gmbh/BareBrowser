@@ -5,9 +5,21 @@ import { $URL } from "./Modules";
  * Interface for URL items.
  */
 export interface IURLItem {
-    DoLoad: boolean; // Should this item be loaded or not?
-    OriginalURL: string; // The original given URL.
-    URL: string; // Fully expanded URL string.
+    /**
+     * Should this item be loaded or not?
+     */
+    DoLoad: boolean;
+    /**
+     *  The original given URL.
+     */
+    OriginalURL: string;
+    /**
+     * Fully expanded URL string.
+     */
+    URL: string;
+    /**
+     * Is the URL a file?
+     */
     IsFileURL: boolean;
 }
 

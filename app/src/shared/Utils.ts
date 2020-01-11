@@ -42,7 +42,13 @@ export function normalize<T>(value: T, defaultValue: T): T {
  * from a directory listing, separated in arrays.
  */
 export interface IDirectoryListing {
+    /**
+     * An array containing directories names.
+     */
     Directories: string[];
+    /**
+     * An array containing file names.
+     */
     Files: string[];
 }
 

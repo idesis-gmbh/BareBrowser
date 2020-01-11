@@ -6,7 +6,13 @@ import * as $Utils from "./Utils";
  * Maybe extended for future attributes.
  */
 export interface IAppInfo {
+    /**
+     * Name of this app.
+     */
     Name: string;
+    /**
+     * Identifier of this app.
+     */
     Identifier: string;
 }
 
@@ -14,41 +20,141 @@ export interface IAppInfo {
  * Interface for app settings.
  */
 export interface ISettings {
+    /**
+     * Properties of a browser window.
+     * Currently only the offset and the size are stored.
+     */
     Window: {
+        /**
+         * Left offset of window.
+         */
         Left: number;
+        /**
+         * Top offset of window.
+         */
         Top: number;
+        /**
+         * Width of window
+         */
         Width: number;
+        /**
+         * Height of window
+         */
         Height: number;
     };
+    /**
+     * Holds the keyboard shortcuts for various actions.
+     */
     ShortCuts: {
+        /**
+         * Enable/disable shortcuts, if the URL entry field is focused.
+         */
         Global: boolean,
+        /**
+         * Show/hide address bar.
+         */
         ToggleAddressBar: string[],
+        /**
+         * Show/hide developer tools for the browser window.
+         */
         ToggleInternalDevTools: string[],
+        /**
+         * Show/hide developer tools for the currently loaded URL.
+         */
         ToggleDevTools: string[],
+        /**
+         * Show addressbar and focus the URL entry field.
+         */
         FocusLocationBar: string[],
+        /**
+         * Reload the browser window.
+         */
         InternalReload: string[],
+        /**
+         * Reload the current page.
+         */
         Reload: string[],
+        /**
+         * Go back in browser history.
+         */
         GoBack: string[],
+        /**
+         * Go forward in browser history.
+         */
         GoForward: string[],
+        /**
+         * Leave fullscreen view.
+         */
         ExitHTMLFullscreen: string[];
+        /**
+         * Show/hide the menu on windows platforms.
+         */
         ToggleWin32Menu: string[];
     };
+    /**
+     * All known URL handler classes.
+     */
     URLHandlers: Array<{
+        /**
+         * URL handler class name (must be unique).
+         */
         ClassName: string;
+        /**
+         * JavaScrpt filename of URL handler.
+         */
         Source: string;
+        /**
+         * Configuration of URL handler.
+         */
         Config?: {};
     }>;
+    /**
+     * The user agent string used by the browser.
+     */
     UserAgent: string;
+    /**
+     * Permissions for the loaded page.
+     */
     Permissions: string[];
+    /**
+     * Allow plugins to be loaded.
+     */
     AllowPlugins: boolean;
+    /**
+     * Allow loaded pages to open popups.
+     */
     AllowPopups: boolean;
+    /**
+     * Allow loaded pages to open new windows.
+     */
     AllowNewWindows: boolean;
+    /**
+     * Delete all files in the user data directory after quitting the app.
+     */
     ClearTraces: boolean;
+    /**
+     * Support single instance mode.
+     */
     SingleInstance: boolean;
+    /**
+     * Activate the last open browser window if a new URL was requested via the command line.
+     */
     FocusOnNewURL: boolean;
+    /**
+     * Enable hardware acceleration.
+     */
     HardwareAcceleration: boolean;
+    /**
+     * Enable content protection for browser windows.
+     */
     ContentProtection: boolean;
+    /**
+     * Initial state of menu on windows platforms.
+     */
     Win32MenuState: number;
+    /**
+     * Open the given page on startup.
+     */
     Homepage: string;
 }
 
