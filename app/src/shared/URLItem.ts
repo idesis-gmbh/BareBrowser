@@ -30,7 +30,12 @@ export interface IURLItem {
  * @returns A URLItem object.
  */
 export function getURLItem(url: string): IURLItem {
-    url = url.trim();
+    url = url
+        .trim()
+        .replace(/^"/, "")
+        .replace(/^'/, "")
+        .replace(/"$/, "")
+        .replace(/'$/, "");
     if (url === "") {
         return { DoLoad: false, OriginalURL: url, URL: "", IsFileURL: false };
     }
