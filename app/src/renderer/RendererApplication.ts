@@ -143,7 +143,7 @@ export class CRendererApplication {
         });
         this.bindShortCut(this.settings.ShortCuts.Reload, () => {
             // Get the current scroll offset from the web view.
-            this.webView.send("FromRenderer", "getScrollOffset");
+            this.webView.send("IPCFromRenderer", "getScrollOffset");
             // Flag to ensure that DOMReady (see below) only does something
             // when the event was caused by a reload.
             this.reloadIssued = true;
@@ -347,7 +347,7 @@ export class CRendererApplication {
     private onDOMReady(_event: Electron.Event): void {
         if (this.reloadIssued) {
             this.reloadIssued = false;
-            this.webView.send("FromRenderer", "scrollToOffset", this.webViewScrollOffset);
+            this.webView.send("IPCFromRenderer", "scrollToOffset", this.webViewScrollOffset);
         }
     }
 
@@ -442,15 +442,31 @@ export class CRendererApplication {
     }
 
     /**
-     * This function stores the current scroll offset from the web view.
-     * Called from the web view; this is the result from sending "getScrollOffset" to the web view.
+     * Handles IPC messages from the web view.
+     * - It stores the current scroll offset from the web view. This is the result
+     *   from sending "getScrollOffset" to the web view.
+     * - It receives any keyboard event from the web view and dispatches it to this
+     *   browser window which then can handlie it with Moustrap.
      * @param event An Electron IpcMessageEvent.
      */
     private onWebViewIPCMessage(event: Electron.IpcMessageEvent): void {
-        if (event.channel === "FromWebView") {
-            if (event.args[0] === "setScrollOffset") {
-                this.webViewScrollOffset.x = event.args[1];
-                this.webViewScrollOffset.y = event.args[2];
+        if (event.channel === "IPCFromWebView") {
+            switch (event.args[0]) {
+                case "setScrollOffset":
+                    this.webViewScrollOffset.x = event.args[1];
+                    this.webViewScrollOffset.y = event.args[2];
+                    break;
+
+                case "keyboardEvent":
+                    try {
+                        document.dispatchEvent(new KeyboardEvent(
+                            event.args[1].type as string,
+                            event.args[1].dict as KeyboardEventInit),
+                        );
+                    } catch (error) {
+                        console.error("Error handling KB event from webview: " + error);
+                    }
+                    break;
             }
         }
     }
