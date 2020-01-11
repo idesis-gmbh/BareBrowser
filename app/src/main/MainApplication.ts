@@ -40,7 +40,7 @@ export class CMainApplication {
         this.setFileNames(this.appInfo.Identifier);
         this.setAppPaths(); // As early as possible!
         this.settings = this.getSettings();
-        if (this.shouldQuitForSingleInstance()) {
+        if (this.isSecondInstance()) {
             app.quit();
             return;
         }
@@ -223,24 +223,24 @@ export class CMainApplication {
      * not, registers *this* instance for single instance operation.
      * @returns True if the current running instance should quit due to another running instance.
      */
-    private shouldQuitForSingleInstance(): boolean {
+    private isSecondInstance(): boolean {
         if (this.settings.SingleInstance) {
-            // makeSingleInstance returns false if this is the first instance
-            if (app.makeSingleInstance(this.onSingleInstanceCallback.bind(this))) {
-                if (process.argv.length === 1) {
-                    console.info("Additional instance without params, quitting.");
-                } else {
-                    console.info("Additional instance, loading %s in current instance and quitting.", process.argv[process.argv.length - 1]);
-                }
-                return true;
+            // requestSingleInstanceLock returns true if this is the first instance
+            if (app.requestSingleInstanceLock()) {
+                return false;
+            }
+            if (process.argv.length === 1) {
+                console.info("Additional instance without params, quitting.");
+            } else {
+                console.info("Additional instance, loading %s in current instance and quitting.", process.argv[process.argv.length - 1]);
             }
         }
-        return false;
+        return true;
     }
 
     /**
      * Apply some settings. Most other settings have to be applied earlier.
-     * Also sets the initial URL to be loaded (if any).  Can probably used
+     * Also sets the initial URL to be loaded (if any). Can probably be used
      * in the future for more settings.
      */
     private setUp(): void {
@@ -264,6 +264,7 @@ export class CMainApplication {
         app.on("ready", this.onAppReady.bind(this));
         app.once("quit", this.onQuit.bind(this));
         app.on("activate", this.onActivate.bind(this));
+        app.on("second-instance", this.onSecondInstance.bind(this));
         app.on("open-url", this.onOpenURL.bind(this));
         app.on("open-file", this.onOpenFile.bind(this));
         app.on("web-contents-created", this.onWebContentsCreated.bind(this));
@@ -364,7 +365,7 @@ export class CMainApplication {
      * @param args The arguments passed to the instance started elsewhere.
      * @param _workingDirectory The working directory of the instance started elsewhere.
      */
-    private onSingleInstanceCallback(args: string[], _workingDirectory: string): void {
+    private onSecondInstance(_event: Electron.Event, args: string[], _workingDirectory: string): void {
         this.currentUrlItem = getURLItem(args[args.length - 1]);
         // Quit command received
         if (this.currentUrlItem.URL === $Consts.CMD_QUIT) {
