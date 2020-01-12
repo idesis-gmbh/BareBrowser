@@ -383,7 +383,8 @@ export class CRendererApplication {
      * @param callback A callback called with the boolean result of the permission check.
      */
     private onPermissionRequest(_webContents: Electron.WebContents,
-                                permission: string, callback: (permissionGranted: boolean) => void): void {
+                                permission: string,
+                                callback: (permissionGranted: boolean) => void): void {
         const grant: boolean = (this.settings.Permissions.indexOf(permission) > -1);
         console.info(`Permission '${permission}' requested, ${grant ? "granting." : "denying."}`);
         callback(grant);

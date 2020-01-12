@@ -12,8 +12,8 @@ import { Win32Menu } from "./Win32Menu";
  * Current Electron TypeScript definitions lack a proper definition for on close window events.
  *  @see onWindowClose and onWindowFocus
  */
-// @ts-ignore
 interface IBrowserWindowCloseEvent extends Electron.Event {
+    // tslint:disable-next-line: completed-docs
     sender: Electron.BrowserWindow;
 }
 
@@ -146,7 +146,7 @@ export class CMainApplication {
      */
     private setAppPaths(): void {
         // Paths must be available, thus synced.
-        // $FSE.mkdirpSync(this.userDataDirectory); // Implicitly created by $FSEmkdirpSync(this.tempDir);
+        // $FSE.mkdirpSync(this.userDataDirectory); // Implicitly created by $FSE.mkdirpSync(this.tempDir);
         $FSE.mkdirpSync(this.tempDir);
         app.setPath("userData", this.userDataDirectory);
         app.setPath("temp", this.tempDir);
