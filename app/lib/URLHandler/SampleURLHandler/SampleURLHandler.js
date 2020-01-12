@@ -2,7 +2,7 @@
  * Mandatory import.
  * See file URLHandler.js for an explanation of the imported constants.
  */
-require("../URLHandler.js");
+let urlHandler = require("../URLHandler.js");
 
 /**
  * You must always choose a class name which won't interfere with
@@ -48,8 +48,9 @@ class SampleURLHandler {
      * match the regular expression which is configured in the config object
      * (`see settings.json`).
      * @param {string} url The URL which should be opened.
+     * @param {number} urlSource Who created/issued the URL.
      */
-    handleURL(url) {
+    handleURL(url, urlSource) {
         // Store the given URL for further usage in `onDOMReady`.
         this.URL = url;
         this.Active = true;
@@ -80,7 +81,7 @@ class SampleURLHandler {
         } catch (error) {
             this.Active = false;
             console.error(className + ": error handling URL: " + this.URL + "\n", error);
-            this.HandleURLCallback(HANDLE_URL_ERROR);
+            this.HandleURLCallback(urlHandler.HANDLE_URL_ERROR);
         }
     }
 
@@ -104,10 +105,10 @@ class SampleURLHandler {
                     + "And it is shown only once.');",
                 );
                 // Signal stop for any further handlers
-                this.HandleURLCallback(HANDLE_URL_STOP);
+                this.HandleURLCallback(urlHandler.HANDLE_URL_STOP);
             } catch (error) {
                 console.error(className + ": onDOMReady: error handling URL: " + this.URL + "\n", error);
-                this.HandleURLCallback(HANDLE_URL_ERROR);
+                this.HandleURLCallback(urlHandler.HANDLE_URL_ERROR);
             }
         }
     }

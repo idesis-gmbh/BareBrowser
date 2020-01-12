@@ -5,26 +5,28 @@ import { HandleURLCallback } from "./RendererApplication";
 /**
  *  Possible return values of function `handleURL` of any URL handler class.
  */
-/**
- * An error occured handling this URL.
- * SingleInstanceBrowser will stop passing on the URL to the following handler.
- */
-export const HANDLE_URL_ERROR: number = 0;
-/**
- * This handler doesn't handle this URL.
- * SingleInstanceBrowser will pass the URL to the following handler.
- */
-export const HANDLE_URL_NONE: number = 1;
-/**
- * This handler has done something with the URL but
- * the URL should be passed on to the following handler.
- */
-export const HANDLE_URL_CONTINUE: number = 2;
-/**
- * This handler has done something with the URL
- * and any further processing should be prevented.
- */
-export const HANDLE_URL_STOP: number = 3;
+export enum HandleURL {
+    /**
+     * An error occured handling this URL.
+     * SingleInstanceBrowser will stop passing on the URL to the following handler.
+     */
+    ERROR = 0,
+    /**
+     * This handler doesn't handle this URL.
+     * SingleInstanceBrowser will pass the URL to the following handler.
+     */
+    NONE,
+    /**
+     * This handler has done something with the URL but
+     * the URL should be passed on to the following handler.
+     */
+    CONTINUE,
+    /**
+     * This handler has done something with the URL
+     * and any further processing should be prevented.
+     */
+    STOP,
+}
 
 /**
  * Interface of a URL handler
@@ -45,11 +47,12 @@ export declare class URLHandler {
     /**
      * Handles a given URL.
      * @param url The URL to be handled by the URL handler.
+     * @param urlSource 'Who' created/issued the URL.
      * @param handleURLCallback The callback function which must be called by any
      *        URL handler after handling the given URL.
      * @see Exported type HandleURLCallback in RendererApplication.ts.
      */
-    public handleURL(url: string, handleURLCallback: HandleURLCallback): void;
+    public handleURL(url: string, urlSource: number, handleURLCallback: HandleURLCallback): void;
 }
 
 /**

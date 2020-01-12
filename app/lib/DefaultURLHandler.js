@@ -2,7 +2,7 @@
  * Mandatory import.
  * See file URLHandler.js for an explanation of the imported constants.
  */
-require("./URLHandler/URLHandler.js");
+let urlHandler = require("./URLHandler/URLHandler.js");
 
 /**
  * You must always choose a class name which won't interfere with
@@ -52,8 +52,9 @@ class DefaultURLHandler {
      * URL handler loop in (see `RendererApplication.ts`) may call other
      * handlers to quickly.
      * @param {string} url The URL which should be opened.
+     * @param {number} urlSource 'Who' created/issued the URL.
      */
-    handleURL(url) {
+    handleURL(url, urlSource) {
         // Store the given URL for further usage in `onDOMReady`.
         this.URL = url;
         this.Active = true;
@@ -69,7 +70,7 @@ class DefaultURLHandler {
             this.Active = false;
             console.error(className + ": error handling URL: " + this.URL + "\n", error);
             // Signal error.
-            this.HandleURLCallback(HANDLE_URL_ERROR);
+            this.HandleURLCallback(urlHandler.HANDLE_URL_ERROR);
         }
     }
 
@@ -94,10 +95,10 @@ class DefaultURLHandler {
             // An *intentional* redirect URL can be given to this.HandleURLCallback as
             // an optional second parameter, but it will only be used if the callback
             // is called with HANDLE_URL_NONE or HANDLE_URL_CONTINUE.
-            this.HandleURLCallback(HANDLE_URL_CONTINUE, newURL !== this.URL ? newURL : null);
+            this.HandleURLCallback(urlHandler.HANDLE_URL_CONTINUE, newURL !== this.URL ? newURL : null);
         } catch (error) {
             console.error(className + ": onDOMReady: error handling URL: " + this.URL + "\n", error);
-            this.HandleURLCallback(HANDLE_URL_ERROR);
+            this.HandleURLCallback(urlHandler.HANDLE_URL_ERROR);
         }
     }
 

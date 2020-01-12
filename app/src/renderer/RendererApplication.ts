@@ -1,9 +1,9 @@
 import { BrowserWindow, ipcRenderer, Point, remote, webContents } from "electron";
 import * as $ShortCuts from "mousetrap";
 import { IAppInfo, ISettings } from "../shared/Settings";
-import { getURLItem, IURLItem } from "../shared/URLItem";
+import { getURLItem, IURLItem, URLSource } from "../shared/URLItem";
 import { BrowserHistory, BrowserHistoryItem } from "./BrowserHistory";
-import { getURLHandlerByClassName, HANDLE_URL_CONTINUE, HANDLE_URL_ERROR, HANDLE_URL_NONE, HANDLE_URL_STOP, URLHandler } from "./URLHandler";
+import { getURLHandlerByClassName, HandleURL, URLHandler } from "./URLHandler";
 
 /**
  * Exported callback for handling a URL.
@@ -33,7 +33,7 @@ export class CRendererApplication {
     private currentURLHandler: URLHandler;
     private history: BrowserHistory;
     private currentHistoryItem: BrowserHistoryItem;
-    private currentURL: string;
+    private currentURLItem: IURLItem;
     private blankPage: string = "_blank";
     private blankPageContent: string = encodeURI("data:text/html,<html><head></head><body></body></html>");
     private errorPage: string = "";
@@ -42,6 +42,7 @@ export class CRendererApplication {
      * Creates the user interface, the web content part and handles all events.
      */
     constructor() {
+        console.log("Creating new renderer");
         this.settings = ipcRenderer.sendSync("IPC", ["getSettings"]) as ISettings;
         this.appInfo = ipcRenderer.sendSync("IPC", ["getAppInfo"]) as IAppInfo;
         const fragment: DocumentFragment = new DocumentFragment();
@@ -96,7 +97,7 @@ export class CRendererApplication {
             this.loadURL(urlItem);
         } else {
             if (this.settings.Homepage !== "") {
-                this.loadURL(getURLItem(this.settings.Homepage));
+                this.loadURL(getURLItem(this.settings.Homepage, URLSource.APP));
             } else {
                 this.addressBar.style.display = "";
                 this.urlField.focus();
@@ -147,7 +148,7 @@ export class CRendererApplication {
             // Flag to ensure that DOMReady (see below) only does something
             // when the event was caused by a reload.
             this.reloadIssued = true;
-            this.loadURL(getURLItem(this.currentURL), false);
+            this.loadURL(this.currentURLItem, false);
         });
         this.bindShortCut(this.settings.ShortCuts.GoBack, () => {
             this.goBack();
@@ -182,10 +183,11 @@ export class CRendererApplication {
                 this.currentHistoryItem = this.history.addOrUpdateItem(urlItem.URL);
             }
             this.currentURLHandler = this.URLHandlers[0];
-            this.currentURL = urlItem.URL;
-            this.window.setTitle(urlItem.URL);
+            this.currentURLItem = urlItem;
+            this.window.setTitle(this.currentURLItem.URL);
             this.spinner.style.visibility = "";
-            this.currentURLHandler.handleURL(this.currentURL, this.handleURLCallback);
+            this.currentURLHandler.handleURL(this.currentURLItem.URL,
+                this.currentURLItem.Source, this.handleURLCallback);
         }
     }
 
@@ -211,43 +213,44 @@ export class CRendererApplication {
         const logMsg: string = nextHandler ? "continuing with next handler" : "last handler in chain reached";
         try {
             switch (handleURLResult) {
-                case HANDLE_URL_ERROR:
-                    console.error(`handleURL: HANDLE_URL_ERROR: Calling URL handler ${currentHandlerName} with ${this.currentURL} returned with an error, stopping.`);
+                case HandleURL.ERROR:
+                    console.error(`handleURL: ERROR: Calling URL handler ${currentHandlerName} with ${this.currentURLItem.URL} returned with an error, stopping.`);
                     return;
 
-                case HANDLE_URL_NONE:
-                    console.log(`handleURL: HANDLE_URL_NON URL: handler ${currentHandlerName} didn't handle URL ${this.currentURL}, ${logMsg}.`);
+                case HandleURL.NONE:
+                    console.log(`handleURL: NONE: URL handler ${currentHandlerName} didn't handle URL ${this.currentURLItem.URL}, ${logMsg}.`);
                     break;
 
-                case HANDLE_URL_CONTINUE:
-                    console.log(`handleURL: HANDLE_URL_CONTINUE: Successfully called URL handler ${currentHandlerName} with ${this.currentURL}, ${logMsg}.`);
+                case HandleURL.CONTINUE:
+                    console.log(`handleURL: CONTINUE: Successfully called URL handler ${currentHandlerName} with ${this.currentURLItem.URL}, ${logMsg}.`);
                     break;
 
-                case HANDLE_URL_STOP:
-                    console.log(`handleURL: HANDLE_URL_STOP: Successfully called URL handler ${currentHandlerName} with ${this.currentURL}, stopping.`);
+                case HandleURL.STOP:
+                    console.log(`handleURL: STOP: Successfully called URL handler ${currentHandlerName} with ${this.currentURLItem}.URL, stopping.`);
                     return;
 
                 default:
-                    console.error(`handleURL: ${handleURLResult}: Calling URL handler ${currentHandlerName} with ${this.currentURL} returned an unknown result (${handleURLResult}), stopping.`);
+                    console.error(`handleURL: ${handleURLResult}: Calling URL handler ${currentHandlerName} with ${this.currentURLItem.URL} returned an unknown result (${handleURLResult}), stopping.`);
                     return;
             }
-            // Proceed with next handler (= implicitly HANDLE_URL_NONE or HANDLE_URL_CONTINUE)
+            // Proceed with next handler (= implicitly NONE or CONTINUE)
             if (redirectURL) {
-                console.log(`handleURL: ${currentHandlerName} redirected from ${this.currentURL} to ${redirectURL}.`);
+                console.log(`handleURL: ${currentHandlerName} redirected from ${this.currentURLItem.URL} to ${redirectURL}.`);
             }
             if (nextHandler) {
                 if (redirectURL) {
-                    this.currentURL = redirectURL;
+                    this.currentURLItem = getURLItem(redirectURL, URLSource.PAGE);
                 }
                 this.currentURLHandler = nextHandler;
-                this.currentURLHandler.handleURL(this.currentURL, this.handleURLCallback);
+                this.currentURLHandler.handleURL(this.currentURLItem.URL,
+                    this.currentURLItem.Source, this.handleURLCallback);
             } else {
                 this.webContents.session.setPermissionRequestHandler(this.onPermissionRequest.bind(this));
             }
         } catch (error) {
-            console.error(`Error calling URL handler: ${currentHandlerName} with ${this.currentURL}\n${error}`);
+            console.error(`Error calling URL handler: ${currentHandlerName} with ${this.currentURLItem.URL}\n${error}`);
         } finally {
-            if ((handleURLResult !== HANDLE_URL_NONE) && (handleURLResult !== HANDLE_URL_CONTINUE)) {
+            if ((handleURLResult !== HandleURL.NONE) && (handleURLResult !== HandleURL.CONTINUE)) {
                 this.spinner.style.visibility = "hidden";
             }
         }
@@ -260,7 +263,7 @@ export class CRendererApplication {
     private goBack(_event?: MouseEvent): void {
         if (this.currentHistoryItem.Previous) {
             this.currentHistoryItem = this.currentHistoryItem.Previous;
-            this.loadURL(getURLItem(this.currentHistoryItem.URL), false);
+            this.loadURL(getURLItem(this.currentHistoryItem.URL, URLSource.USER), false);
         }
     }
 
@@ -271,7 +274,7 @@ export class CRendererApplication {
     private goForward(_event?: MouseEvent): void {
         if (this.currentHistoryItem.Next) {
             this.currentHistoryItem = this.currentHistoryItem.Next;
-            this.loadURL(getURLItem(this.currentHistoryItem.URL), false);
+            this.loadURL(getURLItem(this.currentHistoryItem.URL, URLSource.USER), false);
         }
     }
 
@@ -283,7 +286,7 @@ export class CRendererApplication {
         if ((event.type === "keypress") && ((event as KeyboardEvent).key !== "Enter")) {
             return;
         }
-        this.loadURL(getURLItem(this.urlField.value));
+        this.loadURL(getURLItem(this.urlField.value, URLSource.USER));
     }
 
     /**
@@ -395,7 +398,7 @@ export class CRendererApplication {
         if (event.url === this.blankPageContent) {
             this.urlField.value = "";
         } else if (event.url === this.errorPage) {
-            this.urlField.value = this.currentURL;
+            this.urlField.value = this.currentURLItem.URL;
         } else {
             this.urlField.value = event.url;
         }
@@ -413,7 +416,7 @@ export class CRendererApplication {
      * @param _event An Electron DidNavigateEvent.
      */
     private onDidNavigateInPage(event: Electron.DidNavigateInPageEvent): void {
-        this.currentHistoryItem = this.history.addOrUpdateItem(getURLItem(event.url).URL);
+        this.currentHistoryItem = this.history.addOrUpdateItem(getURLItem(event.url, URLSource.PAGE).URL);
         this.urlField.value = event.url;
         this.goBackButton.disabled = (this.history.Size < 2
             || this.currentHistoryItem === null

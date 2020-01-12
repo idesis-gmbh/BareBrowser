@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import * as $Consts from "../shared/Consts";
 import { $FSE, $Path, $URL } from "../shared/Modules";
 import * as $Settings from "../shared/Settings";
-import { getURLItem, IURLItem } from "../shared/URLItem";
+import { getURLItem, IURLItem, URLSource } from "../shared/URLItem";
 import { getDirectoryListing, IDirectoryListing } from "../shared/Utils";
 import { ApplicationMenu } from "./ApplicationMenu";
 import { DarwinMenu } from "./DarwinMenu";
@@ -250,9 +250,9 @@ export class CMainApplication {
         // Initial URL to be opened
         // tslint:disable-next-line:prefer-conditional-expression
         if (process.argv.length > 1) {
-            this.currentUrlItem = getURLItem(process.argv[process.argv.length - 1]);
+            this.currentUrlItem = getURLItem(process.argv[process.argv.length - 1], URLSource.CMD_LINE);
          } else {
-             this.currentUrlItem = getURLItem("");
+             this.currentUrlItem = getURLItem("", URLSource.APP);
          }
     }
 
@@ -340,9 +340,11 @@ export class CMainApplication {
      * Called by the two `onOpen` events. Gets the current window and loads the given URL in it.
      * @param fileOrURL The URL (or file) to be loaded.
      * @param isFile Indicates whether the given URL is a local file or not.
+     * @param source 'Who' created/issued the URL.
+     * @param browserWindow The browser window which should handle the given URL.
      */
-    private openFileOrURL(fileOrURL: string, isFile: boolean, browserWindow?: BrowserWindow): void {
-        this.currentUrlItem = getURLItem(fileOrURL);
+    private openFileOrURL(fileOrURL: string, isFile: boolean, source: URLSource, browserWindow?: BrowserWindow): void {
+        this.currentUrlItem = getURLItem(fileOrURL, source);
         // On Darwin yet determined by onOpen* so set it explicitly here
         this.currentUrlItem.IsFileURL = isFile;
         const targetWindow: Electron.BrowserWindow | null = browserWindow ? browserWindow : this.getCurrentWindow();
@@ -366,7 +368,7 @@ export class CMainApplication {
      * @param _workingDirectory The working directory of the instance started elsewhere.
      */
     private onSecondInstance(_event: Electron.Event, args: string[], _workingDirectory: string): void {
-        this.currentUrlItem = getURLItem(args[args.length - 1]);
+        this.currentUrlItem = getURLItem(args[args.length - 1], URLSource.CMD_LINE);
         // Quit command received
         if (this.currentUrlItem.URL === $Consts.CMD_QUIT) {
             this.asnycQuit();
@@ -391,7 +393,7 @@ export class CMainApplication {
      */
     private onOpenURL(event: Electron.Event, url: string): void {
         event.preventDefault();
-        this.openFileOrURL(url, false);
+        this.openFileOrURL(url, false, URLSource.CMD_LINE);
     }
 
     /**
@@ -401,7 +403,7 @@ export class CMainApplication {
      */
     private onOpenFile(event: Electron.Event, fileName: string): void {
         event.preventDefault();
-        this.openFileOrURL(fileName, true);
+        this.openFileOrURL(fileName, true, URLSource.CMD_LINE);
     }
 
     /**
@@ -414,7 +416,7 @@ export class CMainApplication {
     private onWebContentsCreated(_event: Electron.Event, webContents: Electron.WebContents): void {
         webContents.on("will-navigate", (willNavigateEvent: Electron.Event, url: string) => {
             willNavigateEvent.preventDefault();
-            this.openFileOrURL(url, url.startsWith("file://"), BrowserWindow.fromWebContents(willNavigateEvent.sender));
+            this.openFileOrURL(url, url.startsWith("file://"), URLSource.PAGE, BrowserWindow.fromWebContents(webContents));
         });
     }
 
@@ -459,7 +461,7 @@ export class CMainApplication {
                 const url: string = args[0][1];
                 if (url) {
                     event.returnValue = true;
-                    this.currentUrlItem = getURLItem(url);
+                    this.currentUrlItem = getURLItem(url, URLSource.NEW_WINDOW);
                     this.createWindow();
                 } else {
                     event.returnValue = false;

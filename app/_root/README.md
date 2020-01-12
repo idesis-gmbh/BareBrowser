@@ -410,7 +410,7 @@ The following example is a minimal URL handler which opens just any URL and sign
 SingleInstanceBrowser should proceed with the next handler.
 
 ```JavaScript
-require("../URLHandler.js");
+let urlHandler = require("../URLHandler.js");
 
 const className = "MyURLHandler";
 
@@ -428,7 +428,7 @@ class MyURLHandler {
         console.log(className + ": instance created with config: " + JSON.stringify(this.Config, 2));
     }
 
-    handleURL(url) {
+    handleURL(url, urlSource) {
         this.URL = url;
         this.Active = true;
         console.log(className + ": attempt to open URL: " + this.URL);
@@ -438,7 +438,7 @@ class MyURLHandler {
         } catch (error) {
             this.Active = false;
             console.error(className + ": error handling URL: " + this.URL + "\n", error);
-            this.HandleURLCallback(HANDLE_URL_ERROR);
+            this.HandleURLCallback(urlHandler.HANDLE_URL_ERROR);
         }
     }
 
@@ -449,16 +449,18 @@ class MyURLHandler {
         this.Active = false;
         try {
             console.log(className + ": successfully handled URL: " + this.URL);
-            this.HandleURLCallback(HANDLE_URL_CONTINUE);
+            this.HandleURLCallback(urlHandler.HANDLE_URL_CONTINUE);
         } catch (error) {
             console.error(className + ": onDOMReady: error handling URL: " + this.URL + "\n", error);
-            this.HandleURLCallback(HANDLE_URL_ERROR);
+            this.HandleURLCallback(urlHandler.HANDLE_URL_ERROR);
         }
     }
 
 }
 
-global[className] = MyURLHandler;
+if (!global[className]) {
+    global[className] = MyURLHandler;
+}
 ```
 
 ### Implementation details
@@ -466,7 +468,7 @@ global[className] = MyURLHandler;
 #### Boilerplate code
 
 ```JavaScript
-require("../URLHandler.js");
+let urlHandler = require("../URLHandler.js");
 
 const className = "MyURLHandler";
 
@@ -479,11 +481,11 @@ if (!global[className]) {
 }
 ```
 
-- `require("../URLHandler.js");` is not strictly mandatory but it contains the predefined constants
-  which must be returned by any handler after having done it's work. In the example it's assumed 
-  that this handler source file is put in its own directory below `./lib/URLHandler/`, that's why 
-  `require` points to `../URLHandler.js`. If you use a different place for your handler you must 
-  adapt the path to `URLHandler.js`.
+- `let urlHandler = require("../URLHandler.js");` is not strictly mandatory but it contains the
+  predefined numeric constants which must be returned by any handler after having done it's work.
+  In the example it's assumed that this handler source file is put in its own directory below
+  `./lib/URLHandler/`, that's why `require` points to `../URLHandler.js`. If you use a different
+  place for your handler you must adapt the path to `URLHandler.js`.
 - `const className = "MyURLHandler";` The name of the class must match the `ClassName` property
   of the handler configuration in `settings.json`.
 - `class MyURLHandler` Again, the class name must match the value given by `const className ...`
@@ -540,14 +542,34 @@ The constructor is mandatory, it has 5 arguments:
 #### Handling URLs
 
 ```JavaScript
-handleURL(url) {
+handleURL(url, urlSource) {
 ...
 }
 ```
 
-Will be called by SingleInstanceBrowser with any URL (parameter `url`) the user navigates to, be
-it by using the commandline line, the address bar or by clicking on a link in a page. The correct 
-way for handler to navigate to a URL is by setting the `src` attribute of the `webview` tag:
+This function will be called by SingleInstanceBrowser whenever a URL should be opened, be it
+by using the commandline line, the address bar or by clicking on a link in a page. The function
+has two parameters:
+
+- `url` (string) is the URL which should be opened.
+- `urlSource` (number) indicates how the URL was triggered. It can be one of the constants
+  defined in `./lib/URLHandlers.js`:
+
+    ```JavaScript
+    // Triggered by the app itself. This value will never be given to handleURL so there is no need to consider this value.
+    const URL_SOURCE_APP = 0;
+    // Manually entered by the user in the address bar.
+    const URL_SOURCE_USER = 1;
+    // Triggered by clicking on a link or by the page itself, for example through rewriting `window.location`.
+    const URL_SOURCE_PAGE = 2;
+    // A new window was opened.
+    const URL_SOURCE_NEW_WINDOW = 3;
+    // The URL was given by command line.
+    const URL_SOURCE_CMD_LINE = 4;
+    ```
+
+The correct way for handler to navigate to a URL is by setting the `src` attribute of the
+`webview` tag:
 
 ```JavaScript
 this.WebView.setAttribute("src", this.URL);
