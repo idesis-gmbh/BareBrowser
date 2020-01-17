@@ -63,6 +63,10 @@ export class CMainApplication {
         const bwOptions: Electron.BrowserWindowConstructorOptions = {
             width: this.settings.Window.Width,
             height: this.settings.Window.Height,
+            webPreferences: {
+                nodeIntegration: true,
+                webviewTag: true,
+            },
         };
         // Place new window with offset to latest current window
         const currentWindow: Electron.BrowserWindow | null = this.getCurrentWindow();
