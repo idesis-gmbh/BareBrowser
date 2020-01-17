@@ -144,7 +144,7 @@ export class CRendererApplication {
             // Flag to ensure that DOMReady (see below) only does something
             // when the event was caused by a reload.
             this.reloadIssued = true;
-            this.loadURL(this.currentURLItem, false);
+            this.webView.src = this.webView.src;
         });
         this.bindShortCut(this.settings.ShortCuts.GoBack, () => {
             this.goBack();
