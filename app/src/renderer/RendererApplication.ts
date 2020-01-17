@@ -2,7 +2,6 @@ import { BrowserWindow, ipcRenderer, Point, remote, webContents } from "electron
 import * as $ShortCuts from "mousetrap";
 import { IAppInfo, ISettings } from "../shared/Settings";
 import { getURLItem, IURLItem, URLSource } from "../shared/URLItem";
-import { BrowserHistory, BrowserHistoryItem } from "./BrowserHistory";
 import { getURLHandlerByClassName, HandleURL, URLHandler } from "./URLHandler";
 
 /**
@@ -31,8 +30,6 @@ export class CRendererApplication {
     // tslint:disable-next-line:variable-name
     private URLHandlers: URLHandler[] = [];
     private currentURLHandler: URLHandler;
-    private history: BrowserHistory;
-    private currentHistoryItem: BrowserHistoryItem;
     private currentURLItem: IURLItem;
     private blankPage: string = "_blank";
     private blankPageContent: string = encodeURI("data:text/html,<html><head></head><body></body></html>");
@@ -60,7 +57,6 @@ export class CRendererApplication {
         ipcRenderer.on("IPC", this.onIPC.bind(this));
         this.bindShortCuts();
         this.loadURLHandlers();
-        this.history = new BrowserHistory(this.blankPage);
         this.queryInitialURLItem();
     }
 
@@ -168,19 +164,15 @@ export class CRendererApplication {
      * Let the first URL handler handle the given URL.
      * @param urlItem The URL to be handled.
      */
-    private loadURL(urlItem: IURLItem, updateHistory: boolean = true): void {
+    private loadURL(urlItem: IURLItem): void {
         if (this.URLHandlers.length === 0) {
             console.warn("loadURL: No URL handlers are configured!");
         } else {
-            // Initial empty item in the browser history (always available).
+            // Initial URL
             if (urlItem.OriginalURL === this.blankPage) {
                 this.webView.setAttribute("src", this.blankPageContent);
                 this.window.setTitle(this.appInfo.Name);
                 return;
-            }
-            // Add new target or update existing target.
-            if (updateHistory) {
-                this.currentHistoryItem = this.history.addOrUpdateItem(urlItem.URL);
             }
             this.currentURLHandler = this.URLHandlers[0];
             this.currentURLItem = urlItem;
@@ -261,9 +253,8 @@ export class CRendererApplication {
      * @param _event A mouse event or null.
      */
     private goBack(_event?: MouseEvent): void {
-        if (this.currentHistoryItem.Previous) {
-            this.currentHistoryItem = this.currentHistoryItem.Previous;
-            this.loadURL(getURLItem(this.currentHistoryItem.URL, URLSource.USER), false);
+        if (this.webView.canGoBack()) {
+            this.webView.goBack();
         }
     }
 
@@ -272,9 +263,8 @@ export class CRendererApplication {
      * @param _event A mouse event or null.
      */
     private goForward(_event?: MouseEvent): void {
-        if (this.currentHistoryItem.Next) {
-            this.currentHistoryItem = this.currentHistoryItem.Next;
-            this.loadURL(getURLItem(this.currentHistoryItem.URL, URLSource.USER), false);
+        if (this.webView.canGoForward()) {
+            this.webView.goForward();
         }
     }
 
@@ -403,28 +393,19 @@ export class CRendererApplication {
         } else {
             this.urlField.value = event.url;
         }
-        this.goBackButton.disabled = (this.history.Size < 2
-            || this.currentHistoryItem === null
-            || this.currentHistoryItem.Previous === undefined);
-        this.goForwardButton.disabled = (this.history.Size < 2
-            || this.currentHistoryItem === null
-            || this.currentHistoryItem.Next === undefined);
+        this.goForwardButton.disabled = !this.webView.canGoForward();
+        this.goBackButton.disabled = !this.webView.canGoBack();
     }
 
     /**
-     * Called when the navigaion to a URL has finished.
+     * Called when the navigaion to a target inside the page has finished.
      * Used to update parts of the user interface.
-     * @param _event An Electron DidNavigateEvent.
+     * @param _event An Electron DidNavigateInPageEvent.
      */
     private onDidNavigateInPage(event: Electron.DidNavigateInPageEvent): void {
-        this.currentHistoryItem = this.history.addOrUpdateItem(getURLItem(event.url, URLSource.PAGE).URL);
         this.urlField.value = event.url;
-        this.goBackButton.disabled = (this.history.Size < 2
-            || this.currentHistoryItem === null
-            || this.currentHistoryItem.Previous === undefined);
-        this.goForwardButton.disabled = (this.history.Size < 2
-            || this.currentHistoryItem === null
-            || this.currentHistoryItem.Next === undefined);
+        this.goForwardButton.disabled = !this.webView.canGoForward();
+        this.goBackButton.disabled = !this.webView.canGoBack();
     }
 
     /**
