@@ -32,7 +32,7 @@ export class CRendererApplication {
     private currentURLHandler: URLHandler;
     private currentURLItem: IURLItem;
     private blankPage: string = "_blank";
-    private blankPageContent: string = encodeURI("data:text/html,<html><head></head><body></body></html>");
+    private blankPageContent: string = "";
     private errorPage: string = "";
 
     /**
@@ -42,6 +42,7 @@ export class CRendererApplication {
         console.log("Creating new renderer");
         this.settings = ipcRenderer.sendSync("IPC", ["getSettings"]) as ISettings;
         this.appInfo = ipcRenderer.sendSync("IPC", ["getAppInfo"]) as IAppInfo;
+        this.blankPageContent = encodeURI(`data:text/html,<html><head><title>${this.appInfo.Name}</title></head><body></body></html>`);
         const fragment: DocumentFragment = new DocumentFragment();
         this.webView = this.getWebView();
         this.addressBar = this.getAddressBar();
@@ -320,7 +321,7 @@ export class CRendererApplication {
     private onDidFailLoad(_event: Electron.DidFailLoadEvent): void {
         if (_event.isMainFrame) {
             this.errorPage = encodeURI(
-                "data:text/html,<html><head></head><body>"
+                "data:text/html,<html><head><title>Error</title></head><body>"
                 + "<p>Error loading page: <em>" + _event.validatedURL + "</em></p>"
                 + "<p>Code: <code>" + _event.errorCode + "</code></p>"
                 + "<p>Description: <code>" + _event.errorDescription + "</code></p>"
