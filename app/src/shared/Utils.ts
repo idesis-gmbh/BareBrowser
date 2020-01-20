@@ -85,3 +85,37 @@ export function getDirectoryListing(directory: string, recursive?: boolean): IDi
     fillDirectoryListing(directory, listing, recursive);
     return listing;
 }
+
+/**
+ * Checks, if two URLs are the same after the hash has been removed from both URLs.
+ * @param URL1 URL to compare.
+ * @param URL2 URL to compare.
+ * @returns true if both URLs are the same.
+ */
+export function compareBaseURLs(URL1: string, URL2: string): boolean {
+    if (URL1 === URL2) {
+        return true;
+    }
+    let url1: $URL.URL | undefined;
+    if (URL1) {
+        try {
+            url1 = new $URL.URL(URL1);
+        } catch (error) {
+            return false;
+        }
+        url1.hash = "";
+    }
+    let url2: $URL.URL | undefined;
+    if (URL2) {
+        try {
+            url2 = new $URL.URL(URL2);
+        } catch (error) {
+            return false;
+        }
+        url2.hash = "";
+    }
+    if (url1 && url2) {
+        return url1.toString() === url2.toString();
+    }
+    return false;
+}
