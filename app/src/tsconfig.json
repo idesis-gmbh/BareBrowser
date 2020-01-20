@@ -21,10 +21,18 @@
         "traceResolution": false,
         "pretty": true,
         "outDir": "../../build/tmp/js/",
+        // Only use imports from modules below build/tmp. Otherwise modules from enclosing directories
+        // would be used first which can lead to TypeScript compile errors.
+        "typeRoots": [
+            "../../build/tmp/**/*"
+        ],
         // 'baseUrl' and 'paths' enable the use of builtin definitions (like in Electron) and definitions from @types/*
         "baseUrl": "../../build/tmp/",
         "paths": {
-            "*": ["node_modules/@types/*", "node_modules/*"]
+            "*": [
+                "node_modules/@types/*",
+                "node_modules/*"
+            ]
         }
     }
 }
