@@ -1,3 +1,4 @@
+import { format as nodeFormat } from "util";
 import { $FSE, $Path } from "./Modules";
 
 /**
@@ -19,7 +20,7 @@ export function normalize<T>(value: T, defaultValue: T): T {
         }
         // By convention take the first element in 'defaultValue'
         // as the type reference for all values in 'value'.
-        const intendedType: string = typeof defaultValue[0];
+        const intendedType: string = typeof (defaultValue as unknown as Array<unknown>)[0];
         // If intendedType isn't available type info is lost so lets
         // assume, that the caller isn't really interested in getting
         // a normalized value and therefore 'value' is returned as is.
@@ -27,14 +28,76 @@ export function normalize<T>(value: T, defaultValue: T): T {
         if (intendedType === "undefined") {
             return value;
         }
-        const result: {} = value.filter((entry: {}) => {
+        const result = value.filter((entry) => {
             return (typeof entry === intendedType);
         });
-        return result as T;
+        return result as unknown as T;
     } else if (typeof value === typeof defaultValue) {
         return value;
     }
     return defaultValue;
+}
+
+/**
+ * Format a string.
+ * @param s The string to be formatted.
+ * @param params Params to be inserted in s.
+ * @returns The formatted string.
+ */
+export function format(s: string, ...params: unknown[]): string {
+    return nodeFormat(s, ...params);
+}
+
+/**
+ * Read and return a (typed) JSON file.
+ * @param fileName The file name f the JSON file.
+ * @returns The JSON object as a typed result.
+ */
+export function requireJSONFile<T>(fileName: string): T {
+    return $FSE.readJSONSync(fileName) as T;
+}
+
+/**
+ * Some frequent MIME types.
+ */
+export const MIME_TYPES: Record<string, string> = {
+    /* eslint-disable jsdoc/require-jsdoc */
+    "mp3": "audio/mp3",
+    "wav": "audio/wav",
+    "mid": "audio/midi",
+    "midi": "audio/midi",
+    "m4a": "audio/x-m4a",
+    "aac": "audio/aac",
+    "ogg": "audio/ogg",
+    "mp4": "video/mp4",
+    "mov": "video/mp4",
+    "mpg": "video/mpeg",
+    "mpeg": "video/mpeg",
+    "pdf": "application/pdf",
+    "gif": "image/gif",
+    "png": "image/png",
+    "jpg": "image/jpeg",
+    "jpeg": "image/jpeg",
+    "svg": "image/svg+xml",
+    "svgz": "image/svg+xml",
+    "txt": "text/plain",
+    "md": "text/plain",
+    "css": "text/css",
+    "htm": "text/html",
+    "html": "text/html",
+    "js": "text/javascript",
+    "json": "application/json",
+    "xml": "text/xml",
+    /* eslint-enable */
+};
+
+/**
+ * Resolve some frequent MIME types by file extension.
+ * @param extension The file extension.
+ * @returns The resolved MIME tye or undefined.
+ */
+export function getMimeTypeFromFileExtension(extension: string): string | undefined {
+    return MIME_TYPES[extension.replace(".", "").toLowerCase()];
 }
 
 /**
@@ -56,11 +119,11 @@ export interface IDirectoryListing {
  * Fill a DirectoryListing object with the contents from `directory`.
  * @param directory The path for which the directory listing should be executed.
  * @param outListing A DirectoryListing object which receives the result of reading the contents of `directory`.
- * @param recursive `True` if reading the directory should be executed recursively.
+ * @param recursive `true` if reading the directory should be executed recursively.
  */
 export function fillDirectoryListing(directory: string, outListing: IDirectoryListing, recursive?: boolean): void {
     const entries: string[] = $FSE.readdirSync(directory);
-    outListing.Directories.push(directory);
+    // outListing.Directories.push(directory);
     for (const entry of entries) {
         const resolvedFile: string = $Path.resolve(directory, entry);
         if ($FSE.lstatSync(resolvedFile).isDirectory()) {
@@ -81,41 +144,7 @@ export function fillDirectoryListing(directory: string, outListing: IDirectoryLi
  * @returns A DirectoryListing object which contains the result of reading the contents of `directory`.
  */
 export function getDirectoryListing(directory: string, recursive?: boolean): IDirectoryListing {
-    const listing: IDirectoryListing = { Directories: [], Files: [] };
+    const listing: IDirectoryListing = { Directories: [], Files: [] }; // eslint-disable-line jsdoc/require-jsdoc
     fillDirectoryListing(directory, listing, recursive);
     return listing;
-}
-
-/**
- * Checks, if two URLs are the same after the hash has been removed from both URLs.
- * @param URL1 URL to compare.
- * @param URL2 URL to compare.
- * @returns true if both URLs are the same.
- */
-export function compareBaseURLs(URL1: string, URL2: string): boolean {
-    if (URL1 === URL2) {
-        return true;
-    }
-    let url1: $URL.URL | undefined;
-    if (URL1) {
-        try {
-            url1 = new $URL.URL(URL1);
-        } catch (error) {
-            return false;
-        }
-        url1.hash = "";
-    }
-    let url2: $URL.URL | undefined;
-    if (URL2) {
-        try {
-            url2 = new $URL.URL(URL2);
-        } catch (error) {
-            return false;
-        }
-        url2.hash = "";
-    }
-    if (url1 && url2) {
-        return url1.toString() === url2.toString();
-    }
-    return false;
 }

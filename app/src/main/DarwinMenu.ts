@@ -1,5 +1,7 @@
 import { Menu, MenuItem } from "electron";
+import { ISettings } from "../shared/Settings";
 import { ApplicationMenu } from "./ApplicationMenu";
+import { MainApplication } from "./MainApplication";
 
 /**
  * The menu for the application on Darwin platforms.
@@ -12,10 +14,12 @@ export class DarwinMenu extends ApplicationMenu {
     /**
      * Build the main menu for Darwin platforms.
      * appName is used for the help menu item label name.
+     * @param mainApp Instance of MainApplication.
+     * @param settings The application settings.
      * @param appName The name of the application.
      */
-    constructor(protected appName: string) {
-        super(appName);
+    constructor(protected mainApp: MainApplication, protected settings: ISettings, protected appName: string) {
+        super(mainApp, settings, appName);
         this.mainMenu = new Menu();
         this.mainMenu.append(this.buildAppMenu());
         this.mainMenu.append(this.buildEditMenu());
@@ -25,6 +29,7 @@ export class DarwinMenu extends ApplicationMenu {
 
     /**
      * Get the PasteAndMatchStyle menu item.
+     * @type {MenuItem}
      */
     public get PasteAndMatchStyleMenu(): MenuItem {
         return this.pasteAndMatchStyleMenu;
@@ -32,12 +37,12 @@ export class DarwinMenu extends ApplicationMenu {
 
     /**
      * Build Application sub menu.
-     * @returns The Application menu item/submenu items.
+     * @returns The Application menu.
      */
     private buildAppMenu(): MenuItem {
         const appMenu = new Menu();
         appMenu.append(new MenuItem({
-            role: "about",
+            role: "about", // eslint-disable-line jsdoc/require-jsdoc
         }));
         // appMenu.append(this.getSeparator());
         // appMenu.append(new MenuItem({
@@ -46,26 +51,26 @@ export class DarwinMenu extends ApplicationMenu {
         // }));
         appMenu.append(this.getSeparator());
         appMenu.append(new MenuItem({
-            role: "services",
-            submenu: new Menu(),
+            role: "services", // eslint-disable-line jsdoc/require-jsdoc
+            submenu: new Menu(), // eslint-disable-line jsdoc/require-jsdoc
         }));
         appMenu.append(this.getSeparator());
         appMenu.append(new MenuItem({
-            role: "hide",
+            role: "hide", // eslint-disable-line jsdoc/require-jsdoc
         }));
         appMenu.append(new MenuItem({
-            role: "hideOthers",
+            role: "hideOthers", // eslint-disable-line jsdoc/require-jsdoc
         }));
         appMenu.append(new MenuItem({
-            role: "unhide",
+            role: "unhide", // eslint-disable-line jsdoc/require-jsdoc
         }));
         appMenu.append(this.getSeparator());
         appMenu.append(new MenuItem({
-            role: "quit",
+            role: "quit", // eslint-disable-line jsdoc/require-jsdoc
         }));
         return new MenuItem({
-            label: "App",
-            submenu: appMenu,
+            label: "App", // eslint-disable-line jsdoc/require-jsdoc
+            submenu: appMenu, // eslint-disable-line jsdoc/require-jsdoc
         });
     }
 
@@ -76,12 +81,12 @@ export class DarwinMenu extends ApplicationMenu {
     private buildEditMenu(): MenuItem {
         const editMenu: Menu = super.getEditMenu();
         this.pasteAndMatchStyleMenu = new MenuItem({
-            role: "pasteAndMatchStyle",
+            role: "pasteAndMatchStyle", // eslint-disable-line jsdoc/require-jsdoc
         });
         editMenu.append(this.pasteAndMatchStyleMenu);
         return new MenuItem({
-            label: "Edit", // Why doesn't this have a builtin translation based on role like windowMenu and help
-            submenu: editMenu,
+            role: "editMenu", // eslint-disable-line jsdoc/require-jsdoc
+            submenu: editMenu, // eslint-disable-line jsdoc/require-jsdoc
         });
     }
 
@@ -92,40 +97,43 @@ export class DarwinMenu extends ApplicationMenu {
     private buildWindowMenu(): MenuItem {
         const windowMenu = new Menu();
         windowMenu.append(new MenuItem({
-            role: "minimize",
+            role: "minimize", // eslint-disable-line jsdoc/require-jsdoc
         }));
         windowMenu.append(new MenuItem({
-            role: "close",
+            role: "close", // eslint-disable-line jsdoc/require-jsdoc
         }));
         windowMenu.append(new MenuItem({
-            role: "zoom",
+            role: "zoom", // eslint-disable-line jsdoc/require-jsdoc
         }));
         windowMenu.append(new MenuItem({
-            role: "togglefullscreen",
+            role: "togglefullscreen", // eslint-disable-line jsdoc/require-jsdoc
         }));
         windowMenu.append(this.getSeparator());
         windowMenu.append(new MenuItem({
-            role: "zoomIn",
+            role: "zoomIn", // eslint-disable-line jsdoc/require-jsdoc
         }));
         windowMenu.append(new MenuItem({
-            role: "zoomOut",
+            role: "zoomOut", // eslint-disable-line jsdoc/require-jsdoc
         }));
         windowMenu.append(new MenuItem({
-            role: "resetZoom",
+            role: "resetZoom", // eslint-disable-line jsdoc/require-jsdoc
         }));
         windowMenu.append(this.getSeparator());
         windowMenu.append(new MenuItem({
-            role: "front",
+            role: "front", // eslint-disable-line jsdoc/require-jsdoc
         }));
+        // windowMenu.append(this.getSeparator());
+        // windowMenu.append(this.getShowAddressBarMenu("ctrl+alt+left"));
+        // windowMenu.append(this.getSeparator());
         return new MenuItem({
-            role: "window",
-            submenu: windowMenu,
+            role: "window", // eslint-disable-line jsdoc/require-jsdoc
+            submenu: windowMenu, // eslint-disable-line jsdoc/require-jsdoc
         });
     }
 
     /**
-     * Build Edit sub menu.
-     * @returns The Edit menu item/submenu items.
+     * Build Help sub menu.
+     * @returns The Help menu item/submenu items.
      */
     // private buildHelpMenu(): MenuItem {
     //     const helpMenu: Menu = super.getHelpMenu("Cmd+?");

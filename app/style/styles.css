@@ -17,10 +17,9 @@ div {
 
 #addressBar {
     display: inline-table;
-    padding: 0.3em 0.7em 0.3em 0.3em;
+    padding: 0.5em 1em 0.5em 0.5em;
     width: 100%;
     flex-grow: 0;
-    background-color: rgb(240, 240, 240);
 }
 
 #navigationButtonsContainer {
@@ -47,17 +46,70 @@ div {
 
 #spinner {
     position: absolute;
-    right: 0.5em;
+    right: 0.7em;
 }
 
 #spinner-img {
     position: relative;
     width: 1em;
-    top: 0.23em;
-    right: 0.1em;
+    top: 0.2em;
+    right: 0;
+}
+
+#addressHint {
+    display: block;
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    left: 0;
+    bottom: 0;
+    max-width: calc(100vw - 30px);
+}
+
+#addressHint.hidden {
+    display: none;
+}
+
+#addressHintURL {
+    display: inline-block;
+    margin: 0;
+    padding: 0.4em 0.2em 0.4em 0.5em;
+    border-radius: 0.5em;
+    background-color: rgba(230, 230, 230, 1);
+    font-size: 8.5pt;
+    width: 100%;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    white-space: nowrap;
 }
 
 #webView {
+    margin: 0;
+    padding: 0;
     flex-grow: 1;
     background-color: white;
+}
+
+#errorInfo {
+    margin: 0 0.5em 0.5em 0.5em;
+    padding: 1em;
+    flex-grow: 0;
+    border: 2px solid rgba(255, 0, 0, 0.3);
+    border-radius: 0.5em;
+    font-size: 10pt;
+    cursor: pointer;
+}
+
+#addressBar[style="display: none;"] + #errorInfo {
+    margin: 0.5em 0.5em 0.5em 0.5em;
+}
+
+#errorInfo * {
+    margin: 0;
+    padding: 0;
+}
+
+#errorInfo strong {
+    display: inline-block;
+    width: 11em;
 }

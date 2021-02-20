@@ -1,20 +1,7 @@
-import { $FSE } from "./Modules";
+import { app } from "electron";
+import { APP_INFO } from "./AppInfo";
+import { AnyObject } from "./Types";
 import * as $Utils from "./Utils";
-
-/**
- * Holds app name and identifier.
- * Maybe extended for future attributes.
- */
-export interface IAppInfo {
-    /**
-     * Name of this app.
-     */
-    Name: string;
-    /**
-     * Identifier of this app.
-     */
-    Identifier: string;
-}
 
 /**
  * Interface for app settings.
@@ -34,13 +21,22 @@ export interface ISettings {
          */
         Top: number;
         /**
-         * Width of window
+         * Treat Left and Top as relative to the the current screen. The
+         * current screen is the one with the mouse cursor inside it.
+         */
+        LeftTopOfCurrentScreen: boolean;
+        /**
+         * Width of window.
          */
         Width: number;
         /**
-         * Height of window
+         * Height of window.
          */
         Height: number;
+        /**
+         * Open new window with an offset relative to the current window (Left and Top).
+         */
+        NewRelativeToCurrent: boolean;
     };
     /**
      * Holds the keyboard shortcuts for various actions.
@@ -67,6 +63,10 @@ export interface ISettings {
          */
         FocusLocationBar: string[],
         /**
+         * Open a new window.
+         */
+        NewWindow: string[],
+        /**
          * Reload the browser window.
          */
         InternalReload: string[],
@@ -92,22 +92,34 @@ export interface ISettings {
         ToggleWin32Menu: string[];
     };
     /**
-     * All known URL handler classes.
+     * All known request handler classes.
      */
-    URLHandlers: Array<{
+    RequestHandlers: {
         /**
-         * URL handler class name (must be unique).
+         * Request handler will be loaded or not.
          */
-        ClassName: string;
+        Load: boolean;
         /**
-         * JavaScrpt filename of URL handler.
+         * Request handler is active or not.
+         */
+        Active: boolean;
+        /**
+         * JavaScrpt filename of request handler.
          */
         Source: string;
         /**
-         * Configuration of URL handler.
+         * Configuration of request handler.
          */
-        Config?: {};
-    }>;
+        Config?: AnyObject;
+    }[];
+    /**
+     * Log all requests made by users/pages.
+     */
+    LogRequests: boolean;
+    /**
+     * Copy all console messages from the loaded page to the internal console.
+     */
+    CaptureConsole: boolean;
     /**
      * The user agent string used by the browser.
      */
@@ -141,6 +153,10 @@ export interface ISettings {
      */
     FocusOnNewURL: boolean;
     /**
+     * Force activating the app on Darwin.
+     */
+    DarwinForceFocus: boolean;
+    /**
      * Enable hardware acceleration.
      */
     HardwareAcceleration: boolean;
@@ -149,6 +165,10 @@ export interface ISettings {
      */
     ContentProtection: boolean;
     /**
+     * Availability of the addressbar.
+     */
+    AddressBar: number;
+    /**
      * Initial state of menu on windows platforms.
      */
     Win32MenuState: number;
@@ -156,6 +176,10 @@ export interface ISettings {
      * Open the given page on startup.
      */
     Homepage: string;
+    /**
+     * Scheme for builtin URLs like bb://settings
+     */
+    Scheme: string;
 }
 
 /**
@@ -163,12 +187,18 @@ export interface ISettings {
  * @returns A Settings object.
  */
 export function getDefaultSettings(): ISettings {
+    /**
+     * @see ISettings
+     */
+    /* eslint-disable jsdoc/require-jsdoc */
     return {
         Window: {
-            Left: 50,
-            Top: 50,
-            Width: 1024,
-            Height: 768,
+            Left: 10,
+            Top: 10,
+            LeftTopOfCurrentScreen: true,
+            Width: 1280,
+            Height: 900,
+            NewRelativeToCurrent: true,
         },
         ShortCuts: {
             Global: true,
@@ -176,20 +206,62 @@ export function getDefaultSettings(): ISettings {
             ToggleInternalDevTools: ["mod+shift+d"],
             ToggleDevTools: ["mod+d"],
             FocusLocationBar: ["mod+l"],
-            InternalReload: ["mod+shift+r", "shift+f5"],
+            NewWindow: ["mod+n"],
+            // InternalReload: ["mod+shift+r", "shift+f5"],
+            InternalReload: [""],
             Reload: ["mod+r", "f5"],
             GoBack: ["ctrl+alt+left"],
             GoForward: ["ctrl+alt+right"],
             ExitHTMLFullscreen: ["esc"],
             ToggleWin32Menu: ["ctrl+h"],
         },
-        URLHandlers: [
+        RequestHandlers: [
             {
-                ClassName: "DefaultURLHandler",
-                Source: "./lib/DefaultURLHandler.js",
+                Load: false,
+                Active: false,
+                Source: "../lib/RequestHandlers/RequestLoggerHandler.js"
+            },
+            {
+                Load: false,
+                Active: false,
+                Source: "../lib/RequestHandlers/FilterRequestHandler.js",
+                Config: {
+                    Filter: [
+                        "^https://github.com(/.*)?",
+                        "^https://github.githubassets.com(/.*)?",
+                        "^https?://(.*\\.)?heise.de(/.*)?",
+                        "^https://heise.cloudimg.io(/.*)?",
+                        "^<LOAD>$",
+                        "^<BACK>$",
+                        "^<FORWARD>$",
+                        "^<RELOAD>$",
+                        "^data:text/html,.*",
+                        "^bb://.*"
+                    ],
+                    LogAllow: false,
+                    LogDeny: true
+                }
+            },
+            {
+                Load: false,
+                Active: false,
+                Source: "../lib/RequestHandlers/RequestHandlerTemplate.js",
+                Config: {
+                    Log: true
+                }
+            },
+            {
+                Load: true,
+                Active: true,
+                Source: "../lib/RequestHandlers/DefaultRequestHandler.js",
+                Config: {
+                    Log: false
+                }
             },
         ],
-        UserAgent: typeof navigator === "undefined" ? "" : navigator.userAgent,
+        LogRequests: false,
+        CaptureConsole: true,
+        UserAgent: app.userAgentFallback,
         Permissions: ["fullscreen"],
         AllowPlugins: false,
         AllowPopups: false,
@@ -197,11 +269,15 @@ export function getDefaultSettings(): ISettings {
         ClearTraces: false,
         SingleInstance: true,
         FocusOnNewURL: true,
+        DarwinForceFocus: false,
         HardwareAcceleration: true,
         ContentProtection: false,
+        AddressBar: 2,
         Win32MenuState: 1,
-        Homepage: "",
+        Homepage: "bb://home",
+        Scheme: "bb",
     };
+    /* eslint-enable */
 }
 
 /**
@@ -213,24 +289,29 @@ export function getDefaultSettings(): ISettings {
 export function getSettings(configFile: string): ISettings {
     let settings: ISettings;
     try {
-        settings = $FSE.readJsonSync(configFile);
+        settings = $Utils.requireJSONFile<ISettings>(configFile);
     } catch (error) {
         console.error("Could't read configuration file", configFile, error);
         return getDefaultSettings();
     }
     let userAgent: string;
-    // tslint:disable-next-line:prefer-conditional-expression
-    if (typeof settings.UserAgent !== "string") {
-        userAgent = (typeof navigator === "undefined" ? "" : navigator.userAgent);
+    if (settings.UserAgent === "") {
+        userAgent = app.userAgentFallback;
     } else {
         userAgent = settings.UserAgent;
     }
+    /**
+     * @see ISettings
+     */
+    /* eslint-disable jsdoc/require-jsdoc */
     settings = {
         Window: {
-            Left: $Utils.normalize(settings.Window.Left, 50),
-            Top: $Utils.normalize(settings.Window.Top, 50),
-            Width: $Utils.normalize(settings.Window.Width, 1024),
-            Height: $Utils.normalize(settings.Window.Height, 768),
+            Left: $Utils.normalize(settings.Window.Left, 10),
+            Top: $Utils.normalize(settings.Window.Top, 10),
+            LeftTopOfCurrentScreen: $Utils.normalize(settings.Window.LeftTopOfCurrentScreen, true),
+            Width: $Utils.normalize(settings.Window.Width, 1280),
+            Height: $Utils.normalize(settings.Window.Height, 900),
+            NewRelativeToCurrent: $Utils.normalize(settings.Window.NewRelativeToCurrent, true),
         },
         ShortCuts: {
             Global: $Utils.normalize(settings.ShortCuts.Global, true),
@@ -238,14 +319,18 @@ export function getSettings(configFile: string): ISettings {
             ToggleInternalDevTools: $Utils.normalize(settings.ShortCuts.ToggleInternalDevTools, ["mod+shift+d"]),
             ToggleDevTools: $Utils.normalize(settings.ShortCuts.ToggleDevTools, ["mod+d"]),
             FocusLocationBar: $Utils.normalize(settings.ShortCuts.FocusLocationBar, ["mod+l"]),
-            InternalReload: $Utils.normalize(settings.ShortCuts.InternalReload, ["mod+shift+r", "shift+f5"]),
+            NewWindow: $Utils.normalize(settings.ShortCuts.NewWindow, ["mod+n"]),
+            // InternalReload: $Utils.normalize(settings.ShortCuts.InternalReload, ["mod+shift+r", "shift+f5"]),
+            InternalReload: $Utils.normalize(settings.ShortCuts.InternalReload, [""]),
             Reload: $Utils.normalize(settings.ShortCuts.Reload, ["mod+r", "f5"]),
             GoBack: $Utils.normalize(settings.ShortCuts.GoBack, ["ctrl+alt+left"]),
             GoForward: $Utils.normalize(settings.ShortCuts.GoForward, ["ctrl+alt+right"]),
             ExitHTMLFullscreen: $Utils.normalize(settings.ShortCuts.ExitHTMLFullscreen, ["esc"]),
             ToggleWin32Menu: $Utils.normalize(settings.ShortCuts.ToggleWin32Menu, ["ctrl+h"]),
         },
-        URLHandlers: settings.URLHandlers,
+        RequestHandlers: settings.RequestHandlers,
+        LogRequests: $Utils.normalize(settings.LogRequests, false),
+        CaptureConsole: $Utils.normalize(settings.CaptureConsole, true),
         UserAgent: userAgent,
         Permissions: $Utils.normalize(settings.Permissions, ["fullscreen"]),
         AllowPlugins: $Utils.normalize(settings.AllowPlugins, false),
@@ -254,11 +339,15 @@ export function getSettings(configFile: string): ISettings {
         ClearTraces: $Utils.normalize(settings.ClearTraces, false),
         SingleInstance: $Utils.normalize(settings.SingleInstance, true),
         FocusOnNewURL: $Utils.normalize(settings.FocusOnNewURL, true),
+        DarwinForceFocus: $Utils.normalize(settings.DarwinForceFocus, false),
         HardwareAcceleration: $Utils.normalize(settings.HardwareAcceleration, true),
         ContentProtection: $Utils.normalize(settings.ContentProtection, false),
+        AddressBar: $Utils.normalize(settings.AddressBar, 2),
         Win32MenuState: $Utils.normalize(settings.Win32MenuState, 1),
-        Homepage: $Utils.normalize(settings.Homepage, "").trim(),
+        Homepage: $Utils.normalize(settings.Homepage, "bb://home").trim().replace(/\$APP_PATH\$/g, APP_INFO.APP_PATH_PKG),
+        Scheme: $Utils.normalize(settings.Scheme, "bb"),
     };
+    /* eslint-enable */
     if ([0, 1, 2].indexOf(settings.Win32MenuState) === -1) {
         settings.Win32MenuState = 1;
     }

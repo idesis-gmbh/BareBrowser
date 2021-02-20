@@ -1,8 +1,6 @@
 {
     "extends": "../app/src/tsconfig.json",
     "files": [
-        "../app/src/MainProcess.ts",
-        "../app/src/RendererProcess.ts",
         "../app/src/preload/preload.ts"
     ]
 }

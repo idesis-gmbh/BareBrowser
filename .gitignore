@@ -3,4 +3,3 @@ build/tmp
 node_modules
 out
 .vscode
-package-lock.json

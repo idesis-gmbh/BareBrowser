@@ -1,46 +1,53 @@
 {
-  "name": "singleinstancebrowser",
-  "productName": "SIB",
-  "description": "A minimalist single window/single instance browser, invokable via command line.",
+  "name": "barebrowser",
+  "productName": "BareBrowser",
+  "description": "A minimalist browser for specific tasks in controlled environments.",
   "companyname": "idesis GmbH",
-  "copyright": "©2017, 2018, 2019, 2020 idesis GmbH",
-  "version": "2.0.0",
-  "identifier": "de.idesis.singleinstancebrowser",
+  "copyright": "©2021 idesis GmbH",
+  "version": "2.0.0-beta1",
+  "-buildVersion": 4367,
+  "identifier": "de.idesis.barebrowser",
+  "identifierRoot": "",
+  "executableName": "bb",
   "darwinAppCategory": "public.app-category.productivity",
-  "win32FileDescription": "SingleInstanceBrowser",
-  "win32InternalName": "idesis SingleInstanceBrowser",
+  "win32FileDescription": "BareBrowser",
+  "win32InternalName": "idesis BareBrowser",
   "win32RequestedExecutionLevel": "asInvoker",
   "win32ApplicationManifest": "",
-  "homepage": "https://github.com/idesis-gmbh/SingleInstanceBrowser",
+  "homepage": "https://github.com/idesis-gmbh/BareBrowser",
   "author": {
     "name": "Michael Nitze",
     "email": "michael.nitze@idesis.de"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/idesis-gmbh/SingleInstanceBrowser.git"
+    "url": "git+https://github.com/idesis-gmbh/BareBrowser.git"
   },
   "readme": "README.md",
   "bugs": {
-    "url": "https://github.com/idesis-gmbh/SingleInstanceBrowser/issues",
+    "url": "https://github.com/idesis-gmbh/BareBrowser/issues",
     "email": "produktion@idesis.de"
   },
   "private": false,
   "license": "MIT",
   "main": "./bin/MainProcess.js",
   "dependencies": {
-    "fs-extra": "8.1.0",
-    "mousetrap": "1.6.3"
+    "fs-extra": "9.1.0",
+    "mousetrap": "1.6.5"
   },
   "devDependencies": {
-    "typescript": "3.7.4",
-    "electron": "7.1.7",
-    "tslint": "5.20.1",
-    "@types/fs-extra": "8.0.1",
-    "@types/mousetrap": "1.6.3"
+    "typescript": "4.1.5",
+    "electron": "11.3.0",
+    "eslint": "7.20.0",
+    "eslint-plugin-jsdoc": "32.0.2",
+    "@types/node": "12.12.42",
+    "@types/fs-extra": "9.0.7",
+    "@types/mousetrap": "1.6.5",
+    "@typescript-eslint/parser": "4.15.1",
+    "@typescript-eslint/eslint-plugin": "4.15.1"
   },
   "config": {
-    "arch": "all",
-    "pkgParams": "--quiet --asar.unpackDir=\"{res,lib/URLHandler}\""
+    "arch": "x64",
+    "pkgParams": "--quiet --asar.unpackDir=\"{res,lib/RequestHandlers}\""
   }
 }

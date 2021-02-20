@@ -1,9 +1,11 @@
 {
     "Window": {
-        "Left": 50,
-        "Top": 50,
-        "Width": 1024,
-        "Height": 768
+        "Left": 10,
+        "Top": 10,
+        "LeftTopOfCurrentScreen": true,
+        "Width": 1280,
+        "Height": 900,
+        "NewRelativeToCurrent": true
     },
     "ShortCuts": {
         "Global": true,
@@ -19,9 +21,11 @@
         "FocusLocationBar": [
             "mod+l"
         ],
+        "NewWindow": [
+            "mod+n"
+        ],
         "InternalReload": [
-            "mod+shift+r",
-            "shift+f5"
+            ""
         ],
         "Reload": [
             "mod+r",
@@ -40,33 +44,67 @@
             "ctrl+h"
         ]
     },
-    "URLHandlers": [
+    "RequestHandlers": [
         {
-            "Note1": "To activate this sample URL handler rename `Source_` to 'Source'.",
-            "Note2": "For production simply delete this handler element.",
-            "ClassName": "SampleURLHandler",
-            "Source_": "./lib/URLHandler/SampleURLHandler/SampleURLHandler.js",
+            "Load": false,
+            "Active": false,
+            "Source": "../lib/RequestHandlers/default/LoggerRequestHandler.js"
+        },
+        {
+            "Load": false,
+            "Active": false,
+            "Source": "../lib/RequestHandlers/default/FilterRequestHandler.js",
             "Config": {
-                "URLRegExp": "\\bhttps://github.com/idesis-gmbh/SingleInstanceBrowser/blob/master/app/_root/README.md\\b"
+                "Filter": [
+                    "^https://github.com(/.*)?",
+                    "^https://github.githubassets.com(/.*)?",
+                    "^https?://(.*\\.)?heise.de(/.*)?",
+                    "^https://heise.cloudimg.io(/.*)?",
+                    "^<LOAD>$",
+                    "^<BACK>$",
+                    "^<FORWARD>$",
+                    "^<RELOAD>$",
+                    "^data:text/html,.*",
+                    "^bb://.*"
+                ],
+                "LogAllow": false,
+                "LogDeny": true
             }
         },
         {
-            "ClassName": "DefaultURLHandler",
-            "Source": "./lib/DefaultURLHandler.js"
+            "Load": false,
+            "Active": false,
+            "Source": "../lib/RequestHandlers/RequestHandlerTemplate.js",
+            "Config": {
+                "Log": true
+            }
+        },
+        {
+            "Load": true,
+            "Active": true,
+            "Source": "../lib/RequestHandlers/default/DefaultRequestHandler.js",
+            "Config": {
+                "Log": false
+            }
         }
     ],
+    "LogRequests": false,
+    "CaptureConsole": true,
     "UserAgent": "",
     "Permissions": [
         "fullscreen"
     ],
-    "AllowPlugins": true,
+    "AllowPlugins": false,
     "AllowPopups": false,
     "AllowNewWindows": true,
     "ClearTraces": false,
     "SingleInstance": true,
     "FocusOnNewURL": true,
+    "DarwinForceFocus": false,
     "HardwareAcceleration": true,
     "ContentProtection": false,
+    "AddressBar": 2,
     "Win32MenuState": 1,
-    "Homepage": ""
+    "Homepage": "bb://home",
+    "Scheme": "bb"
 }

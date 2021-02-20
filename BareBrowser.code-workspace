@@ -1,0 +1,28 @@
+{
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            // Adjust to your needs
+            // "path": "/Users/johndoe/Library/Application Support/de.idesis.barebrowser"
+            // "path": "%APPDATA%\\de.idesis.barebrowser"
+        }
+    ],
+    "settings": {
+        "eslint.options": {
+            "configFile": "./build/tmp/eslintrc.json",
+        },
+        "-eslint.format.enable": true,
+        "eslint.validate": [
+            "typescript"
+        ],
+        "eslint.alwaysShowStatus": true,
+        "eslint.nodePath": "./build/tmp",
+    },
+    "extensions": {
+        "recommendations": [
+            "dbaeumer.vscode-eslint",
+        ]
+    }
+}

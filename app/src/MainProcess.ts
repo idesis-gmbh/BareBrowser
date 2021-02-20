@@ -1,5 +1,5 @@
 import { dialog } from "electron";
-import { CMainApplication } from "./main/MainApplication";
+import { MainApplication } from "./main/MainApplication";
 
 /**
  * Something similar can be found in the Electron sample app, but according to
@@ -19,4 +19,4 @@ process.on("uncaughtException", (error: Error) => {
 /**
  * Start application by creating an instance of the main application class.
  */
-const mainApplication: CMainApplication = new CMainApplication();
+const mainApplication: MainApplication = new MainApplication();

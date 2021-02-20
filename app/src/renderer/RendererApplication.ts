@@ -1,114 +1,134 @@
 import { BrowserWindow, ipcRenderer, Point, remote, webContents } from "electron";
 import * as $ShortCuts from "mousetrap";
-import { IAppInfo, ISettings } from "../shared/Settings";
-import { getURLItem, IURLItem, URLSource } from "../shared/URLItem";
-import { getURLHandlerByClassName, HandleURL, URLHandler } from "./URLHandler";
-
-/**
- * Exported callback for handling a URL.
- * @see Funtion handleURLCallback in class `CRendererApplication`.
- */
-export type HandleURLCallback = (handleURLResult: number, redirectURL?: string) => void;
+import { APP_INFO } from "../shared/AppInfo";
+import { getIPCMessage, IPC, IPC_MAIN_RENDERER, IPC_WEBVIEW_RENDERER } from "../shared/IPC";
+import { ISettings } from "../shared/Settings";
+import { AnyObject } from "../shared/Types";
+import { IURLItem } from "../shared/URLItem";
+import { format } from "../shared/Utils";
 
 /**
  * The class for the renderer application part. Creates a browser window and handles anything else.
  */
-export class CRendererApplication {
+export class RendererApplication {
 
+    private window: BrowserWindow;
+    private windowID: number;
+    private webContents: webContents;
+    private ready = false;
     private settings: ISettings;
-    private appInfo: IAppInfo;
     private addressBar: HTMLDivElement;
     private goBackButton: HTMLButtonElement;
     private goForwardButton: HTMLButtonElement;
     private urlField: HTMLInputElement;
     private spinner: HTMLDivElement;
-    private window: BrowserWindow;
-    private webContents: webContents;
+    private addressHint: HTMLDivElement;
+    private addressHintURL: HTMLSpanElement;
     private webView: Electron.WebviewTag;
-    private webViewScrollOffset: Point = { x: 0, y: 0 };
-    private reloadIssued: boolean = false;
-    // tslint:disable-next-line:variable-name
-    private URLHandlers: URLHandler[] = [];
-    private currentURLHandler: URLHandler;
-    private currentURLItem: IURLItem;
-    private blankPage: string = "_blank";
-    private blankPageContent: string = "";
-    private errorPage: string = "";
+    private errorInfo: HTMLDivElement;
+    private webViewScrollOffset: Point = { x: 0, y: 0 }; // eslint-disable-line jsdoc/require-jsdoc
+    private blankPageContent = encodeURI(`data:text/html,<html><head><title>${APP_INFO.ProductName}</title></head><body></body></html>`);
 
     /**
      * Creates the user interface, the web content part and handles all events.
      */
     constructor() {
-        console.log("Creating new renderer");
-        this.settings = ipcRenderer.sendSync("IPC", ["getSettings"]) as ISettings;
-        this.appInfo = ipcRenderer.sendSync("IPC", ["getAppInfo"]) as IAppInfo;
-        this.blankPageContent = encodeURI(`data:text/html,<html><head><title>${this.appInfo.Name}</title></head><body></body></html>`);
+        console.log("Creating new renderer...");
+        // ipcRenderer.on(IPC_MAIN_RENDERER, this.onIPCFromMain.bind(this));
+        this.window = remote.getCurrentWindow();
+        this.windowID = this.window.id;
+        this.webContents = this.window.webContents;
+        this.settings = ipcRenderer.sendSync(IPC_MAIN_RENDERER, this.windowID, IPC.GET_SETTINGS) as ISettings;
+        this.buildUI();
+        this.bindShortCuts();
+        // Cause an initial load, see also `onDidStartLoading`
+        this.loadURL(this.blankPageContent);
+    }
+
+    /**
+     * Called by `onDidStartLoading`. The webview tag now has a webContents object so it's possible
+     * to ask the main process for the initial URL to be loaded.
+     */
+    private setRendererReady(): void {
+        if (this.ready) {
+            return;
+        }
+        this.ready = true;
+        ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.RENDERER_READY, this.webView.getWebContentsId());
+        const urlItem: IURLItem = ipcRenderer.sendSync(IPC_MAIN_RENDERER, this.windowID, IPC.QUERY_INITIAL_URL_ITEM) as IURLItem;
+        if ((urlItem && urlItem.DoLoad)) {
+            ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.LOAD_URL, urlItem.URL);
+        } else {
+            if (this.settings.Homepage !== "") {
+                ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.LOAD_URL, this.settings.Homepage);
+            } else {
+                if (this.settings.AddressBar === 2) {
+                    // TODO: Handle this in onWebViewDidStopLoading?
+                    setTimeout(() => this.urlField.focus(), 1000);
+                }
+            }
+        }
+        console.log("Creating new renderer done.");
+    }
+
+    /**
+     * Build user interface.
+     */
+    private buildUI(): void {
         const fragment: DocumentFragment = new DocumentFragment();
-        this.webView = this.getWebView();
         this.addressBar = this.getAddressBar();
         this.addressBar.appendChild(this.getNavigationButtons());
         this.addressBar.appendChild(this.getURLField());
         this.spinner = this.getSpinner();
         this.addressBar.appendChild(this.spinner);
+        this.errorInfo = this.getErrorInfo();
+        this.webView = this.getWebView();
+        this.addressHint = this.getAddressHint();
         fragment.appendChild(this.addressBar);
+        fragment.appendChild(this.errorInfo);
         fragment.appendChild(this.webView);
+        fragment.appendChild(this.addressHint);
         document.body.appendChild(fragment);
-        this.window = remote.getCurrentWindow();
-        this.webContents = this.window.webContents;
-        ipcRenderer.on("IPC", this.onIPC.bind(this));
-        this.bindShortCuts();
-        this.loadURLHandlers();
-        this.queryInitialURLItem();
     }
 
     /**
-     * Load URL handlers configured in settings.
+     * Display error message.
+     * @param event An Electron DidFailLoadEvent.
      */
-    private loadURLHandlers(): void {
-        for (const urlHandlerEntry of this.settings.URLHandlers) {
-            if ((urlHandlerEntry.Source) && (urlHandlerEntry.Source !== "")) {
-                try {
-                    require(urlHandlerEntry.Source);
-                    const classInstance: URLHandler = getURLHandlerByClassName(
-                        urlHandlerEntry.ClassName,
-                        urlHandlerEntry.Config,
-                        this.settings,
-                        this.webView,
-                        this.window,
-                        this.handleURLCallback.bind(this),
-                    );
-                    this.URLHandlers.push(classInstance);
-                } catch (error) {
-                    console.error(`Error loading URL handler from: ${urlHandlerEntry.Source}\n${error}`);
-                }
-            }
-        }
-    }
-
-    /**
-     * Get the initial URL to be loaded via an IPC call from the main process.
-     */
-    private queryInitialURLItem(): void {
-        const urlItem: IURLItem = ipcRenderer.sendSync("IPC", ["queryURLItem"]) as IURLItem;
-        if ((urlItem && urlItem.DoLoad)) {
-            this.loadURL(urlItem);
+    private displayError(event: Electron.DidFailLoadEvent): void {
+        if (event.isMainFrame && (event.validatedURL !== "")) {
+            this.setWindowTitle(`${APP_INFO.ProductName} | Error`);
+            this.urlField.value = event.validatedURL;
+            this.errorInfo.innerHTML =
+                `<p><strong>Error loading page:</strong> ${event.validatedURL}</p>`
+                + `<p><strong>Code:</strong> <code>${event.errorCode}</code></p>`
+                + `<p><strong>Description:</strong> <code>${event.errorDescription}</code></p>`;
+            this.errorInfo.style.display = "";
         } else {
-            if (this.settings.Homepage !== "") {
-                this.loadURL(getURLItem(this.settings.Homepage, URLSource.APP));
-            } else {
-                this.addressBar.style.display = "";
-                this.urlField.focus();
-            }
+            console.error(`Error loading page/resource: ${event.validatedURL} \nCode: ${event.errorCode} \nDescription: ${event.errorDescription}`);
         }
+    }
+
+    /**
+     * Hide error message;
+     * @param updateWindowTitle `true` if the window title should be updated 
+     * (currently only when the error message is clicked on).
+     */
+    private clearError(updateWindowTitle: boolean): void {
+        if (updateWindowTitle) {
+            this.setWindowTitle(APP_INFO.ProductName);
+        }
+        this.errorInfo.style.display = "none";
+        this.errorInfo.innerHTML = "";
     }
 
     /**
      * Bind keyboard shortcut(s) to a function.
-     * @param shortcut A single keyboard shortcut ar on array of shortcuts.
+     * @param shortcut A single keyboard shortcut or on array of shortcuts.
      * @param func The function to be executed if the given keyboard shortcut is used.
      */
     private bindShortCut(shortcut: string | string[], func: () => void): void {
-        $ShortCuts.bind(shortcut, (_event: ExtendedKeyboardEvent, _combo: string): boolean => {
+        $ShortCuts.bind(shortcut, (_event: $ShortCuts.ExtendedKeyboardEvent, _combo: string): boolean => {
             func.call(this);
             return false;
         });
@@ -119,8 +139,10 @@ export class CRendererApplication {
      */
     private bindShortCuts(): void {
         this.bindShortCut(this.settings.ShortCuts.ToggleAddressBar, () => {
-            this.addressBar.style.display === "none" ?
-                this.addressBar.style.display = "" : this.addressBar.style.display = "none";
+            if (this.settings.AddressBar > 0) {
+                this.addressBar.style.display === "none" ?
+                    this.addressBar.style.display = "" : this.addressBar.style.display = "none";
+            }
         });
         this.bindShortCut(this.settings.ShortCuts.ToggleInternalDevTools, () => {
             const devToolsOpened = this.webContents.isDevToolsOpened();
@@ -130,22 +152,30 @@ export class CRendererApplication {
             this.webView.isDevToolsOpened() ? this.webView.closeDevTools() : this.webView.openDevTools();
         });
         this.bindShortCut(this.settings.ShortCuts.FocusLocationBar, () => {
-            if (this.addressBar.style.display === "none") {
-                this.addressBar.style.display = "";
+            if (this.settings.AddressBar > 0) {
+                if (this.addressBar.style.display === "none") {
+                    this.addressBar.style.display = "";
+                }
+                this.urlField.focus();
+                this.urlField.select();
             }
-            this.urlField.focus();
-            this.urlField.select();
         });
         this.bindShortCut(this.settings.ShortCuts.InternalReload, () => {
             this.webContents.reload();
         });
+        this.bindShortCut(this.settings.ShortCuts.NewWindow, () => {
+            if (this.settings.AllowNewWindows) {
+                ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.NEW_WINDOW, "");
+            }
+        });
         this.bindShortCut(this.settings.ShortCuts.Reload, () => {
-            // Get the current scroll offset from the web view.
-            this.webView.send("IPCFromRenderer", "getScrollOffset");
-            // Flag to ensure that DOMReady (see below) only does something
-            // when the event was caused by a reload.
-            this.reloadIssued = true;
-            this.webView.src = this.webView.src;
+            ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.RELOAD_URL);
+            // // Get the current scroll offset from the web view.
+            // void this.webView.send(IPC_WEBVIEW_RENDERER, IPC.GET_SCROLL_OFFSET);
+            // // Flag to ensure that DOMReady (see below) only does something
+            // // when the event was caused by a reload.
+            // this.reloadIssued = true;
+            // this.webView.reload(); // this.webView.src = this.webView.src;
         });
         this.bindShortCut(this.settings.ShortCuts.GoBack, () => {
             this.goBack();
@@ -154,99 +184,25 @@ export class CRendererApplication {
             this.goForward();
         });
         this.bindShortCut(this.settings.ShortCuts.ExitHTMLFullscreen, () => {
-            this.webView.executeJavaScript("document.webkitExitFullscreen();", true);
+            void this.webView.executeJavaScript("document.webkitExitFullscreen();", true);
         });
         this.bindShortCut(this.settings.ShortCuts.ToggleWin32Menu, () => {
-            ipcRenderer.send("IPC", ["toggleWin32Menu"]);
+            ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.TOGGLE_WIN32_MENU);
         });
     }
 
     /**
-     * Let the first URL handler handle the given URL.
-     * @param urlItem The URL to be handled.
+     * Tell the main process to open the given URL.
+     * @param url The URL to be opened.
      */
-    private loadURL(urlItem: IURLItem): void {
-        if (this.URLHandlers.length === 0) {
-            console.warn("loadURL: No URL handlers are configured!");
-        } else {
-            // Initial URL
-            if (urlItem.OriginalURL === this.blankPage) {
-                this.webView.setAttribute("src", this.blankPageContent);
-                this.window.setTitle(this.appInfo.Name);
-                return;
-            }
-            this.currentURLHandler = this.URLHandlers[0];
-            this.currentURLItem = urlItem;
-            this.window.setTitle(this.currentURLItem.URL);
-            this.spinner.style.visibility = "";
-            this.currentURLHandler.handleURL(this.currentURLItem.URL,
-                this.currentURLItem.Source, this.handleURLCallback);
+    private loadURL(url: string): void {
+        // Blank URL
+        if (url === this.blankPageContent) {
+            this.webView.setAttribute("src", this.blankPageContent);
+            return;
         }
-    }
-
-    /**
-     * Callback function which *must* be called by any URL handler after handling a URL.
-     * In future versions probably this can be done using Promises.
-     * @param currentURLHandler The URL handler which is calling this function.
-     * @param handleURLResult The result of handling the URL by the the URL handler.
-     * @param originalURL The original URL given to the URL handler.
-     * @param redirectURL Optional, if set, then this URL will be used for the following URL handler.
-     * @see Function loadURLHandlers.
-     */
-    private handleURLCallback: HandleURLCallback = (handleURLResult: number, redirectURL?: string): void => {
-        window.setTimeout(this.doHandleURLCallback.bind(this), 10, handleURLResult, redirectURL);
-    }
-
-    /**
-     * @see Function handleURLCallback.
-     */
-    private doHandleURLCallback: HandleURLCallback = (handleURLResult: number, redirectURL?: string): void => {
-        const nextHandler: URLHandler = this.URLHandlers[this.URLHandlers.indexOf(this.currentURLHandler) + 1];
-        const currentHandlerName: string = this.currentURLHandler.constructor.name;
-        const logMsg: string = nextHandler ? "continuing with next handler" : "last handler in chain reached";
-        try {
-            switch (handleURLResult) {
-                case HandleURL.ERROR:
-                    console.error(`handleURL: ERROR: Calling URL handler ${currentHandlerName} with ${this.currentURLItem.URL} returned with an error, stopping.`);
-                    return;
-
-                case HandleURL.NONE:
-                    console.log(`handleURL: NONE: URL handler ${currentHandlerName} didn't handle URL ${this.currentURLItem.URL}, ${logMsg}.`);
-                    break;
-
-                case HandleURL.CONTINUE:
-                    console.log(`handleURL: CONTINUE: Successfully called URL handler ${currentHandlerName} with ${this.currentURLItem.URL}, ${logMsg}.`);
-                    break;
-
-                case HandleURL.STOP:
-                    console.log(`handleURL: STOP: Successfully called URL handler ${currentHandlerName} with ${this.currentURLItem}.URL, stopping.`);
-                    return;
-
-                default:
-                    console.error(`handleURL: ${handleURLResult}: Calling URL handler ${currentHandlerName} with ${this.currentURLItem.URL} returned an unknown result (${handleURLResult}), stopping.`);
-                    return;
-            }
-            // Proceed with next handler (= implicitly NONE or CONTINUE)
-            if (redirectURL) {
-                console.log(`handleURL: ${currentHandlerName} redirected from ${this.currentURLItem.URL} to ${redirectURL}.`);
-            }
-            if (nextHandler) {
-                if (redirectURL) {
-                    this.currentURLItem = getURLItem(redirectURL, URLSource.PAGE);
-                }
-                this.currentURLHandler = nextHandler;
-                this.currentURLHandler.handleURL(this.currentURLItem.URL,
-                    this.currentURLItem.Source, this.handleURLCallback);
-            } else {
-                this.webContents.session.setPermissionRequestHandler(this.onPermissionRequest.bind(this));
-            }
-        } catch (error) {
-            console.error(`Error calling URL handler: ${currentHandlerName} with ${this.currentURLItem.URL}\n${error}`);
-        } finally {
-            if ((handleURLResult !== HandleURL.NONE) && (handleURLResult !== HandleURL.CONTINUE)) {
-                this.spinner.style.visibility = "hidden";
-            }
-        }
+        this.spinner.style.visibility = "";
+        ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.LOAD_URL, url);
     }
 
     /**
@@ -254,9 +210,7 @@ export class CRendererApplication {
      * @param _event A mouse event or null.
      */
     private goBack(_event?: MouseEvent): void {
-        if (this.webView.canGoBack()) {
-            this.webView.goBack();
-        }
+        ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.GO_BACK);
     }
 
     /**
@@ -264,9 +218,7 @@ export class CRendererApplication {
      * @param _event A mouse event or null.
      */
     private goForward(_event?: MouseEvent): void {
-        if (this.webView.canGoForward()) {
-            this.webView.goForward();
-        }
+        ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.GO_FORWARD);
     }
 
     /**
@@ -277,29 +229,79 @@ export class CRendererApplication {
         if ((event.type === "keypress") && ((event as KeyboardEvent).key !== "Enter")) {
             return;
         }
-        this.loadURL(getURLItem(this.urlField.value, URLSource.USER));
+        const url = this.urlField.value.trim();
+        if (url === "") {
+            this.loadURL(this.blankPageContent);
+        } else if (this.settings.AllowNewWindows && url.startsWith("new:")) {
+            ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.NEW_WINDOW, url);
+        } else {
+            this.loadURL(url);
+        }
     }
 
     /**
-     * Handles all IPC calls from the main process.
-     * @param event An Electron event.
-     * @param args The arguments sent by the calling main process.
+     * Set a new title for this window.
+     * @param title The new window title
      */
-    // tslint:disable-next-line:no-any
-    private onIPC(_event: Electron.Event, ...args: any[]): void {
-        if ((args.length === 0) || (!this.webView)) {
+    private setWindowTitle(title: string) {
+        // this.window.setTitle(`[${this.windowID}]  ${title}`);
+        this.settings.AllowNewWindows ? this.window.setTitle(`[${this.window.id}]  ${title}`) : this.window.setTitle(title);
+    }
+
+    /**
+     * Called when a web page logs something to the browser console.
+     * The message is enhanced with additional infos and again written
+     * to the console of the hosting browser window. In future versions
+     * this should be redirected/copied to a log file.
+     * @param event An Electron ConsoleMessageEvent.
+     */
+    private onWebViewConsoleMessage(event: Electron.ConsoleMessageEvent): void {
+        const logMessage = format("LOG [Level %d] [Line %d in %s]\nFrom: %s\n\n%s", event.level, event.line, event.sourceId, this.webView.getURL(), event.message);
+        // Silence Electron warning message during development.
+        if (!APP_INFO.IsPackaged && (logMessage.indexOf("This warning will not show up") > -1)) {
             return;
         }
-        switch (args[0][0]) {
-            case "loadURLItem":
-                if (args[0].length === 2) {
-                    this.loadURL((args[0][1] as IURLItem));
-                }
+        switch (event.level) {
+            case 0:
+            case 1:
+                console.log(logMessage);
+                break;
+
+            case 2:
+                console.warn(logMessage);
+                break;
+
+            case 3:
+                console.error(logMessage);
                 break;
 
             default:
+                console.log(logMessage);
                 break;
         }
+    }
+
+    /**
+     * Called when the page starts loading.
+     * @param _event An Electron event.
+     */
+    private onWebViewDidStartLoading(_event: Electron.Event): void {
+        // console.log("DID-START_LOADING", this.webView.src);
+        this.clearError(false);
+        this.spinner.style.visibility = "";
+        // This is the earliest possible moment to tell the main process once, that this renderer is ready.
+        if (!this.ready) {
+            this.setRendererReady();
+        }
+    }
+
+    /**
+     * Called when loading the page failed.
+     * @param event An Electron event.
+     */
+    private onWebViewDidFailLoad(event: Electron.DidFailLoadEvent): void {
+        console.log("DID-FAIL-LOAD");
+        this.displayError(event);
     }
 
     /**
@@ -307,30 +309,21 @@ export class CRendererApplication {
      * Sets the focus to the webview tag to enable keyboard navigation in the page.
      * @param _event An Electron event.
      */
-    private onDidFinishLoad(_event: Electron.Event): void {
-        this.spinner.style.visibility = "hidden";
-        if (!this.webView.getWebContents().isFocused()) {
-            this.webView.focus();
-        }
-    }
+    // private onWebViewDidFinishLoad(_event: Electron.Event): void {
+    //     console.log("DID-FINISH-LOAD");
+    //     this.spinner.style.visibility = "hidden";
+    //     this.webView.focus();
+    // }    
 
     /**
-     * Called when loading the page failed.
+     * Called when the page has finished loading.
+     * Sets the focus to the webview tag to enable keyboard navigation in the page.
      * @param _event An Electron event.
      */
-    private onDidFailLoad(_event: Electron.DidFailLoadEvent): void {
-        if (_event.isMainFrame) {
-            this.errorPage = encodeURI(
-                "data:text/html,<html><head><title>Error</title></head><body>"
-                + "<p>Error loading page: <em>" + _event.validatedURL + "</em></p>"
-                + "<p>Code: <code>" + _event.errorCode + "</code></p>"
-                + "<p>Description: <code>" + _event.errorDescription + "</code></p>"
-                + "</body></html>",
-            );
-            this.webView.setAttribute("src", this.errorPage);
-        } else {
-            console.error("Error loading page: " + _event.validatedURL + "\nCode: " + _event.errorCode + "\nDescription: " + _event.errorDescription);
-        }
+    private onWebViewDidStopLoading(_event: Electron.Event): void {
+        // console.log("DID-STOP-LOADING");
+        this.spinner.style.visibility = "hidden";
+        this.webView.focus();
     }
 
     /**
@@ -338,59 +331,22 @@ export class CRendererApplication {
      * offset but only if the event occurs during a page *reload*.
      * @param _event An Electron event.
      */
-    private onDOMReady(_event: Electron.Event): void {
-        if (this.reloadIssued) {
-            this.reloadIssued = false;
-            this.webView.send("IPCFromRenderer", "scrollToOffset", this.webViewScrollOffset);
-        }
-    }
+    // private onWebViewDOMReady(_event: Electron.Event): void {
+    //     // console.log("DOM-READY");
+    //     // if (this.reloadIssued) {
+    //     //     this.reloadIssued = false;
+    //     //     void this.webView.send(IPC_WEBVIEW_RENDERER, IPC.SCROLL_TO_OFFSET, this.webViewScrollOffset);
+    //     // }
+    // }
 
     /**
-     * Called when the title of the current page has been updated.
-     * @param event An Electron PageTitleUpdatedEvent.
+     * Called when the navigaion to a URL has finished. Used to update parts of the user interface.
+     * @param event An Electron DidNavigateEvent.
      */
-    private onPageTitleUpdated(event: Electron.PageTitleUpdatedEvent): void {
-        this.window.setTitle(event.title);
-    }
-
-    /**
-     * Called when a web page logs something to the browser console.
-     * Default handling for the event is prevented, enhanced with additional
-     * infos and again written to the console. In future versions this should
-     * be redirected/copied to a log file.
-     * @param event An Electron ConsoleMessageEvent.
-     */
-    private onConsoleMessage(event: Electron.ConsoleMessageEvent): void {
-        console.log("LOG from %s: [Level %d] %s (Line %d in %s)", this.webView.getURL(), event.level, event.message, event.line, event.sourceId);
-        event.preventDefault();
-        event.stopImmediatePropagation();
-    }
-
-    /**
-     * Handles permission requests from web pages.
-     * Permissions are granted based on app settings.
-     * @param _webContents The calling Electron webContents.
-     * @param permission The requested permission.
-     * @param callback A callback called with the boolean result of the permission check.
-     */
-    private onPermissionRequest(_webContents: Electron.WebContents,
-                                permission: string,
-                                callback: (permissionGranted: boolean) => void): void {
-        const grant: boolean = (this.settings.Permissions.indexOf(permission) > -1);
-        console.info(`Permission '${permission}' requested, ${grant ? "granting." : "denying."}`);
-        callback(grant);
-    }
-
-    /**
-     * Called when the navigaion to a URL has finished.
-     * Used to update parts of the user interface.
-     * @param _event An Electron DidNavigateEvent.
-     */
-    private onDidNavigate(event: Electron.DidNavigateEvent): void {
+    private onWebViewDidNavigate(event: Electron.DidNavigateEvent): void {
+        // console.log("DID-NAVIGATE", event.url);
         if (event.url === this.blankPageContent) {
             this.urlField.value = "";
-        } else if (event.url === this.errorPage) {
-            this.urlField.value = this.currentURLItem.URL;
         } else {
             this.urlField.value = event.url;
         }
@@ -399,61 +355,52 @@ export class CRendererApplication {
     }
 
     /**
-     * Called when the navigaion to a target inside the page has finished.
+     * Called when the navigation to a target inside the page has finished.
      * Used to update parts of the user interface.
-     * @param _event An Electron DidNavigateInPageEvent.
+     * @param event An Electron DidNavigateInPageEvent.
      */
-    private onDidNavigateInPage(event: Electron.DidNavigateInPageEvent): void {
+    private onWebViewDidNavigateInPage(event: Electron.DidNavigateInPageEvent): void {
+        // console.log("DID-NAVIGATE-IN-PAGE", event.url);
         this.urlField.value = event.url;
         this.goForwardButton.disabled = !this.webView.canGoForward();
         this.goBackButton.disabled = !this.webView.canGoBack();
     }
 
     /**
-     * Called when the user clicks on a link in a page which should be opened in another window/tab.
-     * @param event An Electron NewWindowEvent.
+     * Called when the title of the embedded page has been updated.
+     * @param event An Electron PageTitleUpdatedEvent.
      */
-    private onNewWindow(event: Electron.NewWindowEvent): void {
-        if (this.settings.AllowNewWindows) {
-            // Excluding `save-to-disk` for now
-            if (["default",
-                "foreground-tab",
-                "background-tab",
-                "new-window",
-                // "save-to-disk",
-                "other"].indexOf(event.disposition) !== -1) {
-                ipcRenderer.send("IPC", ["openWindow", event.url]);
-            }
-        }
+    private onWebViewPageTitleUpdated(event: Electron.PageTitleUpdatedEvent): void {
+        // console.log("PAGE-TITLE-UPDATED");
+        this.setWindowTitle(event.title);
     }
 
     /**
-     * Handles IPC messages from the web view.
-     * - It stores the current scroll offset from the web view. This is the result
-     *   from sending "getScrollOffset" to the web view.
-     * - It receives any keyboard event from the web view and dispatches it to this
-     *   browser window which then can handlie it with Moustrap.
-     * @param event An Electron IpcMessageEvent.
+     * Called when the user hovers over a link of the embedded page or focuses a link with the keyboard.
+     * @param event An Electron UpdateTargetUrlEvent.
      */
-    private onWebViewIPCMessage(event: Electron.IpcMessageEvent): void {
-        if (event.channel === "IPCFromWebView") {
-            switch (event.args[0]) {
-                case "setScrollOffset":
-                    this.webViewScrollOffset.x = event.args[1];
-                    this.webViewScrollOffset.y = event.args[2];
-                    break;
+    private onWebViewUpdateTargetURL(event: Electron.UpdateTargetUrlEvent): void {
+        // console.log("UPDATE-TARGET-URL");
+        this.addressHintURL.textContent = event.url;
+        event.url === "" ? this.addressHint.classList.add("hidden") : this.addressHint.classList.remove("hidden");
+    }
 
-                case "keyboardEvent":
-                    try {
-                        document.dispatchEvent(new KeyboardEvent(
-                            event.args[1].type as string,
-                            event.args[1].dict as KeyboardEventInit),
-                        );
-                    } catch (error) {
-                        console.error("Error handling KB event from webview: " + error);
-                    }
-                    break;
-            }
+    /**
+     * Called when the user clicks on a link in a page which should be opened in another window/tab.
+     * @param event An Electron NewWindowEvent.
+     */
+    private onWebViewNewWindow(event: Electron.NewWindowEvent): void {
+        // console.log("NEW-WINDOW? ", this.settings.AllowNewWindows, event.disposition);
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        // Excluding `save-to-disk` for now
+        if (["default",
+            "foreground-tab",
+            "background-tab",
+            "new-window",
+            "save-to-disk",
+            "other"].indexOf(event.disposition) !== -1) {
+            ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.NEW_WINDOW, event.url);
         }
     }
 
@@ -464,8 +411,9 @@ export class CRendererApplication {
     private getAddressBar(): HTMLDivElement {
         const addressBar: HTMLDivElement = document.createElement("div");
         addressBar.setAttribute("id", "addressBar");
-        // Initially hidden; made visible depending on command line params
-        addressBar.style.display = "none";
+        if (this.settings.AddressBar < 2) {
+            addressBar.style.display = "none";
+        }
         return addressBar;
     }
 
@@ -538,13 +486,38 @@ export class CRendererApplication {
     }
 
     /**
+     * Build the hint for the address which is shown when hovering over a link.
+     * @returns The DOM element for the address hint.
+     */
+    private getAddressHint(): HTMLDivElement {
+        this.addressHint = document.createElement("div");
+        this.addressHint.setAttribute("id", "addressHint");
+        this.addressHintURL = document.createElement("span");
+        this.addressHintURL.setAttribute("id", "addressHintURL");
+        this.addressHint.appendChild(this.addressHintURL);
+        return this.addressHint;
+    }
+
+    /**
+     * Build the container for error messages.
+     * @returns A div element for error messages.
+     */
+    private getErrorInfo(): HTMLDivElement {
+        const errorInfo: HTMLDivElement = document.createElement("div");
+        errorInfo.id = "errorInfo";
+        errorInfo.style.display = "none";
+        errorInfo.title = "Hide error";
+        errorInfo.addEventListener("click", () => this.clearError(true));
+        return errorInfo;
+    }
+
+    /**
      * Build the webview tag.
      * @returns A completely configured Electron.WebviewTag.
      */
     private getWebView(): Electron.WebviewTag {
         const webView: Electron.WebviewTag = document.createElement("webview");
         webView.setAttribute("id", "webView");
-        webView.setAttribute("autosize", "");
         if (this.settings.AllowPlugins) {
             webView.setAttribute("plugins", "");
         }
@@ -552,17 +525,78 @@ export class CRendererApplication {
             webView.setAttribute("allowpopups", "");
         }
         webView.setAttribute("useragent", this.settings.UserAgent);
-        webView.setAttribute("preload", "./lib/preload.js");
-        webView.addEventListener("did-navigate", this.onDidNavigate.bind(this), false);
-        webView.addEventListener("did-navigate-in-page", this.onDidNavigateInPage.bind(this), false);
-        webView.addEventListener("did-finish-load", this.onDidFinishLoad.bind(this), false);
-        webView.addEventListener("did-fail-load", this.onDidFailLoad.bind(this), false);
-        webView.addEventListener("dom-ready", this.onDOMReady.bind(this), false);
-        webView.addEventListener("page-title-updated", this.onPageTitleUpdated.bind(this), false);
-        webView.addEventListener("console-message", this.onConsoleMessage.bind(this), false);
-        webView.addEventListener("new-window", this.onNewWindow.bind(this), false);
+        webView.setAttribute("preload", "./bin/preload.js");
+        if (this.settings.CaptureConsole) {
+            webView.addEventListener("console-message", this.onWebViewConsoleMessage.bind(this), false);
+        }
+        webView.addEventListener("did-start-loading", this.onWebViewDidStartLoading.bind(this), false);
+        webView.addEventListener("did-fail-load", this.onWebViewDidFailLoad.bind(this), false);
+        // webView.addEventListener("did-finish-load", this.onWebViewDidFinishLoad.bind(this), false);
+        webView.addEventListener("did-stop-loading", this.onWebViewDidStopLoading.bind(this), false);
+        // webView.addEventListener("dom-ready", this.onWebViewDOMReady.bind(this), false);
+        webView.addEventListener("did-navigate", this.onWebViewDidNavigate.bind(this), false);
+        webView.addEventListener("did-navigate-in-page", this.onWebViewDidNavigateInPage.bind(this), false);
+        webView.addEventListener("page-title-updated", this.onWebViewPageTitleUpdated.bind(this), false);
+        webView.addEventListener("update-target-url", this.onWebViewUpdateTargetURL.bind(this), false);
+        webView.addEventListener("new-window", this.onWebViewNewWindow.bind(this), false);
         webView.addEventListener("ipc-message", this.onWebViewIPCMessage.bind(this), false);
         return webView;
     }
 
+    /**
+     * Handles IPC messages from the main process.
+     * @param _event An Electron event.
+     * @param args The arguments sent by the main process.
+     */
+    // private onIPCFromMain(_event: Electron.IpcRendererEvent, ...args: unknown[]): void {
+    //     const msgId: number = args[0] as number;
+    //     const params: unknown[] = args.slice(1);
+    //     switch (msgId) {
+    //         case IPC.TEST:
+    //             console.log(params);
+    //             break;
+
+    //         default:
+    //             console.warn(format("Unknown/unhandled IPC message received from main: %d. ", msgId, ...params));
+    //             break;
+    //     }
+    // }
+
+    /**
+     * Handles IPC messages from the web view. Communication is asynchronous.
+     * - It stores the current scroll offset from the web view. This is the result
+     *   from sending "getScrollOffset" to the web view.
+     * - It receives any keyboard event from the web view and dispatches it to this
+     *   browser window which then can handlie it with Mousetrap.
+     * @param event An Electron IpcMessageEvent.
+     */
+    private onWebViewIPCMessage(event: Electron.IpcMessageEvent): void {
+        if (event.channel !== IPC_WEBVIEW_RENDERER) {
+            return
+        }
+        const msgId = event.args[0] as number;
+        const params: unknown[] = event.args.slice(1);
+        switch (msgId) {
+            case IPC.SET_SCROLL_OFFSET:
+                this.webViewScrollOffset.x = Number(params[0]);
+                this.webViewScrollOffset.y = Number(params[1]);
+                break;
+
+            case IPC.KEYBOARD_EVENT:
+                try {
+                    document.dispatchEvent(new KeyboardEvent(
+                        (params[0] as AnyObject).type as string,
+                        (params[0] as AnyObject).dict as KeyboardEventInit),
+                    );
+                } catch (error) {
+                    console.error(`Error handling KB event from webview: ${error}`);
+                }
+                break;
+
+            default:
+                console.warn(format("Unknown/unhandled IPC message received from webview: %d, %s. ", msgId, getIPCMessage(msgId).Text, ...params));
+                break;
+        }
+
+    }
 }

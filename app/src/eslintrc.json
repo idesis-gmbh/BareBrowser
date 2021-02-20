@@ -1,0 +1,73 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./app/src/tsconfig.json"
+  },
+  "plugins": [
+    "@typescript-eslint",
+    "jsdoc"
+  ],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "plugin:jsdoc/recommended"
+  ],
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "ignorePatterns": [
+    "*.js"
+  ],
+  "rules": {
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ],
+    "@typescript-eslint/restrict-template-expressions": [
+      "off",
+      {
+        "allowBoolean": true,
+        "allowAny": true
+      }
+    ],
+    "no-case-declarations": "off",
+    "jsdoc/require-jsdoc": [
+      "warn",
+      {
+        "require": {
+          "ArrowFunctionExpression": true,
+          "ClassDeclaration": true,
+          "ClassExpression": true,
+          "FunctionDeclaration": true,
+          "FunctionExpression": true,
+          "MethodDefinition": true
+        },
+        "contexts": [
+          "Property",
+          "ClassProperty:not([accessibility=\"private\"])",
+          "TSMethodSignature",
+          "TSEnumDeclaration",
+          "TSInterfaceDeclaration",
+          "TSTypeAliasDeclaration",
+          "-TSPropertySignature",
+          "ExportNamedDeclaration"
+        ],
+        "checkGetters": true,
+        "checkSetters": true,
+        "exemptEmptyConstructors": true
+      }
+    ],
+    "jsdoc/newline-after-description": "off",
+    "jsdoc/require-param-type": "off",
+    "jsdoc/require-returns": "warn",
+    "jsdoc/require-returns-type": "off",
+    "jsdoc/no-undefined-types": "warn"
+  }
+}

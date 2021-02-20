@@ -1,14 +1,14 @@
+
 /**
  * A module with common modules exports used by both the main and renderer process.
  */
-import * as path from "path";
-export { path as $Path };
-
-import * as url from "url";
-export { url as $URL };
-
-import * as os from "os";
-export {os as $OS};
-
+/* eslint-disable */
 import * as fse from "fs-extra"; // Also exports anything from 'fs'
+import * as os from "os";
+import * as path from "path";
+import * as url from "url";
 export { fse as $FSE };
+export { os as $OS };
+export { path as $Path };
+export { url as $URL };
+/* eslint-enable */

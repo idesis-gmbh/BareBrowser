@@ -1,0 +1,87 @@
+# v2.0.0-beta1
+
+This version is a rewrite of almost every aspect. Please see the README file on GitHub or the
+builtin URL `bb://readme` of a standard BareBrowser distribution for detailed information.
+
+
+# v1.0.4
+
+## Changes
+- Try to scroll to last position on page reload.
+- Use of plugins is now configurable (default false). Please update `settings.json` accordingly.
+- Update to Electron 1.8.6.
+- Update other dependencies.
+
+
+# v1.0.3
+
+## Changes
+- Using current Electron version 1.8.4 to fix security issue.
+- Updated all dependencies.
+- Moved electron-packager dependency to build process.
+
+
+# v1.0.2
+
+## Changes
+- Security fix: update to Electron 1.6.16.
+
+
+# v1.0.1
+
+## Bugs
+- Fixes a bug where the setting for ClearTraces was ignored (#10).
+
+
+# v1.0.0
+
+## Bugs
+- Source code documentation fixed (#2).
+- New browser windows are now opened from existing windows (#9).
+
+## Changes
+- Various documentation changes/fixes.
+- Icon generation changed to use [png2icons](https://github.com/idesis-gmbh/png2icons).
+
+
+# v0.9.3-beta
+
+## Bug Fixes
+- Version renaming crashed if a versioned directory already exists.
+- Some small Markdown fixes.
+
+## Changes
+- Chromium HardwareAcceleration is now configurable via settings.
+- ContentProtection is now configurable via settings.
+- Popup windows are now configurable via settings.
+- Updated TypeScript and Electron packager dependencies to newer versions.
+- Move `Settings.json` to userData directory (`~/Library/Application Support` and `%APPDATA%`).
+- This also modifies the general handling of settings.
+- Adds a basic menu for both platforms (fixes #1).
+- Try harder to delete user data on quitting the app.
+- Documentation improvements.
+
+
+# v0.9.2-pre-release
+
+## Bug Fixes
+- Fixed URL encoding (#5)
+- Fixed build scripts
+
+## Changes
+- Changed keyboard shortcuts (#6)
+- Added quitting a running instance via command line (#8)
+
+
+# v0.9.1-pre-release
+
+## Bug Fixes
+- Various clarifications and corrections in documentation
+- Build system was partially broken
+- Fixed problem with TypeScript definitions for Node.js inside electron package
+
+## Changes
+- Added permission handling (#4)
+- Added shortcut for leaving HTML fullscreen state
+- Code cleanup
+- Updated docs

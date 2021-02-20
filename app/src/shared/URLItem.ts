@@ -1,41 +1,10 @@
 import * as $Consts from "../shared/Consts";
-import { $URL } from "./Modules";
-
-/**
- * Interface for the origin of URL items.
- */
-export enum URLSource {
-    /**
-     * Created by the app itself.
-     */
-    APP = 0,
-    /**
-     * URL was manually entered by the user.
-     */
-    USER,
-    /**
-     * URL was created by, for example, clicking on a link or
-     * by the page itself by rewriting `window.location`.
-     */
-    PAGE,
-    /**
-     * URL was created by opening a new window.
-     */
-    NEW_WINDOW,
-    /**
-     * URL was given by command line.
-     */
-    CMD_LINE,
-}
+import { $Path, $URL } from "./Modules";
 
 /**
  * Interface for URL items.
  */
 export interface IURLItem {
-    /**
-     * Should this item be loaded or not?
-     */
-    DoLoad: boolean;
     /**
      *  The original given URL.
      */
@@ -49,19 +18,20 @@ export interface IURLItem {
      */
     IsFileURL: boolean;
     /**
-     * 'Who' created/issued the URL.
+     * Should this item be loaded or not?
      */
-    Source: URLSource;
+    DoLoad: boolean;
 }
 
 /**
  * Creates a URLItem object from a given string.
- * This can result in either a URL for the web (http://) or a file (file://).
+ * This can result in either a URL for the web (https://) or a file (file://).
  * @param url The URL string to be parsed.
- * @param source 'Who' created/issued the URL.
+ * @param scheme A custom protocol scheme.
  * @returns A URLItem object.
  */
-export function getURLItem(url: string, source: URLSource): IURLItem {
+export function getURLItem(url: string, scheme?: string): IURLItem {
+    /* eslint-disable jsdoc/require-jsdoc */
     url = url
         .trim()
         .replace(/^"/, "")
@@ -69,27 +39,94 @@ export function getURLItem(url: string, source: URLSource): IURLItem {
         .replace(/"$/, "")
         .replace(/'$/, "");
     if (url === "") {
-        return { DoLoad: false, OriginalURL: url, URL: "", IsFileURL: false, Source: source };
+        return { OriginalURL: url, URL: "", IsFileURL: false, DoLoad: false };
     }
-    if ((url === $Consts.CMD_QUIT) || ((url === $Consts.CMD_URL_QUIT))) {
-        return { DoLoad: false, OriginalURL: url, URL: $Consts.CMD_QUIT, IsFileURL: false, Source: source };
+    // Quit.
+    if (url === $Consts.CMD_QUIT) {
+        return { OriginalURL: url, URL: $Consts.CMD_QUIT, IsFileURL: false, DoLoad: false };
     }
-    if (url.startsWith("/")) {
-        return { DoLoad: true, OriginalURL: url, URL: "file://" + url, IsFileURL: true, Source: source };
+    // Clear traces.
+    if (url === $Consts.CMD_CLEAR_TRACES) {
+        return { OriginalURL: url, URL: $Consts.CMD_CLEAR_TRACES, IsFileURL: false, DoLoad: false };
+    }
+    // A relative or absolute file path.
+    if (url.startsWith(".") || url.startsWith("/")) {
+        const fileURL = url.startsWith(".") ? $Path.resolve(url) : url;
+        try {
+            return { OriginalURL: url, URL: new $URL.URL("file://" + fileURL).toString(), IsFileURL: true, DoLoad: true };
+        } catch (error) {
+            console.error(`Invalid URL: ${error}`);
+            return { OriginalURL: url, URL: "", IsFileURL: true, DoLoad: false };
+        }
+    }
+    // Internal resources
+    if (url.startsWith("data:text/html,")) {
+        return { OriginalURL: url, URL: url, IsFileURL: false, DoLoad: true };
     }
     const urlLower: string = url.toLowerCase();
     if (urlLower.startsWith("https://") ||
         urlLower.startsWith("http://") ||
-        urlLower.startsWith("ftp://") ||
-        urlLower.startsWith("file://")) {
+        urlLower.startsWith("file://") ||
+        (scheme && urlLower.startsWith(scheme))) {
         try {
-            const parsedUrl: $URL.URL = new $URL.URL(url);
-            return { DoLoad: true, OriginalURL: url, URL: parsedUrl.toString(), IsFileURL: url.startsWith("file://"), Source: source };
+            return { OriginalURL: url, URL: new $URL.URL(url).toString(), IsFileURL: url.startsWith("file://"), DoLoad: true };
         } catch (error) {
             console.error(`Invalid URL: ${error}`);
-            return { DoLoad: false, OriginalURL: url, URL: "", IsFileURL: false, Source: source };
+            return { OriginalURL: url, URL: "", IsFileURL: false, DoLoad: false };
         }
     }
     // Simplistic fallback
-    return { DoLoad: true, OriginalURL: url, URL: "http://" + url, IsFileURL: false, Source: source };
+    return { OriginalURL: url, URL: "https://" + url, IsFileURL: false, DoLoad: true };
+    /* eslint-enable */
+}
+
+/**
+ * Make a URL of a string.
+ * @param url The URL string.
+ * @returns A URL or undefined.
+ */
+function getURL(url: string): $URL.URL | undefined {
+    try {
+        return new $URL.URL(url);
+    } catch (error) {
+        return undefined;
+    }
+}
+
+/**
+ * Checks, if two URLs are the same after the hash has been removed from both URLs.
+ * @param URL1 URL to compare.
+ * @param URL2 URL to compare.
+ * @returns true if both URLs are the same.
+ */
+export function compareURLs(URL1: string, URL2: string): boolean {
+    if (URL1 === URL2) {
+        return true;
+    }
+    const url1 = getURL(URL1);
+    const url2 = getURL(URL2);
+    if (url1 && url2) {
+        url1.hash = "";
+        url2.hash = "";
+        return url1.toString() === url2.toString();
+    }
+    return false;
+}
+
+/**
+ * Checks, if two URLs have the same origin.
+ * @param URL1 URL to compare.
+ * @param URL2 URL to compare.
+ * @returns true if both URLs have the same origin the same.
+ */
+export function isSameOrigin(URL1: string, URL2: string): boolean {
+    if (URL1 === URL2) {
+        return true;
+    }
+    const url1 = getURL(URL1);
+    const url2 = getURL(URL2);
+    if (url1 && url2) {
+        return url1.origin === url2.origin;
+    }
+    return false;
 }

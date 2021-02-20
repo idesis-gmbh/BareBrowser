@@ -1,14 +1,12 @@
 // Run specified release build
 
 // Checks
-if ((process.argv[3] == "darwin") && (process.platform != "darwin")) {
-    console.error("%s: Cannot run darwin release on %s", process.argv[1], process.platform);
-    process.exit(1);
-} else if ((process.argv[3] == "win32") && (process.platform != "win32")) {
-    console.error("%s: Cannot run win32 release on %s", process.argv[1], process.platform);
-    process.exit(1);
-} else if ((process.argv[3] !== "darwin") && (process.argv[3] !== "win32")) {
+if ((process.argv[3] !== "darwin") && (process.argv[3] !== "win32")) {
     console.error("%s: Unknown platform: %s", process.argv[1], process.argv[3]);
+    process.exit(1);
+}
+if (process.argv[3] !== process.platform) {
+    console.error("%s: Cannot run %s release on %s", process.argv[1], process.argv[3], process.platform);
     process.exit(1);
 }
 
@@ -28,7 +26,7 @@ if (process.argv[3] === "darwin") {
     process.exit(proc.spawnSync("open", params, { shell: true, stdio: "inherit" }).status);
 } else if (process.argv[3] === "win32") {
     const executable = "\""
-        + path.join("release", `${apppj.productName}-${apppj.version}-win32-${apppj.config.archWin}`, `${apppj.productName}.exe`)
+        + path.join("release", `${apppj.productName}-${apppj.version}-win32-${apppj.config.archWin}`, `${apppj.executableName}.exe`)
         + "\"";
     console.log("///// Running current win32-%s release of %s...", apppj.config.archWin, apppj.productName);
     proc.spawn(executable, [], { detached: true, shell: true });
