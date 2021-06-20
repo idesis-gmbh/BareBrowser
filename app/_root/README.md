@@ -1136,7 +1136,7 @@ Resources loaded from other origins should make us skeptical if not nervous. Don
 `Nervous.js` will do this job for you! It's a creative use for a request handler, trying to
 visualize what really happens behind the scenes on todays web sites...
 
-You'll find the JavaScript file* in `./lib/RequestHandlers` The handler isn't configured in
+You'll find the JavaScript file* in `./lib/RequestHandlers/default` The handler isn't configured in
 `settings.json`, so you have to activate it by adding this snippet to the `RequestHandlers` object
 (*before* the default request handler):
 
@@ -1144,7 +1144,7 @@ You'll find the JavaScript file* in `./lib/RequestHandlers` The handler isn't co
 {
   "Load": true,
   "Active": true,
-  "Source": "../lib/RequestHandlers/Nervous.js"
+  "Source": "../lib/RequestHandlers/default/Nervous.js"
 },
 ```
 
