@@ -572,7 +572,7 @@ export class RendererApplication {
      */
     private onWebViewIPCMessage(event: Electron.IpcMessageEvent): void {
         if (event.channel !== IPC_WEBVIEW_RENDERER) {
-            return
+            return;
         }
         const msgId = event.args[0] as number;
         const params: unknown[] = event.args.slice(1);

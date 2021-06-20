@@ -7,7 +7,7 @@ import { MainApplication } from "./main/MainApplication";
  * there is no straight forward use of it.
  */
 process.on("uncaughtException", (error: Error) => {
-    console.error("Uncaught exception:",  error);
+    console.error("Uncaught exception:", error);
     dialog.showErrorBox("Caught unhandled exception", error.message || "Unknown/missing error message");
     // Only do synchronous cleanup here (if any) and then fail/quit
     // ...cleanup...

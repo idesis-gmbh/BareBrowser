@@ -79,7 +79,7 @@ export abstract class ApplicationMenu {
     public get Paste(): MenuItem {
         return this.pasteMenu;
     }
-    
+
     /**
      * Get the Select all menu item.
      * @type {MenuItem}

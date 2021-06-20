@@ -95,8 +95,7 @@ export declare class RequestHandler {
      * @param navigationType The type of the request/navigation issued.
      * See enum `NavigationType` above for possible values.
      * @returns A RequestResult which tells BareBrowser how to proceed with the request.
-     * See enum `RequestResult` above for possible values.
-     * 
+     * See enum `RequestResult` above for possible values.\
      * The request/navigation can be issued by
      * - clicking on a link in page which is already loaded,
      * - the page itslef, e.g. JavaScript,

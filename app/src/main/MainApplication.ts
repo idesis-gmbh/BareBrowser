@@ -69,7 +69,7 @@ export class MainApplication {
         // Issued by another instance which is about to quit.
         if (this.currentUrlItem.URL == $Consts.CMD_CLEAR_TRACES) {
             setTimeout(() => {
-                this.clearTraces()
+                this.clearTraces();
                 this.quit();
             }, 1000);
             //}, process.platform === "win32" ? 1000 : 100);
@@ -132,7 +132,7 @@ export class MainApplication {
         return {
             URL: URL,
             WindowID: Math.trunc(windowId)
-        }
+        };
         /* eslint-enable */
     }
 
@@ -446,7 +446,7 @@ export class MainApplication {
             }
         }
         // ... then directories (deepest first)
-        userDataFiles.Directories.sort((a: string, b: string) => { return b.length - a.length });
+        userDataFiles.Directories.sort((a: string, b: string) => { return b.length - a.length; });
         for (const entry of userDataFiles.Directories) {
             try {
                 $FSE.removeSync(entry);
@@ -461,11 +461,11 @@ export class MainApplication {
 
     /**
      * Move the given window to the foreground (make it the last entry in the internal window list).
-     * *Note:* This doesn't focus the window.
+     * _Note:_ This doesn't focus the window.
      * @param window The window to be moved to the foreground.
      */
     private setForegoundWindow(window: BrowserWindow) {
-        const index: number = this.windows.findIndex(entry => entry.Window === window)
+        const index: number = this.windows.findIndex(entry => entry.Window === window);
         if (index !== -1) {
             this.windows.push(this.windows.splice(index, 1)[0]);
         }
@@ -845,7 +845,7 @@ export class MainApplication {
             } else if (this.settings.LogRequests) {
                 console.log(`MainApplication handleRequest: ${msg}`);
             }
-        }
+        };
         /* eslint-enable */
 
         logRequest(url);
@@ -959,7 +959,7 @@ export class MainApplication {
                     return false;
                 }
                 /* eslint-enable */
-            }
+            };
             // Handle URL
             const originalURL = request.url;
             const parsedURL = new $URL.URL(originalURL);
@@ -1065,7 +1065,7 @@ export class MainApplication {
      * On activating the app.
      * On darwin it's common to re-create a window in the app when the
      * dock icon is clicked and there are no other windows open.
-     * *Note:* This is left here only for completeness.
+     * Note:_ This is left here only for completeness.
      * BareBrowser currently quits if the last browser window is closed.
      * @param _event An Electron event
      * @param _hasVisibleWindows True if there are existing visible windows.
@@ -1092,7 +1092,7 @@ export class MainApplication {
      * @see IBrowserWindowCloseEvent;
      */
     private onWindowClosed(event: IBrowserWindowEvent): void {
-        const index: number = this.windows.findIndex(entry => entry.Window === event.sender)
+        const index: number = this.windows.findIndex(entry => entry.Window === event.sender);
         if (index !== -1) {
             const windowEntry = this.windows[index];
             // @ts-ignore

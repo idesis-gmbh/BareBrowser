@@ -46,7 +46,7 @@ export const enum IPC {
     GET_SCROLL_OFFSET,
     SET_SCROLL_OFFSET,
     SCROLL_TO_OFFSET,
-    KEYBOARD_EVENT,
+    KEYBOARD_EVENT
 }
 
 /* eslint-disable jsdoc/require-jsdoc */
@@ -71,55 +71,55 @@ export const IPC_DEBUG: IIPCMessage = {
 export const IPC_LOAD_URL_ITEM: IIPCMessage = {
     Id: IPC.LOAD_URL,
     Text: "",
-}
+};
 export const IPC_RELOAD_URL_ITEM: IIPCMessage = {
     Id: IPC.RELOAD_URL,
     Text: "",
-}
+};
 export const IPC_GO_BACK: IIPCMessage = {
     Id: IPC.GO_BACK,
     Text: "",
-}
+};
 export const IPC_GO_FORWARD: IIPCMessage = {
     Id: IPC.GO_FORWARD,
     Text: "",
-}
+};
 export const IPC_QUERY_INITIAL_URL_ITEM: IIPCMessage = {
     Id: IPC.QUERY_INITIAL_URL_ITEM,
     Text: "",
-}
+};
 export const IPC_GET_SETTINGS: IIPCMessage = {
     Id: IPC.GET_SETTINGS,
     Text: "",
-}
+};
 export const IPC_RENDERER_READY: IIPCMessage = {
     Id: IPC.RENDERER_READY,
     Text: "",
-}
+};
 export const IPC_TOGGLE_WIN32_MENU: IIPCMessage = {
     Id: IPC.TOGGLE_WIN32_MENU,
     Text: "",
-}
+};
 export const IPC_NEW_WINDOW: IIPCMessage = {
     Id: IPC.NEW_WINDOW,
     Text: "",
-}
+};
 export const IPC_GET_SCROLL_OFFSET: IIPCMessage = {
     Id: IPC.GET_SCROLL_OFFSET,
     Text: "",
-}
+};
 export const IPC_SET_SCROLL_OFFSET: IIPCMessage = {
     Id: IPC.SET_SCROLL_OFFSET,
     Text: "",
-}
+};
 export const IPC_SCROLL_TO_OFFSET: IIPCMessage = {
     Id: IPC.SCROLL_TO_OFFSET,
     Text: "",
-}
+};
 export const IPC_KEYBOARD_EVENT: IIPCMessage = {
     Id: IPC.KEYBOARD_EVENT,
     Text: "",
-}
+};
 /* eslint-enable */
 
 /** 

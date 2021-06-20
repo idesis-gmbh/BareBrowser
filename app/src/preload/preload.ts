@@ -53,6 +53,6 @@ function handleKBevent(t: string, e: KeyboardEvent) {
 
 /* eslint-disable jsdoc/require-jsdoc */
 // window.addEventListener("keypress", (e) => { handleKBevent("keypress", e); }, {capture: true, passive: true});
-window.addEventListener("keydown", (e) => { handleKBevent("keydown", e); }, {capture: true, passive: true});
-window.addEventListener("keyup", (e) => { handleKBevent("keyup", e); }, {capture: true, passive: true});
+window.addEventListener("keydown", (e) => { handleKBevent("keydown", e); }, { capture: true, passive: true });
+window.addEventListener("keyup", (e) => { handleKBevent("keyup", e); }, { capture: true, passive: true });
 /* eslint-enable */
