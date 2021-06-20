@@ -38,8 +38,8 @@ interface IBrowserWindowEvent extends Electron.Event {
  */
 interface IWindowEntry {
     Window: Electron.BrowserWindow;
-    WebContents: webContents;
-    WebContentsID: number;
+    WebViewWebContents: webContents;
+    WebViewWebContentsID: number;
     RequestHandlers: RequestHandler[];
 }
 
@@ -581,7 +581,7 @@ export class MainApplication {
             }
             const windowEntry = this.getBrowserWindowEntry(targetWindow.id);
             if (windowEntry) {
-                this.handleRequest(this.currentUrlItem.URL, windowEntry.WebContentsID, NavigationType.LOAD);
+                this.handleRequest(this.currentUrlItem.URL, windowEntry.WebViewWebContentsID, NavigationType.LOAD);
             }
         }
     }
@@ -643,7 +643,7 @@ export class MainApplication {
         if (cmdLineArgs.URL !== "") {
             const windowEntry = this.getBrowserWindowEntry(targetWindow.id);
             if (windowEntry) {
-                this.handleRequest(this.currentUrlItem.URL, windowEntry.WebContentsID, NavigationType.LOAD);
+                this.handleRequest(this.currentUrlItem.URL, windowEntry.WebViewWebContentsID, NavigationType.LOAD);
             }
         }
     }
@@ -719,22 +719,22 @@ export class MainApplication {
             case IPC.LOAD_URL:
                 windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
-                    this.handleRequest(getURLItem(this.handleBuiltinURLs(params[0] as string), this.settings.Scheme).URL, windowEntry.WebContentsID, NavigationType.LOAD);
+                    this.handleRequest(getURLItem(this.handleBuiltinURLs(params[0] as string), this.settings.Scheme).URL, windowEntry.WebViewWebContentsID, NavigationType.LOAD);
                 }
                 break;
 
             case IPC.RELOAD_URL:
                 windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
-                    this.handleRequest("<RELOAD>", windowEntry.WebContentsID, NavigationType.RELOAD);
+                    this.handleRequest("<RELOAD>", windowEntry.WebViewWebContentsID, NavigationType.RELOAD);
                 }
                 break;
 
             case IPC.GO_BACK:
                 windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
-                    if (windowEntry.WebContents.canGoBack()) {
-                        this.handleRequest("<BACK>", windowEntry.WebContentsID, NavigationType.BACK);
+                    if (windowEntry.WebViewWebContents.canGoBack()) {
+                        this.handleRequest("<BACK>", windowEntry.WebViewWebContentsID, NavigationType.BACK);
                     }
                 }
                 break;
@@ -742,8 +742,8 @@ export class MainApplication {
             case IPC.GO_FORWARD:
                 windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
-                    if (windowEntry.WebContents.canGoForward()) {
-                        this.handleRequest("<FORWARD>", windowEntry.WebContentsID, NavigationType.FORWARD);
+                    if (windowEntry.WebViewWebContents.canGoForward()) {
+                        this.handleRequest("<FORWARD>", windowEntry.WebViewWebContentsID, NavigationType.FORWARD);
                     }
                 }
                 break;
@@ -796,14 +796,14 @@ export class MainApplication {
             // Set the id of the webContents of the webview tag which is hosted in the browser window.
             case IPC.RENDERER_READY:
                 const _window = BrowserWindow.fromId(windowId);
-                const _webContents = webContents.fromId(params[0] as number);
-                if (_window && _webContents) {
+                const _webViewWebContents = webContents.fromId(params[0] as number);
+                if (_window && _webViewWebContents) {
                     /* eslint-disable jsdoc/require-jsdoc */
                     this.windows.push({
                         Window: _window,
-                        WebContents: _webContents,
-                        WebContentsID: _webContents.id,
-                        RequestHandlers: this.loadRequestHandlers(_webContents, _window)
+                        WebViewWebContents: _webViewWebContents,
+                        WebViewWebContentsID: _webViewWebContents.id,
+                        RequestHandlers: this.loadRequestHandlers(_webViewWebContents, _window)
                     });
                     /* eslint-enable */
                 }
@@ -852,7 +852,7 @@ export class MainApplication {
         // Get associated handlers
         let handlers: RequestHandler[] = [];
         for (let i = 0; i < this.windows.length; i++) {
-            if (this.windows[i].WebContentsID === webContentsId) {
+            if (this.windows[i].WebViewWebContentsID === webContentsId) {
                 handlers = this.windows[i].RequestHandlers;
                 break;
             }
@@ -911,7 +911,7 @@ export class MainApplication {
             if (details.webContentsId === undefined) {
                 const browserWindowEntry = this.getBrowserWindowEntry(undefined);
                 if (browserWindowEntry) {
-                    webContentsId = browserWindowEntry.WebContentsID;
+                    webContentsId = browserWindowEntry.WebViewWebContentsID;
                 } else {
                     // No WebContents, cancel this request.
                     return;
@@ -1014,11 +1014,11 @@ export class MainApplication {
                         callback({ statusCode: 304, mimeType: "text/plain", data: Readable.from(Buffer.from("")) });
                         if (windowEntry) {
                             if (host === "reload") {
-                                setImmediate(() => this.handleRequest("<RELOAD>", windowEntry.WebContentsID, NavigationType.RELOAD));
+                                setImmediate(() => this.handleRequest("<RELOAD>", windowEntry.WebViewWebContentsID, NavigationType.RELOAD));
                             } else if (host === "back") {
-                                setImmediate(() => this.handleRequest("<BACK>", windowEntry.WebContentsID, NavigationType.BACK));
+                                setImmediate(() => this.handleRequest("<BACK>", windowEntry.WebViewWebContentsID, NavigationType.BACK));
                             } else if (host === "forward") {
-                                setImmediate(() => this.handleRequest("<FORWARD>", windowEntry.WebContentsID, NavigationType.FORWARD));
+                                setImmediate(() => this.handleRequest("<FORWARD>", windowEntry.WebViewWebContentsID, NavigationType.FORWARD));
                             }
                         }
                         return;
