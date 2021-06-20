@@ -10,6 +10,27 @@
         }
     ],
     "settings": {
+        // Turn this filter on to reduce the clutter in the file explorer.
+        "-files.exclude": {
+            "node_modules": true,
+            "**/build/*.js": true,
+            "**/build/tmp/.electron-download": true,
+            "**/build/tmp/node_modules": true,
+            "**/build/tmp/js/**/*.js.map": true,
+            "**/build/tmp/js/tsconfigall.tsbuildinfo": true,
+            "**/build/tmp/package.json": true,
+            "**/build/tmp/package-lock.json": true,
+            "**/build/tmp/eslintrc.json": true,
+            "**/build/tmp/appicon.icns": true,
+            "**/build/tmp/appicon.ico": true,
+            "**/build/tsconfig*.json": true,
+            "**/out": true,
+            "**/release": true,
+            ".gitignore": true,
+            ".npmrc": true,
+            "package.json": true,
+            "package-lock.json": true
+        },
         "eslint.options": {
             "configFile": "./build/tmp/eslintrc.json",
         },
