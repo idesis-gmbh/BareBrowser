@@ -38,11 +38,14 @@ export const enum IPC {
     RELOAD_URL,
     GO_BACK,
     GO_FORWARD,
+    WINDOW_CREATED,
     QUERY_INITIAL_URL_ITEM,
     GET_SETTINGS,
     RENDERER_READY,
+    SET_WINDOW_TITLE,
     TOGGLE_WIN32_MENU,
     NEW_WINDOW,
+    TOGGLE_INTERNAL_DEV_TOOLS,
     GET_SCROLL_OFFSET,
     SET_SCROLL_OFFSET,
     SCROLL_TO_OFFSET,
@@ -84,6 +87,10 @@ export const IPC_GO_FORWARD: IIPCMessage = {
     Id: IPC.GO_FORWARD,
     Text: "",
 };
+export const IPC_WINDOW_CREATED: IIPCMessage = {
+    Id: IPC.WINDOW_CREATED,
+    Text: "",
+};
 export const IPC_QUERY_INITIAL_URL_ITEM: IIPCMessage = {
     Id: IPC.QUERY_INITIAL_URL_ITEM,
     Text: "",
@@ -96,12 +103,20 @@ export const IPC_RENDERER_READY: IIPCMessage = {
     Id: IPC.RENDERER_READY,
     Text: "",
 };
+export const IPC_SET_WINDOW_TITLE: IIPCMessage = {
+    Id: IPC.RENDERER_READY,
+    Text: "",
+};
 export const IPC_TOGGLE_WIN32_MENU: IIPCMessage = {
     Id: IPC.TOGGLE_WIN32_MENU,
     Text: "",
 };
 export const IPC_NEW_WINDOW: IIPCMessage = {
     Id: IPC.NEW_WINDOW,
+    Text: "",
+};
+export const IPC_TOGGLE_INTERNAL_DEV_TOOLS: IIPCMessage = {
+    Id: IPC.TOGGLE_INTERNAL_DEV_TOOLS,
     Text: "",
 };
 export const IPC_GET_SCROLL_OFFSET: IIPCMessage = {
@@ -135,12 +150,15 @@ export function getIPCMessage(id: number): IIPCMessage {
         case IPC.RELOAD_URL: return IPC_RELOAD_URL_ITEM;
         case IPC.GO_BACK: return IPC_GO_BACK;
         case IPC.GO_FORWARD: return IPC_GO_FORWARD;
+        case IPC.WINDOW_CREATED: return IPC_WINDOW_CREATED;
         case IPC.QUERY_INITIAL_URL_ITEM: return IPC_QUERY_INITIAL_URL_ITEM;
         case IPC.GET_SETTINGS: return IPC_GET_SETTINGS;
         case IPC.RENDERER_READY: return IPC_RENDERER_READY;
+        case IPC.SET_WINDOW_TITLE: return IPC_SET_WINDOW_TITLE;
         case IPC.TOGGLE_WIN32_MENU: return IPC_TOGGLE_WIN32_MENU;
         case IPC.NEW_WINDOW: return IPC_NEW_WINDOW;
         case IPC.GET_SCROLL_OFFSET: return IPC_GET_SCROLL_OFFSET;
+        case IPC.TOGGLE_INTERNAL_DEV_TOOLS: return IPC_TOGGLE_INTERNAL_DEV_TOOLS;
         case IPC.SET_SCROLL_OFFSET: return IPC_SET_SCROLL_OFFSET;
         case IPC.SCROLL_TO_OFFSET: return IPC_SCROLL_TO_OFFSET;
         case IPC.KEYBOARD_EVENT: return IPC_KEYBOARD_EVENT;

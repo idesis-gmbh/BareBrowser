@@ -1,5 +1,5 @@
-import { BrowserWindow, ipcRenderer, Point, remote, webContents } from "electron";
-import * as $ShortCuts from "mousetrap";
+import { ipcRenderer, Point } from "electron";
+import * as ShortCuts from "mousetrap";
 import { APP_INFO } from "../shared/AppInfo";
 import { getIPCMessage, IPC, IPC_MAIN_RENDERER, IPC_WEBVIEW_RENDERER } from "../shared/IPC";
 import { ISettings } from "../shared/Settings";
@@ -11,10 +11,7 @@ import { format } from "../shared/Utils";
  * The class for the renderer application part. Creates a browser window and handles anything else.
  */
 export class RendererApplication {
-
-    private window: BrowserWindow;
     private windowID: number;
-    private webContents: webContents;
     private ready = false;
     private settings: ISettings;
     private addressBar: HTMLDivElement;
@@ -34,10 +31,7 @@ export class RendererApplication {
      */
     constructor() {
         console.log("Creating new renderer...");
-        // ipcRenderer.on(IPC_MAIN_RENDERER, this.onIPCFromMain.bind(this));
-        this.window = remote.getCurrentWindow();
-        this.windowID = this.window.id;
-        this.webContents = this.window.webContents;
+        ipcRenderer.on(IPC_MAIN_RENDERER, this.onIPCFromMain.bind(this));
         this.settings = ipcRenderer.sendSync(IPC_MAIN_RENDERER, this.windowID, IPC.GET_SETTINGS) as ISettings;
         this.buildUI();
         this.bindShortCuts();
@@ -128,7 +122,7 @@ export class RendererApplication {
      * @param func The function to be executed if the given keyboard shortcut is used.
      */
     private bindShortCut(shortcut: string | string[], func: () => void): void {
-        $ShortCuts.bind(shortcut, (_event: $ShortCuts.ExtendedKeyboardEvent, _combo: string): boolean => {
+        ShortCuts.bind(shortcut, (_event: ShortCuts.ExtendedKeyboardEvent, _combo: string): boolean => {
             func.call(this);
             return false;
         });
@@ -145,10 +139,10 @@ export class RendererApplication {
             }
         });
         this.bindShortCut(this.settings.ShortCuts.ToggleInternalDevTools, () => {
-            const devToolsOpened = this.webContents.isDevToolsOpened();
-            devToolsOpened ? this.webContents.closeDevTools() : this.webContents.openDevTools();
+            ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.TOGGLE_INTERNAL_DEV_TOOLS);
         });
         this.bindShortCut(this.settings.ShortCuts.ToggleDevTools, () => {
+            ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.RELOAD_URL);
             this.webView.isDevToolsOpened() ? this.webView.closeDevTools() : this.webView.openDevTools();
         });
         this.bindShortCut(this.settings.ShortCuts.FocusLocationBar, () => {
@@ -161,7 +155,8 @@ export class RendererApplication {
             }
         });
         this.bindShortCut(this.settings.ShortCuts.InternalReload, () => {
-            this.webContents.reload();
+            // Deactivated for now; would also probably break this renderer.
+            // this.webContents.reload();
         });
         this.bindShortCut(this.settings.ShortCuts.NewWindow, () => {
             if (this.settings.AllowNewWindows) {
@@ -244,8 +239,7 @@ export class RendererApplication {
      * @param title The new window title
      */
     private setWindowTitle(title: string) {
-        // this.window.setTitle(`[${this.windowID}]  ${title}`);
-        this.settings.AllowNewWindows ? this.window.setTitle(`[${this.window.id}]  ${title}`) : this.window.setTitle(title);
+        ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.SET_WINDOW_TITLE, title);
     }
 
     /**
@@ -289,10 +283,6 @@ export class RendererApplication {
         // console.log("DID-START_LOADING", this.webView.src);
         this.clearError(false);
         this.spinner.style.visibility = "";
-        // This is the earliest possible moment to tell the main process once, that this renderer is ready.
-        if (!this.ready) {
-            this.setRendererReady();
-        }
     }
 
     /**
@@ -548,19 +538,21 @@ export class RendererApplication {
      * @param _event An Electron event.
      * @param args The arguments sent by the main process.
      */
-    // private onIPCFromMain(_event: Electron.IpcRendererEvent, ...args: unknown[]): void {
-    //     const msgId: number = args[0] as number;
-    //     const params: unknown[] = args.slice(1);
-    //     switch (msgId) {
-    //         case IPC.TEST:
-    //             console.log(params);
-    //             break;
+    private onIPCFromMain(_event: Electron.IpcRendererEvent, ...args: unknown[]): void {
+        const msgId: number = args[0] as number;
+        const params: unknown[] = args.slice(1);
+        switch (msgId) {
+            case IPC.WINDOW_CREATED:
+                this.windowID = params[0] as number;
+                // This is the earliest possible moment to tell the main process once, that this renderer is ready.
+                this.setRendererReady();
+                break;
 
-    //         default:
-    //             console.warn(format("Unknown/unhandled IPC message received from main: %d. ", msgId, ...params));
-    //             break;
-    //     }
-    // }
+            default:
+                console.warn(format("Unknown/unhandled IPC message received from main: %d. ", msgId, ...params));
+                break;
+        }
+    }
 
     /**
      * Handles IPC messages from the web view. Communication is asynchronous.

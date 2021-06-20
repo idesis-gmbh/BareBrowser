@@ -196,7 +196,8 @@ export class MainApplication {
         this.setWindowTitle(window, APP_INFO.ProductName);
         // Load
         await window.loadURL($URL.format(urlObject));
-        // window.webContents.openDevTools();
+        // Tell renderer its own window id.
+        window.webContents.send(IPC_MAIN_RENDERER, IPC.WINDOW_CREATED, window.id);
         console.log("Creating new window done.");
         return window;
     }
@@ -793,6 +794,15 @@ export class MainApplication {
                 }
                 break;
 
+            case IPC.TOGGLE_INTERNAL_DEV_TOOLS:
+                windowEntry = this.getBrowserWindowEntry(windowId);
+                if (windowEntry) {
+                    const devToolsOpened = windowEntry.Window.webContents.isDevToolsOpened();
+                    devToolsOpened ? windowEntry.Window.webContents.closeDevTools() : windowEntry.Window.webContents.openDevTools();
+                }
+                break;
+
+
             // Set the id of the webContents of the webview tag which is hosted in the browser window.
             case IPC.RENDERER_READY:
                 const _window = BrowserWindow.fromId(windowId);
@@ -806,6 +816,14 @@ export class MainApplication {
                         RequestHandlers: this.loadRequestHandlers(_webViewWebContents, _window)
                     });
                     /* eslint-enable */
+                }
+                break;
+
+            // Set new window title of calling renderer process
+            case IPC.SET_WINDOW_TITLE:
+                windowEntry = this.getBrowserWindowEntry(windowId);
+                if (windowEntry) {
+                    this.setWindowTitle(windowEntry.Window, params[0] as string);
                 }
                 break;
 
