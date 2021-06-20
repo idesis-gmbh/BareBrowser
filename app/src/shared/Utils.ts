@@ -6,7 +6,7 @@ import { $FSE, $Path } from "./Modules";
  * If the types don't match, a default value is returned. This function is
  * useful if potentially unsafe values or unknown types (for example from
  * a JSON object) have to be set to a specific type (and default value).
- * *Note:* Using generics instead of `any` enables the TypeScript compiler
+ * _Note:_ Using generics instead of `any` enables the TypeScript compiler
  * to detect wrong uses like `normalize("string", true)`.
  * @param value The value to be checked.
  * @param defaultValue The default value to be returned if `value` is of different type than `defaultValue`.
@@ -78,6 +78,9 @@ export const MIME_TYPES: Record<string, string> = {
     "png": "image/png",
     "jpg": "image/jpeg",
     "jpeg": "image/jpeg",
+    "bmp": "image/bmp",
+    "tif": "image/tiff",
+    "tiff": "image/tiff",
     "svg": "image/svg+xml",
     "svgz": "image/svg+xml",
     "txt": "text/plain",
