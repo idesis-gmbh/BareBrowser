@@ -2,8 +2,8 @@
 # BareBrowser
 
 ***Important note:***\
-Apart from the usual recommendations for Electron based 'web browsers' no special attempts have been
-made to make this browser secure for ordinary web browsing (see also
+Apart from the usual recommendations for Electron based 'web browsers' no special or further
+attempts have been made to make this browser secure for ordinary web browsing (see also
 [Electron BrowserWindow](https://electronjs.org/docs/api/browser-window) and
 [Electron &lt;webview&gt; Tag](https://electronjs.org/docs/api/webview-tag)). BareBrowser is by no
 means a complete replacement for regular browsers, for normal web surfing it's probably a better
@@ -37,9 +37,10 @@ BareBrowser is meant to be a tool for specific tasks in controlled environments:
 
 Download one of the releases from the
 [releases](https://github.com/idesis-gmbh/BareBrowser/releases) page, unzip the file and copy the
-resulting directory to any place you like (on a local hard drive, running BareBrowser from a network
-mount may prevent opening the developer tools). On the Mac you'd probably just copy the `BareBrowser`
-app (inside the unzipped folder) to `/Applications`.
+resulting directory to any place you like (on a local hard drive, *running BareBrowser from a network
+mount may prevent opening the developer tools and also may lead to other problems like frozen
+windows!*). On the Mac you'd probably just copy the `BareBrowser` app (inside the unzipped folder) to
+`/Applications`.
 
 ## GUI Usage
 
@@ -285,7 +286,7 @@ If you later modify the template settings file (in the installation directory) i
 again to the user data directory (on restarting BareBrowser) overwriting an already existing user
 settings file but only if the template settings file is newer than the user settings file. A backup
 is created before overwriting the older user settings file (for example
-`settings-2021-02-07_19-51-52.json`).
+`settings-2021-06-22_19-51-52.json`).
 
 The default configuration (from the directory above) looks like this:
 
@@ -542,7 +543,7 @@ the values is invalid, missing or has the wrong type. For the `RequestHandlers` 
 - `Scheme` is used for BareBrowsers internal protocol `bb://`, for example to show the internal home
   page. It can be changed to other
   [RFC 3986 URI syntax](https://tools.ietf.org/html/rfc3986#section-3) compliant values. This
-  affects BareBrowser builtin URLs, so you would have to use, for example, `myscheme://home` etc.
+  affects BareBrowsers builtin URLs, so you would have to use, for example, `myscheme://home` etc.
   instead of `bb://home`.
 
 
@@ -974,22 +975,22 @@ Configuration is entirely done in `./app/package.json`:
   "license": "MIT",
   "main": "./bin/MainProcess.js",
   "dependencies": {
-    "fs-extra": "9.1.0",
+    "fs-extra": "10.0.0",
     "mousetrap": "1.6.5"
   },
   "devDependencies": {
-    "typescript": "4.1.5",
-    "electron": "11.2.3",
-    "eslint": "7.20.0",
-    "eslint-plugin-jsdoc": "32.0.2",
-    "@types/node": "12.12.42",
-    "@types/fs-extra": "9.0.7",
-    "@types/mousetrap": "1.6.5",
-    "@typescript-eslint/parser": "4.15.1",
-    "@typescript-eslint/eslint-plugin": "4.15.1"
+    "@types/fs-extra": "9.0.11",
+    "@types/mousetrap": "1.6.8",
+    "@types/node": "14.17.3",
+    "@typescript-eslint/eslint-plugin": "4.28.0",
+    "@typescript-eslint/parser": "4.28.0",
+    "electron": "13.1.3",
+    "eslint-plugin-jsdoc": "35.4.0",
+    "eslint": "7.29.0",
+    "typescript": "4.3.4"
   },
   "config": {
-    "arch": "x64",
+    "arch": "x64,arm64",
     "pkgParams": "--quiet --asar.unpackDir=\"{res,lib/RequestHandlers}\""
   }
 }
@@ -1041,8 +1042,12 @@ of the fields:
   `electron` and `eslint` are the absolute minimum. Removing `eslint-plugin-jsdoc` means changing
   the ESLint configuration.
 
-- `config.arch` must be `x64` or `ia32` (`ia32` is only valid for building a 32-bit Windows
-  version!).
+- `config.arch` can be `x64`, `arm64`, `ia32` or any combination of these values, if you want to
+  build releases for multiple architectures (comma-delimited). `ia32` is only valid for building a
+  32-bit Windows version. If it's used when building a Mac version a warning will be emitted on the
+  console and this architecture will be ignored. If, for example, `config.arch` is
+  `x64,arm64,ia32` and `Make:all` (see below) is used on a Mac, the build system will generate 5
+  releases, 2 for macOS (`x64`, `arm64`) and 3 for Windows (`x64`, `arm64`, `ia32`).
 
 - `config.pkgParams` can be modified, please refer to Electron packager. `--asar.unpackDir`
   currently keeps the directories `./app/res` and `./app/lib/RequestHandlers` out of the packed
@@ -1087,7 +1092,7 @@ all start with a capital letter. These are the tasks you'd normaly use during de
 | :-------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Watch`         | Starts all of the watch tasks which are configured in `package.json` in parallel.                                                                         |
 | `Start:Build`   | Runs the current compiled state of BareBrowser from the directory `./out`.                                                                                |
-| `Start:Release` | Runs the packaged BareBrowser from the directory `./release` (created by the `Make*` tasks).                                                              |
+| `Start:Release` | Runs the packaged BareBrowser from the directory `./release` (created by the `Make*` tasks).\*                                                            |
 | `Build`         | Complete refresh of the build system files, based on the settings in `./app/package.json`.                                                                |
 | `Compile`       | Compiles the complete source code (main and renderer process, preload script).                                                                            |
 | `Clean`         | Cleans everything (including the `release` directory). After cleaning you must run the `Build` and `Compile` tasks again to be able to use `Start:Build`. |
@@ -1096,6 +1101,10 @@ all start with a capital letter. These are the tasks you'd normaly use during de
 | `Make:Mac`      | Packages BareBrowser for the Mac (can't be used on Windows).                                                                                              |
 | `Make:All`      | Packages BareBrowser for the Mac *and* for Windows (can only be used on the Mac).                                                                         |
 | `Lint`          | Executes source code linting with ESLint (based on the settings in `./app/src/eslintrc.json`.)                                                            |
+
+\* `Start:Release` currently will always pick a release that matches the current Node.js processor
+architecture. If, for example, you are developing on a Mac with Apple Silicon and `config.arch` is
+only `x64` running `Start:Release` will fail.
 
 It's highly recommended that you start the `Watch` task. This task watches for file changes in
 `./app/package.json` and all of the directories below `./app`. On a change it immediately executes
@@ -1115,9 +1124,16 @@ up-to-date state in `./out`, ready for running with `Start:Build`.
   `m:darwin:pkg` to quickly package BareBrowser for the Mac (provided the necessary `Build` and
   `Compile` tasks have been run before). This is much faster than running `Make`, although `Make` is
   safer because it ensures, that everything was cleaned and setup properly.
+- If a Windows version is packaged on a Mac with Apple Silicon (ARM64) the build system will patch
+  the `node-rcedit` module (a dependency of Electron Packager, see this
+  [bug](https://github.com/electron/node-rcedit/issues/83)), otherwise setting the icon for the
+  generated Windows executable would fail. In future versions of Electron Packager this may be no
+  longer necessary.
 
 The repo contains a Visual Studio Code workspace file (`BareBrowser.code-workspace`). It contains
-mainly the necessary settings to enable live linting based on `./app/src/eslintrc.json` in VS Code.
+the necessary settings to enable live linting based on `./app/src/eslintrc.json` in VS Code and a
+filter setting to hide most of the files/directories not needed during development from the file
+explorer.
 
 
 ## License
@@ -1128,7 +1144,7 @@ MIT ©2021 [idesis GmbH](https://www.idesis.de), Sabinastraße 27, D-45136 Essen
 
 ---
 
-## Nervous? ;-)
+## Nervous? 😉
 
 Ideally a good web site should only load resources from or below it's origin, right? E.g.
 `www.example.org` can load things from `www.example.org`, `example.org`, `imgs.example.org` etc.
@@ -1150,7 +1166,7 @@ You'll find the JavaScript file* in `./lib/RequestHandlers/default` The handler 
 
 After restarting BareBrowser just go to a web site, `https://www.forbes.com` is a 'recommended'
 example. Now every time Forbes loads a resource which doesn't origin from `*forbes.com` the browser
-window will *shiver for you* (it also talks on the command-line to you), so you can sit back and
+window will *shiver for you* (it also 'talks' to you on the command-line), so you can sit back and
 relax ;-).
 
 \* Beware, `Nervous.js` is a quick hack, it's by no means stable or complete, it may fail any time
