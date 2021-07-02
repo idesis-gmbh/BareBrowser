@@ -580,7 +580,7 @@ handlers matches their order in `settings.json`. You register a URL handler by a
   used to deactivate a handler completely.
 - `Active` indicates if a loaded handler is active or not. If `Active` is `false` the function
   `handleRequest` won't be called by BareBrowser. This means that the handler has no influence on
-  resource loading. Using `"Load": true` together with `"Active": false` can be used to perform a
+  resource loading. Using `"Load": true` together with `"Active": false` can be used to perform a
   single task when a new window is opened (in the constructor of a handler).
 - `Source` is the name of a JavaScript source file which must export a request handler class.
   Request handler source files should be placed in the `/lib/RequestHandlers` directory, preferably
