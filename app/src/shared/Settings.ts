@@ -348,7 +348,7 @@ export function getSettings(configFile: string): ISettings {
         Scheme: $Utils.normalize(settings.Scheme, "bb"),
     };
     /* eslint-enable */
-    if ([0, 1, 2].indexOf(settings.Win32MenuState) === -1) {
+    if (![0, 1, 2].includes(settings.Win32MenuState)) {
         settings.Win32MenuState = 1;
     }
     return settings;

@@ -40,7 +40,7 @@ class Nervous {
                 return REQ_CONTINUE;
             }
         }
-        if ((url.startsWith(`${this.settings.Scheme}://`)) || (["<BACK>", "<FORWARD>", "<RELOAD>", "<INTERNAL>"].indexOf(url) >= 0)) {
+        if ((url.startsWith(`${this.settings.Scheme}://`)) || ["<BACK>", "<FORWARD>", "<RELOAD>", "<INTERNAL>"].includes(url)) {
             this.log(`No problem here.  ${url}`);
             return REQ_CONTINUE;
         }

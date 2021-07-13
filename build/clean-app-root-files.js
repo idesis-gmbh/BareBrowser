@@ -4,7 +4,7 @@ const path = require("path");
 const preserve = process.argv.splice(3);
 if (fse.existsSync(process.argv[2])) {
     fse.readdirSync(process.argv[2]).forEach((entry) => {
-        if (preserve.indexOf(entry) === -1) {
+        if (!preserve.includes(entry)) {
             fse.removeSync(path.join(process.argv[2], entry));
         }
     });

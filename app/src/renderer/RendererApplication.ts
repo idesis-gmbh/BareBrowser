@@ -383,13 +383,12 @@ export class RendererApplication {
         // console.log("NEW-WINDOW? ", this.settings.AllowNewWindows, event.disposition);
         event.preventDefault();
         event.stopImmediatePropagation();
-        // Excluding `save-to-disk` for now
         if (["default",
             "foreground-tab",
             "background-tab",
             "new-window",
             "save-to-disk",
-            "other"].indexOf(event.disposition) !== -1) {
+            "other"].includes(event.disposition)) {
             ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.NEW_WINDOW, event.url);
         }
     }

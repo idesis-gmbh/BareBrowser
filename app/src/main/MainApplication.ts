@@ -296,7 +296,7 @@ export class MainApplication {
                 `${this.settings.Scheme}://back`,
                 `${this.settings.Scheme}://forward`,
                 `${this.settings.Scheme}://close`
-            ].indexOf(this.handleBuiltinURLs(testURL)) > -1) {
+            ].includes(this.handleBuiltinURLs(testURL))) {
                 cmdLineArgs.URL = "";
             }
             this.currentUrlItem = getURLItem(this.handleBuiltinURLs(cmdLineArgs.URL), this.settings.Scheme);
@@ -612,7 +612,7 @@ export class MainApplication {
                 `${this.settings.Scheme}://back`,
                 `${this.settings.Scheme}://forward`,
                 `${this.settings.Scheme}://close`
-            ].indexOf(this.currentUrlItem.URL) > -1) {
+            ].includes(this.currentUrlItem.URL)) {
                 console.log(`Ignoring ${this.currentUrlItem.URL} on second instance.`);
                 return;
             }
@@ -842,7 +842,7 @@ export class MainApplication {
      * @param callback A callback called with the boolean result of the permission check.
      */
     private onPermissionRequest(_webContents: Electron.WebContents, permission: string, callback: (permissionGranted: boolean) => void): void {
-        const grant: boolean = (this.settings.Permissions.indexOf(permission) > -1);
+        const grant: boolean = this.settings.Permissions.includes(permission);
         console.info(`Permission '${permission}' requested, ${grant ? "granting." : "denying."}`);
         callback(grant);
     }
