@@ -47,13 +47,13 @@
     "RequestHandlers": [
         {
             "Load": false,
-            "Active": false,
-            "Source": "../lib/RequestHandlers/default/LoggerRequestHandler.js"
+            "Active": true,
+            "Source": "./lib/RequestHandlers/default/LoggerRequestHandler.js"
         },
         {
             "Load": false,
-            "Active": false,
-            "Source": "../lib/RequestHandlers/default/FilterRequestHandler.js",
+            "Active": true,
+            "Source": "./lib/RequestHandlers/default/FilterRequestHandler.js",
             "Config": {
                 "Filter": [
                     "^https://github.com(/.*)?",
@@ -74,7 +74,7 @@
         {
             "Load": false,
             "Active": false,
-            "Source": "../lib/RequestHandlers/RequestHandlerTemplate.js",
+            "Source": "./lib/RequestHandlers/RequestHandlerTemplate.js",
             "Config": {
                 "Log": true
             }
@@ -82,7 +82,7 @@
         {
             "Load": true,
             "Active": true,
-            "Source": "../lib/RequestHandlers/default/DefaultRequestHandler.js",
+            "Source": "./lib/RequestHandlers/default/DefaultRequestHandler.js",
             "Config": {
                 "Log": false
             }

@@ -360,8 +360,19 @@ export class MainApplication {
         for (const handler of this.settings.RequestHandlers) {
             if (handler.Load) {
                 try {
+                    let requestHandlerSource: string;
+                    if ($Path.isAbsolute(handler.Source)) {
+                        requestHandlerSource = handler.Source;
+                    } else {
+                        // First, load from real file system
+                        requestHandlerSource = $Path.resolve(APP_INFO.APP_PATH, handler.Source);
+                        if (!$FSE.existsSync(requestHandlerSource)) {
+                            // Next, try to load from file system inside app.asar
+                            requestHandlerSource = $Path.resolve(APP_INFO.APP_PATH_PKG, handler.Source);
+                        }
+                    }
                     // eslint-disable-next-line @typescript-eslint/no-var-requires
-                    const handlerClass: typeof RequestHandler = require(handler.Source) as typeof RequestHandler;
+                    const handlerClass: typeof RequestHandler = require(requestHandlerSource) as typeof RequestHandler;
                     const classInstance: RequestHandler = new handlerClass(
                         handler.Config,
                         this.settings,

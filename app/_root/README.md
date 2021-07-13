@@ -341,12 +341,12 @@ The default configuration (from the directory above) looks like this:
     {
       "Load": false,
       "Active": false,
-      "Source": "../lib/RequestHandlers/default/RequestLoggerHandler.js"
+      "Source": "./lib/RequestHandlers/default/RequestLoggerHandler.js"
     },
     {
       "Load": false,
       "Active": false,
-      "Source": "../lib/RequestHandlers/default/FilterRequestHandler.js",
+      "Source": "./lib/RequestHandlers/default/FilterRequestHandler.js",
       "Config": {
         "Filter": [
           "^https://github.com(/.*)?",
@@ -367,7 +367,7 @@ The default configuration (from the directory above) looks like this:
     {
       "Load": false,
       "Active": false,
-      "Source": "../lib/RequestHandlers/RequestHandlerTemplate.js",
+      "Source": "./lib/RequestHandlers/RequestHandlerTemplate.js",
       "Config": {
         "Log": true
       }
@@ -375,7 +375,7 @@ The default configuration (from the directory above) looks like this:
     {
       "Load": true,
       "Active": true,
-      "Source": "../lib/RequestHandlers/default/DefaultRequestHandler.js",
+      "Source": "./lib/RequestHandlers/default/DefaultRequestHandler.js",
       "Config": {
         "Log": false
       }
@@ -569,7 +569,7 @@ handlers matches their order in `settings.json`. You register a URL handler by a
   {
     "Load": true,
     "Active": true,
-    "Source": "../lib/RequestHandlers/MyURLHandler/MyURLHandler.js",
+    "Source": "./lib/RequestHandlers/MyURLHandler/MyURLHandler.js",
     "Config": {
       "UserAgent": "FooBar"
     }
@@ -583,13 +583,13 @@ handlers matches their order in `settings.json`. You register a URL handler by a
   resource loading. Using `"Load": true` together with `"Active": false` can be used to perform a
   single task when a new window is opened (in the constructor of a handler).
 - `Source` is the name of a JavaScript source file which must export a request handler class.
-  Request handler source files should be placed in the `/lib/RequestHandlers` directory, preferably
-  in their own directory below `/lib/RequestHandlers`.
+  Request handler source files should be placed in the `./lib/RequestHandlers` directory, preferably
+  in their own directory below `./lib/RequestHandlers`.
 - The `Config` object is optional, but if it is available, it will pe passed as an object to the
   handlers constructor (see below).
 
 Request handlers must implement a simple interface and export it as a class. The file
-`RequestHandlerTemplate.js` in `/lib/RequestHandlers` can be used as a template for writing
+`RequestHandlerTemplate.js` in `./lib/RequestHandlers` can be used as a template for writing
 your own handler. The files `DefaultRequestHandler.js` and `RequestHandlerConsts.js` contain
 detailed comments and API descriptions (see also the TypeScript file `/src/main/RequestHandler.ts`).
 
@@ -1160,7 +1160,7 @@ You'll find the JavaScript file* in `./lib/RequestHandlers/default` The handler 
 {
   "Load": true,
   "Active": true,
-  "Source": "../lib/RequestHandlers/default/Nervous.js"
+  "Source": "./lib/RequestHandlers/default/Nervous.js"
 },
 ```
 
