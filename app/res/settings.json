@@ -95,7 +95,7 @@
         "fullscreen"
     ],
     "AllowPlugins": false,
-    "AllowPopups": false,
+    "AllowPopups": true,
     "AllowNewWindows": true,
     "ClearTraces": false,
     "SingleInstance": true,

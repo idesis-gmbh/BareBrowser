@@ -376,24 +376,6 @@ export class RendererApplication {
     }
 
     /**
-     * Called when the user clicks on a link in a page which should be opened in another window/tab.
-     * @param event An Electron NewWindowEvent.
-     */
-    private onWebViewNewWindow(event: Electron.NewWindowEvent): void {
-        // console.log("NEW-WINDOW? ", this.settings.AllowNewWindows, event.disposition);
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        if (["default",
-            "foreground-tab",
-            "background-tab",
-            "new-window",
-            "save-to-disk",
-            "other"].includes(event.disposition)) {
-            ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.NEW_WINDOW, event.url);
-        }
-    }
-
-    /**
      * Build the address bar.
      * @returns The DOM element for the address bar.
      */
@@ -527,7 +509,6 @@ export class RendererApplication {
         webView.addEventListener("did-navigate-in-page", this.onWebViewDidNavigateInPage.bind(this), false);
         webView.addEventListener("page-title-updated", this.onWebViewPageTitleUpdated.bind(this), false);
         webView.addEventListener("update-target-url", this.onWebViewUpdateTargetURL.bind(this), false);
-        webView.addEventListener("new-window", this.onWebViewNewWindow.bind(this), false);
         webView.addEventListener("ipc-message", this.onWebViewIPCMessage.bind(this), false);
         return webView;
     }

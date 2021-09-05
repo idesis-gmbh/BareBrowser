@@ -388,7 +388,7 @@ The default configuration (from the directory above) looks like this:
       "fullscreen"
   ],
   "AllowPlugins": false,
-  "AllowPopups": false,
+  "AllowPopups": true,
   "AllowNewWindows": true,
   "ClearTraces": false,
   "SingleInstance": true,
@@ -469,13 +469,19 @@ the values is invalid, missing or has the wrong type. For the `RequestHandlers` 
 
 - With `AllowPlugins` set to `true` BareBrowser should be able to load plugins.
 
-- With `AllowPopups` set to `true` the current window can open other popup windows.
+- With `AllowPopups` set to `true` the current window can open other windows (e. g. through links
+  with `target="_blank"`). If this setting is `false`, *nothing* will happen if such links are
+  clicked. Instead you have to click with `Shift` or `Ctrl`/`Cmd` (see below `AllowNewWindows`).
 
 - With `AllowNewWindows` set to `true` the current window can open new windows when links in the
-  current page want to be opened in a new window. Setting this to `false` can significantly degrade
-  the browsing experience. Prefixing URLs with `new:` (see above) also won't open new windows.\
+  current page want to be opened in a new window (see `AllowPopups`). In addition to that users will
+  be able to open new (empty) windows with `Cmd`/`Ctrl`+`N`. Setting this to `false` can
+  significantly degrade the browsing experience. Prefixing URLs with `new:` (see above) also won't
+  open new windows.\
   ***Note:*** To open a regular link in a new window you can click on it while holding down the
-  `Shift` or `Cmd` key on the Mac or the `Shift` or `Ctrl` key on Windows.
+  `Shift` or `Cmd` key on the Mac or the `Shift` or `Ctrl` key on Windows. If `AllowNewWindows` is
+  `false` clicking on a link while holding down one of these keys has no effect, instead the link
+  will be opened in the current window.
 
 - If `ClearTraces` is set to `true` then any temporary data like caches, local storage, cookies,
   sessions etc. will be deleted when BareBrowser is closed. Deleting means the *complete removal*(!)

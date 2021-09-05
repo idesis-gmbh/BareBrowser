@@ -1,5 +1,6 @@
 import { spawn } from "child_process";
 import { app, BrowserWindow, ipcMain, Menu, protocol, screen, session, webContents } from "electron";
+import { HandlerDetails } from "electron/main";
 import { Readable } from "stream";
 import { APP_INFO } from "../shared/AppInfo";
 import * as $Consts from "../shared/Consts";
@@ -156,7 +157,7 @@ export class MainApplication {
             webPreferences: {
                 nodeIntegration: true,
                 webviewTag: true,
-                enableRemoteModule: true,
+                nativeWindowOpen: true,
                 contextIsolation: false,
             },
         };
@@ -576,7 +577,7 @@ export class MainApplication {
      * @param browserWindow The browser window which should handle the given URL.
      */
     private openFileOrURL(fileOrURL: string, isFile: boolean, browserWindow?: BrowserWindow | null): void {
-        this.currentUrlItem = getURLItem(this.handleBuiltinURLs(fileOrURL));
+        this.currentUrlItem = getURLItem(this.handleBuiltinURLs(fileOrURL), this.settings.Scheme);
         // On Darwin yet determined by onOpen* so set it explicitly here
         this.currentUrlItem.IsFileURL = isFile;
         const targetWindow = browserWindow ? browserWindow : this.getCurrentWindow();
@@ -681,25 +682,27 @@ export class MainApplication {
     }
 
     /**
-     * Secure the webview tag.
+     * Various handlers for the webContents of the webview tag.
      * @param _event Electron event.
      * @param webContents The web contents of the renderer process.
      * @see https://www.electronjs.org/docs/tutorial/security
      */
     private onWebContentsCreated(_event: Electron.Event, webContents: Electron.WebContents): void {
+        // Secure the webview tag.
         webContents.on("will-attach-webview", (_e: Electron.Event, wp: Electron.WebPreferences, _params: Record<string, string>): void => {
             delete wp.preload;
             wp.backgroundThrottling = false;
             wp.nodeIntegration = false;
             wp.nodeIntegrationInSubFrames = false;
             wp.nodeIntegrationInWorker = false;
-            wp.enableRemoteModule = false;
+            wp.sandbox = true;
+            wp.nativeWindowOpen = true;
             wp.contextIsolation = false;
             wp.webSecurity = true;
             wp.experimentalFeatures = false;
             wp.enableBlinkFeatures = "";
             // wp.v8CacheOptions = "code";
-            // webPreferences.allowRunningInsecureContent = false;
+            wp.allowRunningInsecureContent = false;
         });
         // A different URL origin will cause a new handler chain to be started (through openFileOrURL).
         webContents.on("will-navigate", (willNavigateEvent: Electron.Event, url: string) => {
@@ -712,6 +715,31 @@ export class MainApplication {
                 willNavigateEvent.preventDefault();
                 this.openFileOrURL(url, url.startsWith("file://"), BrowserWindow.fromWebContents(webContents));
             }
+        });
+        // Handle requests to open new windows. Since BareBrowser has no tabs (yet) new windows will
+        // be created in all cases.
+        webContents.setWindowOpenHandler((details: HandlerDetails) => {
+            if (["default",
+                // Link with target="_blank" etc. If AllowPopups is false, the setWindowOpenHandler
+                // will never be called.
+                "foreground-tab",
+                // Cmd-/Ctrl-click
+                "background-tab",
+                // Shift-click
+                "new-window",
+                "save-to-disk",
+                "other"].includes(details.disposition)) {
+                this.currentUrlItem = getURLItem(this.handleBuiltinURLs(details.url), this.settings.Scheme);
+                if (this.settings.AllowNewWindows) {
+                    void this.createWindow();
+                } else {
+                    setImmediate(() => {
+                        this.openFileOrURL(this.currentUrlItem.URL, this.currentUrlItem.IsFileURL);
+                    });
+                }
+            }
+            // eslint-disable-next-line jsdoc/require-jsdoc
+            return { action: "deny" };
         });
     }
 
