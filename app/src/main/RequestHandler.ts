@@ -92,6 +92,7 @@ export declare class RequestHandler {
      * Mandatory.
      * Handle the request for a given URL.
      * @param url The URL of the requested resource.
+     * @param originalURL The original URL (e. g. from the command line).
      * @param navigationType The type of the request/navigation issued.
      * See enum `NavigationType` above for possible values.
      * @returns A RequestResult which tells BareBrowser how to proceed with the request.
@@ -106,7 +107,7 @@ export declare class RequestHandler {
      * appropriately through calling methods on `this.webContents`, see also:
      * https://www.electronjs.org/docs/api/web-contents
      */
-    public handleRequest(url: string, navigationType: NavigationType): RequestResult;
+    public handleRequest(url: string, originalURL: string, navigationType: NavigationType): RequestResult;
 
     /**
      * Mandatory.

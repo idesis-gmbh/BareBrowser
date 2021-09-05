@@ -43,6 +43,10 @@ class DefaultRequestHandler {
      * Mandatory.
      * Handle the request for a given URL.
      * @param url {string} The URL of the requested resource.
+     * @param originalURL {string} The original URL of the requested resource. On an initial load
+     * request this is the raw URL as it was given on the command line. It can be used to bypass the
+     * internal auto formatting of URLs which is done with Node.js' `new URL(...)` or to pass
+     * arbitrary data to a request handler. In most other cases `url` and `originalURL` are equal.
      * @param navType {number} The type of the request/navigation issued.
      * See `RequestHandlerConsts.js` for possible values.
      * @returns {number} A request result which tells BareBrowser how to proceed with the request.
@@ -58,15 +62,16 @@ class DefaultRequestHandler {
      * appropriately through calling methods on `this.webContents`, see also:
      * https://www.electronjs.org/docs/api/web-contents
      */
-    handleRequest(url, navType) {
+    handleRequest(url, originalURL, navType) {
+        const logURL = url === originalURL ? url : `${url} (${originalURL})`;
         try {
             if (navType === NAV_LOAD) {
-                this.log(`Initial load request ${url}`);
+                this.log(`Initial load request ${logURL}`);
             }
             switch (navType) {
                 // Just load the URL
                 case NAV_LOAD:
-                    this.log(`Navigating to ${url}`);
+                    this.log(`Navigating to ${logURL}`);
                     this.webContents.loadURL(url, { userAgent: this.settings.UserAgent });
                     break;
 
@@ -96,7 +101,7 @@ class DefaultRequestHandler {
                 // Implicitly NAV_INTERNAL. Issued, for example, if the
                 // page itself requests a resource (CSS, JavaScript, ...).
                 default:
-                    this.log(`Allow request ${url}`);
+                    this.log(`Allow request ${logURL}`);
                     break;
             }
             return REQ_ALLOW;

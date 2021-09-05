@@ -35,8 +35,7 @@ export class RendererApplication {
         this.settings = ipcRenderer.sendSync(IPC_MAIN_RENDERER, this.windowID, IPC.GET_SETTINGS) as ISettings;
         this.buildUI();
         this.bindShortCuts();
-        // Cause an initial load, see also `onDidStartLoading`
-        this.loadURL(this.blankPageContent);
+        this.loadURL(this.blankPageContent, this.blankPageContent);
     }
 
     /**
@@ -51,10 +50,10 @@ export class RendererApplication {
         ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.RENDERER_READY, this.webView.getWebContentsId());
         const urlItem: IURLItem = ipcRenderer.sendSync(IPC_MAIN_RENDERER, this.windowID, IPC.QUERY_INITIAL_URL_ITEM) as IURLItem;
         if ((urlItem && urlItem.DoLoad)) {
-            ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.LOAD_URL, urlItem.URL);
+            this.loadURL(urlItem.URL, urlItem.OriginalURL);
         } else {
             if (this.settings.Homepage !== "") {
-                ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.LOAD_URL, this.settings.Homepage);
+                this.loadURL(this.settings.Homepage, this.settings.Homepage);
             } else {
                 if (this.settings.AddressBar === 2) {
                     // TODO: Handle this in onWebViewDidStopLoading?
@@ -189,15 +188,16 @@ export class RendererApplication {
     /**
      * Tell the main process to open the given URL.
      * @param url The URL to be opened.
+     * @param originalURL The original URL (e. g. from the command line or equal to `url`).
      */
-    private loadURL(url: string): void {
+    private loadURL(url: string, originalURL: string): void {
         // Blank URL
         if (url === this.blankPageContent) {
             this.webView.setAttribute("src", this.blankPageContent);
             return;
         }
         this.spinner.style.visibility = "";
-        ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.LOAD_URL, url);
+        ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.LOAD_URL, url, originalURL);
     }
 
     /**
@@ -226,11 +226,11 @@ export class RendererApplication {
         }
         const url = this.urlField.value.trim();
         if (url === "") {
-            this.loadURL(this.blankPageContent);
+            this.loadURL(this.blankPageContent, this.blankPageContent);
         } else if (this.settings.AllowNewWindows && url.startsWith("new:")) {
             ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.NEW_WINDOW, url);
         } else {
-            this.loadURL(url);
+            this.loadURL(url, url);
         }
     }
 

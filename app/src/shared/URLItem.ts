@@ -63,6 +63,7 @@ export function getURLItem(url: string, scheme?: string): IURLItem {
     if (url.startsWith("data:text/html,")) {
         return { OriginalURL: url, URL: url, IsFileURL: false, DoLoad: true };
     }
+    // Regular resources
     const urlLower: string = url.toLowerCase();
     if (urlLower.startsWith("https://") ||
         urlLower.startsWith("http://") ||

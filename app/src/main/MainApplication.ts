@@ -593,7 +593,7 @@ export class MainApplication {
             }
             const windowEntry = this.getBrowserWindowEntry(targetWindow.id);
             if (windowEntry) {
-                this.handleRequest(this.currentUrlItem.URL, windowEntry.WebViewWebContentsID, NavigationType.LOAD);
+                this.handleRequest(this.currentUrlItem.URL, this.currentUrlItem.OriginalURL, windowEntry.WebViewWebContentsID, NavigationType.LOAD);
             }
         }
     }
@@ -655,7 +655,7 @@ export class MainApplication {
         if (cmdLineArgs.URL !== "") {
             const windowEntry = this.getBrowserWindowEntry(targetWindow.id);
             if (windowEntry) {
-                this.handleRequest(this.currentUrlItem.URL, windowEntry.WebViewWebContentsID, NavigationType.LOAD);
+                this.handleRequest(this.currentUrlItem.URL, this.currentUrlItem.OriginalURL, windowEntry.WebViewWebContentsID, NavigationType.LOAD);
             }
         }
     }
@@ -731,14 +731,20 @@ export class MainApplication {
             case IPC.LOAD_URL:
                 windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
-                    this.handleRequest(getURLItem(this.handleBuiltinURLs(params[0] as string), this.settings.Scheme).URL, windowEntry.WebViewWebContentsID, NavigationType.LOAD);
+                    const loadURL = getURLItem(this.handleBuiltinURLs(params[0] as string), this.settings.Scheme);
+                    // Must be patched to the original URL which is passed as `params[1]` by the
+                    // the renderer process (it knows the correct value, see `setRendererReady`).
+                    // Since the already parsed URL is fed into `getURLItem` it creates a wrong
+                    // `OriginalURL` member.
+                    loadURL.OriginalURL = params[1] as string;
+                    this.handleRequest(loadURL.URL, loadURL.OriginalURL, windowEntry.WebViewWebContentsID, NavigationType.LOAD);
                 }
                 break;
 
             case IPC.RELOAD_URL:
                 windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
-                    this.handleRequest("<RELOAD>", windowEntry.WebViewWebContentsID, NavigationType.RELOAD);
+                    this.handleRequest("<RELOAD>", "<RELOAD>", windowEntry.WebViewWebContentsID, NavigationType.RELOAD);
                 }
                 break;
 
@@ -746,7 +752,7 @@ export class MainApplication {
                 windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
                     if (windowEntry.WebViewWebContents.canGoBack()) {
-                        this.handleRequest("<BACK>", windowEntry.WebViewWebContentsID, NavigationType.BACK);
+                        this.handleRequest("<BACK>", "<BACK>", windowEntry.WebViewWebContentsID, NavigationType.BACK);
                     }
                 }
                 break;
@@ -755,7 +761,7 @@ export class MainApplication {
                 windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
                     if (windowEntry.WebViewWebContents.canGoForward()) {
-                        this.handleRequest("<FORWARD>", windowEntry.WebViewWebContentsID, NavigationType.FORWARD);
+                        this.handleRequest("<FORWARD>", "<FORWARD>", windowEntry.WebViewWebContentsID, NavigationType.FORWARD);
                     }
                 }
                 break;
@@ -861,11 +867,12 @@ export class MainApplication {
     /**
      * Handle a requested resource.
      * @param url The URL requested.
+     * @param originalURL The original URL (e. g. given on the command line).
      * @param webContentsId The id of the webContents which requests a resource.
      * @param navType The navigation type (@see RequestHandlers.ts).
      * @returns `true` if the requested resource is allowed to be loaded, otherwise `false`.
      */
-    private handleRequest(url: string, webContentsId: number, navType: NavigationType): boolean {
+    private handleRequest(url: string, originalURL: string, webContentsId: number, navType: NavigationType): boolean {
 
         /* eslint-disable jsdoc/require-jsdoc */
         const logRequest = (msg: string, onError?: boolean): void => {
@@ -877,7 +884,7 @@ export class MainApplication {
         };
         /* eslint-enable */
 
-        logRequest(url);
+        logRequest(`${url} (${originalURL})`);
         // Get associated handlers
         let handlers: RequestHandler[] = [];
         for (let i = 0; i < this.windows.length; i++) {
@@ -890,7 +897,7 @@ export class MainApplication {
         for (const handler of handlers) {
             if (handler.IsActive) {
                 const currentHandlerName: string = handler.constructor.name;
-                const handleResult: RequestResult = handler.handleRequest(url, navType);
+                const handleResult: RequestResult = handler.handleRequest(url, originalURL, navType);
                 const msg = `Result from ${currentHandlerName} (${webContentsId}):`;
                 switch (handleResult) {
                     case RequestResult.ERROR:
@@ -948,7 +955,7 @@ export class MainApplication {
             } else {
                 webContentsId = details.webContentsId;
             }
-            cancelRequest = !this.handleRequest(url, webContentsId, NavigationType.INTERNAL);
+            cancelRequest = !this.handleRequest(url, url, webContentsId, NavigationType.INTERNAL);
         } finally {
             // eslint-disable-next-line jsdoc/require-jsdoc
             cb({ cancel: cancelRequest });
@@ -1043,11 +1050,11 @@ export class MainApplication {
                         callback({ statusCode: 304, mimeType: "text/plain", data: Readable.from(Buffer.from("")) });
                         if (windowEntry) {
                             if (host === "reload") {
-                                setImmediate(() => this.handleRequest("<RELOAD>", windowEntry.WebViewWebContentsID, NavigationType.RELOAD));
+                                setImmediate(() => this.handleRequest("<RELOAD>", "<RELOAD>", windowEntry.WebViewWebContentsID, NavigationType.RELOAD));
                             } else if (host === "back") {
-                                setImmediate(() => this.handleRequest("<BACK>", windowEntry.WebViewWebContentsID, NavigationType.BACK));
+                                setImmediate(() => this.handleRequest("<BACK>", "<BACK>", windowEntry.WebViewWebContentsID, NavigationType.BACK));
                             } else if (host === "forward") {
-                                setImmediate(() => this.handleRequest("<FORWARD>", windowEntry.WebViewWebContentsID, NavigationType.FORWARD));
+                                setImmediate(() => this.handleRequest("<FORWARD>", "<FORWARD>", windowEntry.WebViewWebContentsID, NavigationType.FORWARD));
                             }
                         }
                         return;

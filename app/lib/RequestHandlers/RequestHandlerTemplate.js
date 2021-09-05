@@ -28,7 +28,7 @@ class RequestHandlerTemplate {
     /**
      * @see DefaultRequestHandler.js
      */
-    handleRequest(url, navType) {
+    handleRequest(url, originalURL, navType) {
         this.log(`(${navType}) ${url}`);
         switch (navType) {
             case NAV_LOAD:

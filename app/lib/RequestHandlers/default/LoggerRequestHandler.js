@@ -24,26 +24,27 @@ class LoggerRequestHandler {
     /**
      * @see DefaultRequestHandler.js
      */
-    handleRequest(url, navType) {
+    handleRequest(url, originalURL, navType) {
+        const logURL = url === originalURL ? url : `${url} (${originalURL})`;;
         switch (navType) {
             case NAV_LOAD:
-                this.log(`LOAD    => ${url}`);
+                this.log(`LOAD    => ${logURL}`);
                 break;
 
             case NAV_RELOAD:
-                this.log(`RELOAD  => ${url}`);
+                this.log(`RELOAD  => ${logURL}`);
                 break;
 
             case NAV_BACK:
-                this.log(`BACK    => ${url}`);
+                this.log(`BACK    => ${logURL}`);
                 break;
 
             case NAV_FORWARD:
-                this.log(`FORWARD => ${url}`);
+                this.log(`FORWARD => ${logURL}`);
                 break;
 
             default:
-                this.log(`REQUEST => ${url}`);
+                this.log(`REQUEST => ${logURL}`);
                 break;
         }
         return REQ_NONE;

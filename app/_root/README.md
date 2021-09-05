@@ -623,7 +623,7 @@ class MyRequestHandler {
     console.log(`${this.className}: Instance created with config (Active=${active}): ${JSON.stringify(this.config, 2)}`);
   }
 
-  handleRequest(url, navType) {
+  handleRequest(url, originalURL, navType) {
     switch (navType) {
       case NAV_LOAD:
         console.log(`${this.className}: Loading ${url}`);
@@ -721,7 +721,7 @@ Every handler gets passed the following parameters in its constructor:
 
 ```javascript
 // Mandatory
-handleRequest(url, navType) {
+handleRequest(url, originalURL, navType) {
   switch (navType) {
     case NAV_LOAD:
       console.log(`${className}: Loading ${url}`);
@@ -744,9 +744,16 @@ handleRequest(url, navType) {
 }
 ```
 
-If a resource is requested, the first handler in the chain will be called with the URL of the
-resource and a navigation type (function `handleRequest`). The navigation type (numeric constant)
-tells the handler what caused the request:
+If a resource is requested, the first handler in the chain will be called (function `handleRequest`)
+with the (parsed) URL, the original (unparsed) URL of the resource and a navigation type . `url`
+usually is the URL which originates from a resource in a web page. If it originates as the inital
+URL from the command line `originalURL` will contain the unparsed command line value. This can be
+used to create a proper URL since not all calling processes are able to create a correctly encoded
+URL. But you could also use it to pass arbitrary data to URL handlers that has nothing to do with
+URLs, for example `bb.exe "doSomething=10,20"`. In this case you would have to implement your own
+handling since `url` would contain `https://dosomething%3D10%2C20/`. In most other cases `url` and
+`originalURL` are equal. The navigation type (numeric constant) tells the handler what caused the
+request:
 
 - `NAV_LOAD` (= `0`) Initial loading of a page.
 - `NAV_RELOAD` (= `1`) Reload an already loaded page*.
@@ -754,7 +761,8 @@ tells the handler what caused the request:
 - `NAV_FORWARD` (= `3`) Go forward in the browser history*.
 - `NAV_INTERNAL` (= `4`) Issued by a page itself during loading CSS, JavaScript, images etc.
 
-\* On these naviagtion types `url` contains the atificial URLs `<RELOAD>`, `<BACK>` and `<FORWARD>`.
+\* On these naviagtion types `url` and `originalURL` contain the atificial URLs `<RELOAD>`, `<BACK>`
+and `<FORWARD>`.
 
 If a handler decides to handle the request it *must* call the corresponding method on the
 `webContents` object. In the case of `NAV_LOAD` this would be `this.webContents.loadURL(url);`.
@@ -809,7 +817,7 @@ dispose() {
   the next handlers in the chain:
 
     ```javascript
-    handleRequest(url, navType) {
+    handleRequest(url, originalURL, navType) {
       if (navType === NAV_FORWARD) {
         return REQ_DENY;
       };
