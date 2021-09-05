@@ -140,7 +140,7 @@ open -g -b de.idesis.barebrowser ./../somedir/SomePDF.pdf
   foreground. This can also be controlled with BareBrowsers own [settings](#configuration), so you
   can decide for yourself which behavior best fits your needs.
 
-The default behaviour of `open` is to prevent multiple instances of an application, so calling
+The default behavior of `open` is to prevent multiple instances of an application, so calling
 `open` if BareBrowser is already running will open the given URL/filename in the already running
 instance. But if you really need multiple instances, you can use `open` with `-n`:
 
@@ -155,7 +155,7 @@ id.
 
 ### Windows
 
-The behaviour is the same like on the Mac, but starting BareBrowser from the command-line is
+The behavior is the same like on the Mac, but starting BareBrowser from the command-line is
 straight forward:
 
 ```text
@@ -461,7 +461,7 @@ the values is invalid, missing or has the wrong type. For the `RequestHandlers` 
   set this value to any string you like. If you don't want to send a detectable user agent set this
   value to a single space (`" "`).
 
-- `Permissions` is an array of strings which controls the behaviour if a web page asks for a
+- `Permissions` is an array of strings which controls the behavior if a web page asks for a
   specific permission. The default is to allow fullscreen requests. If you also want to allow
   notifications from web pages the value would be `["fullscreen", "notifications"]`. The following
   values can be used: `clipboard-read`, `media`, `mediaKeySystem`, `geolocation`, `notifications`,
@@ -532,7 +532,7 @@ the values is invalid, missing or has the wrong type. For the `RequestHandlers` 
   be initially hidden on startup and in new windows. The value `2` shows the address bar on startup
   and in new windows. Any other value will cause the default setting (`1`) to be used.
 
-- `Win32MenuState` sets the behaviour of the main menu on Windows platforms. This setting is ignored
+- `Win32MenuState` sets the behavior of the main menu on Windows platforms. This setting is ignored
   on the Mac. `0` disables the main menu completely. Setting the value to `1` enables the main menu
   but doesn't show it on startup (see respective shortcut). `2` enables the main menu and shows it
   on startup. Any other value will cause the default setting (`1`) to be used.
@@ -961,7 +961,7 @@ Configuration is entirely done in `./app/package.json`:
   "description": "A minimalist browser for specific tasks in controlled environments.",
   "companyname": "idesis GmbH",
   "copyright": "©2021 idesis GmbH",
-  "version": "2.0.0-beta1",
+  "version": "2.1.0",
   "-buildVersion": 4367,
   "identifier": "de.idesis.barebrowser",
   "identifierRoot": "",
@@ -993,15 +993,15 @@ Configuration is entirely done in `./app/package.json`:
     "mousetrap": "1.6.5"
   },
   "devDependencies": {
-    "@types/fs-extra": "9.0.11",
+    "@types/fs-extra": "9.0.12",
     "@types/mousetrap": "1.6.8",
     "@types/node": "14.17.3",
-    "@typescript-eslint/eslint-plugin": "4.28.0",
-    "@typescript-eslint/parser": "4.28.0",
-    "electron": "13.1.3",
-    "eslint-plugin-jsdoc": "35.4.0",
-    "eslint": "7.29.0",
-    "typescript": "4.3.4"
+    "@typescript-eslint/eslint-plugin": "4.30.0",
+    "@typescript-eslint/parser": "4.30.0",
+    "electron": "14.0.0",
+    "eslint-plugin-jsdoc": "36.0.8",
+    "eslint": "7.32.0",
+    "typescript": "4.4.2"
   },
   "config": {
     "arch": "x64,arm64",

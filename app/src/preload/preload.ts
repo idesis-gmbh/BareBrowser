@@ -7,12 +7,12 @@ import { IPC, IPC_WEBVIEW_RENDERER } from "../shared/IPC";
  */
 ipcRenderer.on(IPC_WEBVIEW_RENDERER, function (_event: Electron.IpcRendererEvent, ...args: unknown[]) {
     if (args[0] === IPC.SCROLL_TO_OFFSET) {
-        // Scroll window to (former) offset to enable proper reload behaviour.
+        // Scroll window to (former) offset to enable proper reload behavior.
         const point = args[1] as Point;
         window.scrollTo(point.x, point.y);
     } else if (args[0] === IPC.GET_SCROLL_OFFSET) {
         // Queried by the browser window. The browser window will store
-        // the current scroll offset to enable proper reload behaviour.
+        // the current scroll offset to enable proper reload behavior.
         ipcRenderer.sendToHost(IPC_WEBVIEW_RENDERER, IPC.SET_SCROLL_OFFSET, window.scrollX, window.scrollY);
     }
 });

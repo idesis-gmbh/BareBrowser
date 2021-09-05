@@ -17,7 +17,7 @@ if (htmlTemplateContent.indexOf(placeHolder) === -1) {
 
 try {
     const { Octokit } = require("@octokit/core");
-    
+
     async function makeReadmeHTML() {
         let githubHTML = await new Octokit({
             // Authentication token (optional).
@@ -31,9 +31,9 @@ try {
         // Internal links must be adapted.
         const finalHTML = githubHTML.data.replace(/ href="#/g, " href=\"#user-content-");
         const processedHTML = htmlTemplateContent.replace(placeHolder, finalHTML);
-        fse.writeFileSync(htmlTemplate, processedHTML, {encoding: "utf8"});
+        fse.writeFileSync(htmlTemplate, processedHTML, { encoding: "utf8" });
     }
-    
+
     const readmeContent = fse.readFileSync(readme).toString();
     makeReadmeHTML();
 } catch (error) {
