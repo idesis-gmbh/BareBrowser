@@ -2,7 +2,7 @@
 
 // Checks
 const targetPlatform = process.argv[3];
-if ((targetPlatform !== "darwin") && (targetPlatform !== "win32")) {
+if (!["darwin", "linux", "win32"].includes(targetPlatform)) {
     console.error("%s: Unknown platform: %s", process.argv[1], targetPlatform);
     process.exit(1);
 }
@@ -22,6 +22,7 @@ const apppj = fse.readJsonSync(process.argv[2]);
 
 // Default params
 const packagerParams = apppj.config.pkgParams.split(" ");
+packagerParams.push(`--platform=${targetPlatform}`);
 packagerParams.push(
     "./out/",
     `"${apppj.productName}"`,
@@ -43,22 +44,17 @@ if (apppj.copyright) {
 
 // Platform specific params
 if (targetPlatform === "darwin") {
-    packagerParams.push(
-        "--platform=darwin",
-        "--icon=./build/tmp/appicon.icns",
-    );
+    packagerParams.push("--icon=./build/tmp/appicon.icns");
     if (apppj.identifier) {
         packagerParams.push(`--app-bundle-id="${apppj.identifier}"`);
     }
     if (apppj.darwinAppCategory) {
         packagerParams.push(`--app-category-type="${apppj.darwinAppCategory}"`);
     }
-    console.log(`///// Making darwin x64 release of ${apppj.productName} ${apppj.version} ...`);
+} else if (targetPlatform === "linux") {
+    packagerParams.push("--icon=./build/tmp/appicon.png"); // Currently seems to have no effect for Linux
 } else if (targetPlatform === "win32") {
-    packagerParams.push(
-        "--platform=win32",
-        "--icon=./build/tmp/appicon.ico",
-    );
+    packagerParams.push("--icon=./build/tmp/appicon.ico");
     if (apppj.companyname) {
         packagerParams.push(`--win32metadata.CompanyName="${apppj.companyname}"`);
     }
@@ -80,13 +76,14 @@ if (targetPlatform === "darwin") {
     if (apppj.win32ApplicationManifest) {
         packagerParams.push(`--win32metadata.applicationManifest="${apppj.win32ApplicationManifest}"`);
     }
-    console.log(`///// Making win32 ${apppj.config.arch} release of ${apppj.productName} ${apppj.version} ...`);
 }
+console.log(`///// Making ${targetPlatform} ${apppj.config.arch} release of ${apppj.productName} ${apppj.version} ...`);
 //console.log(packagerParams);
 
 
 // Patch node-rcedit, to make it work on Apple Silicon.
-// See https://github.com/electron/node-rcedit/issues/83 
+// See https://github.com/electron/node-rcedit/issues/83
+/* Issue 83 has been fixed meanwhile, just leaving the code here in case an older rcedit must be used.
 if ((targetPlatform === "win32") && (process.platform === "darwin") && (process.arch === "arm64")) {
     let rceditPath = path.join("node_modules", "electron-packager", "node_modules", "rcedit");
     if (!fse.existsSync(rceditPath)) {
@@ -117,7 +114,7 @@ if ((targetPlatform === "win32") && (process.platform === "darwin") && (process.
         // Version 3 would also need patching https://github.com/malept/cross-spawn-windows-exe
     }
 }
-
+*/
 
 // Run packager
 const exitCode = proc.spawnSync(
@@ -130,9 +127,14 @@ const exitCode = proc.spawnSync(
 // Rename all existing release build paths to contain the version.
 if (exitCode === 0) {
     const outputRootName = path.join(__dirname, "..", "release", apppj.productName).replace(/\\/g, "/");
+    const iconFile = path.join(__dirname, "..", "out", "appicon.png")
     const outputPaths = [
         outputRootName + "-darwin-x64",
         outputRootName + "-darwin-arm64",
+        outputRootName + "-linux-x64",
+        outputRootName + "-linux-arm64",
+        outputRootName + "-linux-armv7l",
+        outputRootName + "-linux-mips64el",
         outputRootName + "-win32-x64",
         outputRootName + "-win32-ia32",
         outputRootName + "-win32-arm64"
@@ -145,6 +147,10 @@ if (exitCode === 0) {
                 fse.removeSync(versionedName);
             }
             fse.renameSync(outputPaths[i], versionedName);
+            // Icon for Linux packages
+            if (targetPlatform === "linux") {
+                fse.copyFileSync(iconFile, path.join(versionedName, "icon.png"));
+            }
         }
     }
 }
