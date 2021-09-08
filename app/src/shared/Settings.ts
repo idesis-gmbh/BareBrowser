@@ -87,9 +87,9 @@ export interface ISettings {
          */
         ExitHTMLFullscreen: string[];
         /**
-         * Show/hide the menu on windows platforms.
+         * Show/hide the menu on Linux/Windows platforms.
          */
-        ToggleWin32Menu: string[];
+        ToggleMenu: string[];
     };
     /**
      * All known request handler classes.
@@ -169,9 +169,9 @@ export interface ISettings {
      */
     AddressBar: number;
     /**
-     * Initial state of menu on windows platforms.
+     * Initial state of menu on Linux/Windows platforms.
      */
-    Win32MenuState: number;
+    MenuState: number;
     /**
      * Open the given page on startup.
      */
@@ -213,7 +213,7 @@ export function getDefaultSettings(): ISettings {
             GoBack: ["ctrl+alt+left"],
             GoForward: ["ctrl+alt+right"],
             ExitHTMLFullscreen: ["esc"],
-            ToggleWin32Menu: ["ctrl+h"],
+            ToggleMenu: ["ctrl+h"],
         },
         RequestHandlers: [
             {
@@ -273,7 +273,7 @@ export function getDefaultSettings(): ISettings {
         HardwareAcceleration: true,
         ContentProtection: false,
         AddressBar: 2,
-        Win32MenuState: 1,
+        MenuState: 1,
         Homepage: "bb://home",
         Scheme: "bb",
     };
@@ -326,7 +326,7 @@ export function getSettings(configFile: string): ISettings {
             GoBack: $Utils.normalize(settings.ShortCuts.GoBack, ["ctrl+alt+left"]),
             GoForward: $Utils.normalize(settings.ShortCuts.GoForward, ["ctrl+alt+right"]),
             ExitHTMLFullscreen: $Utils.normalize(settings.ShortCuts.ExitHTMLFullscreen, ["esc"]),
-            ToggleWin32Menu: $Utils.normalize(settings.ShortCuts.ToggleWin32Menu, ["ctrl+h"]),
+            ToggleMenu: $Utils.normalize(settings.ShortCuts.ToggleMenu, ["ctrl+h"]),
         },
         RequestHandlers: settings.RequestHandlers,
         LogRequests: $Utils.normalize(settings.LogRequests, false),
@@ -343,13 +343,13 @@ export function getSettings(configFile: string): ISettings {
         HardwareAcceleration: $Utils.normalize(settings.HardwareAcceleration, true),
         ContentProtection: $Utils.normalize(settings.ContentProtection, false),
         AddressBar: $Utils.normalize(settings.AddressBar, 2),
-        Win32MenuState: $Utils.normalize(settings.Win32MenuState, 1),
+        MenuState: $Utils.normalize(settings.MenuState, 1),
         Homepage: $Utils.normalize(settings.Homepage, "bb://home").trim().replace(/\$APP_PATH\$/g, APP_INFO.APP_PATH_PKG),
         Scheme: $Utils.normalize(settings.Scheme, "bb"),
     };
     /* eslint-enable */
-    if (![0, 1, 2].includes(settings.Win32MenuState)) {
-        settings.Win32MenuState = 1;
+    if (![0, 1, 2].includes(settings.MenuState)) {
+        settings.MenuState = 1;
     }
     return settings;
 }

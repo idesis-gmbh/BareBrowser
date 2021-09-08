@@ -43,7 +43,7 @@ export const enum IPC {
     GET_SETTINGS,
     RENDERER_READY,
     SET_WINDOW_TITLE,
-    TOGGLE_WIN32_MENU,
+    TOGGLE_MENU,
     NEW_WINDOW,
     TOGGLE_INTERNAL_DEV_TOOLS,
     GET_SCROLL_OFFSET,
@@ -107,8 +107,8 @@ export const IPC_SET_WINDOW_TITLE: IIPCMessage = {
     Id: IPC.RENDERER_READY,
     Text: "",
 };
-export const IPC_TOGGLE_WIN32_MENU: IIPCMessage = {
-    Id: IPC.TOGGLE_WIN32_MENU,
+export const IPC_TOGGLE_MENU: IIPCMessage = {
+    Id: IPC.TOGGLE_MENU,
     Text: "",
 };
 export const IPC_NEW_WINDOW: IIPCMessage = {
@@ -155,7 +155,7 @@ export function getIPCMessage(id: number): IIPCMessage {
         case IPC.GET_SETTINGS: return IPC_GET_SETTINGS;
         case IPC.RENDERER_READY: return IPC_RENDERER_READY;
         case IPC.SET_WINDOW_TITLE: return IPC_SET_WINDOW_TITLE;
-        case IPC.TOGGLE_WIN32_MENU: return IPC_TOGGLE_WIN32_MENU;
+        case IPC.TOGGLE_MENU: return IPC_TOGGLE_MENU;
         case IPC.NEW_WINDOW: return IPC_NEW_WINDOW;
         case IPC.GET_SCROLL_OFFSET: return IPC_GET_SCROLL_OFFSET;
         case IPC.TOGGLE_INTERNAL_DEV_TOOLS: return IPC_TOGGLE_INTERNAL_DEV_TOOLS;

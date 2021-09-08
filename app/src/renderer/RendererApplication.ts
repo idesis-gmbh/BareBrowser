@@ -180,8 +180,8 @@ export class RendererApplication {
         this.bindShortCut(this.settings.ShortCuts.ExitHTMLFullscreen, () => {
             void this.webView.executeJavaScript("document.webkitExitFullscreen();", true);
         });
-        this.bindShortCut(this.settings.ShortCuts.ToggleWin32Menu, () => {
-            ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.TOGGLE_WIN32_MENU);
+        this.bindShortCut(this.settings.ShortCuts.ToggleMenu, () => {
+            ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.TOGGLE_MENU);
         });
     }
 

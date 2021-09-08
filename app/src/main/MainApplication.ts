@@ -12,8 +12,8 @@ import { getURLItem, isSameOrigin, IURLItem } from "../shared/URLItem";
 import { format, getDirectoryListing, getMimeTypeFromFileExtension, IDirectoryListing } from "../shared/Utils";
 import { ApplicationMenu } from "./ApplicationMenu";
 import { DarwinMenu } from "./DarwinMenu";
+import { LinuxWin32Menu } from "./LinuxWin32Menu";
 import { NavigationType, RequestHandler, RequestResult } from "./RequestHandler";
-import { Win32Menu } from "./Win32Menu";
 
 /**
  * Primitive command-line object.
@@ -49,7 +49,7 @@ interface IWindowEntry {
  */
 export class MainApplication {
 
-    private appURLPath = process.platform === "win32" ? `file:///${APP_INFO.APP_PATH.replaceAll("\\", "/")}` : `file://${APP_INFO.APP_PATH}`;
+    private appURLPath = APP_INFO.Platform === "win32" ? `file:///${APP_INFO.APP_PATH.replaceAll("\\", "/")}` : `file://${APP_INFO.APP_PATH}`;
     private userDataDirectory: string;
     private tempDir: string;
     private settingsFile: string;
@@ -73,7 +73,7 @@ export class MainApplication {
                 this.clearTraces();
                 this.quit();
             }, 1000);
-            //}, process.platform === "win32" ? 1000 : 100);
+            //}, APP_INFO.Platform === "win32" ? 1000 : 100);
             return;
         }
         // Next, check if another instance is aleady running.
@@ -120,7 +120,7 @@ export class MainApplication {
         }
         if (!URL) {
             URL = "";
-        } else if (process.platform === "win32") {
+        } else if (APP_INFO.Platform === "win32") {
             // Workaround for several problems with command-line handling in onSecondInstance on Windows.
             URL = URL
                 .trim()
@@ -160,6 +160,7 @@ export class MainApplication {
                 nativeWindowOpen: true,
                 contextIsolation: false,
             },
+            icon: APP_INFO.Platform === "linux" ? $Path.join(APP_INFO.APP_PATH_PKG, "dockicon.png") : undefined,
         };
         /* eslint-enable */
         const currentWindow = this.getCurrentWindow();
@@ -325,25 +326,25 @@ export class MainApplication {
      * Create and install a basic menu depending on the current platform.
      */
     private setApplicationMenu(): void {
-        if (process.platform === "darwin") {
+        if (APP_INFO.Platform === "darwin") {
             this.appMenu = new DarwinMenu(this, this.settings, APP_INFO.ProductName);
             Menu.setApplicationMenu(this.appMenu.Menu);
-        } else if (process.platform === "win32") {
-            switch (this.settings.Win32MenuState) {
-                // No menu for Win32 allowed
+        } else if (["linux", "win32"].includes(APP_INFO.Platform)) {
+            switch (this.settings.MenuState) {
+                // No menu for Linux/Windows allowed
                 case 0:
                     Menu.setApplicationMenu(null);
                     break;
 
-                // Menu for Win32 allowed but initially hidden
+                // Menu for Linux/Windows allowed but initially hidden
                 case 1:
-                    this.appMenu = new Win32Menu(this, this.settings, APP_INFO.ProductName);
+                    this.appMenu = new LinuxWin32Menu(this, this.settings, APP_INFO.ProductName);
                     Menu.setApplicationMenu(null);
                     break;
 
-                // Allow and show menu for Win32
+                // Allow and show menu for Linux/Windows
                 case 2:
-                    this.appMenu = new Win32Menu(this, this.settings, APP_INFO.ProductName);
+                    this.appMenu = new LinuxWin32Menu(this, this.settings, APP_INFO.ProductName);
                     Menu.setApplicationMenu(this.appMenu.Menu);
                     break;
             }
@@ -528,7 +529,7 @@ export class MainApplication {
      */
     private handleBuiltinURLs(url: string): string {
         // Workaround for several problems with command-line handling in onSecondInstance on Windows.
-        if (process.platform === "win32") {
+        if (APP_INFO.Platform === "win32") {
             url = url
                 .trim()
                 .replace(/^"/, "")
@@ -590,7 +591,7 @@ export class MainApplication {
             if (this.settings.FocusOnNewURL) {
                 targetWindow.focus();
                 // eslint-disable-next-line jsdoc/require-jsdoc
-                app.focus({ steal: process.platform === "darwin" && this.settings.DarwinForceFocus });
+                app.focus({ steal: APP_INFO.Platform === "darwin" && this.settings.DarwinForceFocus });
             }
             const windowEntry = this.getBrowserWindowEntry(targetWindow.id);
             if (windowEntry) {
@@ -651,7 +652,7 @@ export class MainApplication {
         if (this.settings.FocusOnNewURL) {
             targetWindow.focus();
             // eslint-disable-next-line jsdoc/require-jsdoc
-            app.focus({ steal: process.platform === "darwin" && this.settings.DarwinForceFocus });
+            app.focus({ steal: APP_INFO.Platform === "darwin" && this.settings.DarwinForceFocus });
         }
         if (cmdLineArgs.URL !== "") {
             const windowEntry = this.getBrowserWindowEntry(targetWindow.id);
@@ -812,9 +813,9 @@ export class MainApplication {
                 event.returnValue = this.settings;
                 break;
 
-            // Toggle main menu on Win32 platforms
-            case IPC.TOGGLE_WIN32_MENU:
-                if ((process.platform === "win32") && (this.settings.Win32MenuState > 0) && (this.appMenu)) {
+            // Toggle main menu on Linux/Windows platforms
+            case IPC.TOGGLE_MENU:
+                if (["linux", "win32"].includes(APP_INFO.Platform) && (this.settings.MenuState > 0) && (this.appMenu)) {
                     Menu.getApplicationMenu() ? Menu.setApplicationMenu(null) : Menu.setApplicationMenu(this.appMenu.Menu);
                     event.returnValue = true;
                 } else {

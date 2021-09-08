@@ -40,7 +40,7 @@
         "ExitHTMLFullscreen": [
             "esc"
         ],
-        "ToggleWin32Menu": [
+        "ToggleMenu": [
             "ctrl+h"
         ]
     },
@@ -104,7 +104,7 @@
     "HardwareAcceleration": true,
     "ContentProtection": false,
     "AddressBar": 2,
-    "Win32MenuState": 1,
+    "MenuState": 1,
     "Homepage": "bb://home",
     "Scheme": "bb"
 }

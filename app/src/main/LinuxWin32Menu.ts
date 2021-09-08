@@ -1,15 +1,16 @@
 import { Menu, MenuItem } from "electron";
+import { APP_INFO } from "../shared/AppInfo";
 import { ISettings } from "../shared/Settings";
 import { ApplicationMenu } from "./ApplicationMenu";
 import { MainApplication } from "./MainApplication";
 
 /**
- * The menu for the application on Win32 platforms.
+ * The menu for the application on Linux/Windows platforms.
  */
-export class Win32Menu extends ApplicationMenu {
+export class LinuxWin32Menu extends ApplicationMenu {
 
     /**
-     * Build the main menu for Win32 platforms.
+     * Build the main menu for Linux/Windows platforms.
      * appName is used for the help menu item label name.
      * @param mainApp Instance of MainApplication.
      * @param settings The application settings.
@@ -42,7 +43,7 @@ export class Win32Menu extends ApplicationMenu {
         fileMenu.append(new MenuItem({
             role: "quit", // eslint-disable-line jsdoc/require-jsdoc
             // Why does this have to be set manually for role quit?
-            accelerator: "Alt+F4", // eslint-disable-line jsdoc/require-jsdoc
+            accelerator: APP_INFO.Platform === "linux" ? "Ctrl+Q" : "Alt+F4", // eslint-disable-line jsdoc/require-jsdoc
         }));
         return new MenuItem({
             role: "fileMenu", // eslint-disable-line jsdoc/require-jsdoc

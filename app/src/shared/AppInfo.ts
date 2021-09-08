@@ -32,6 +32,7 @@ export interface IAppInfo {
     readonly LIB_PATH: string;
     readonly STYLE_PATH: string;
     //
+    readonly Platform: string;
     readonly OSVersion: string;
     readonly ElectronVersion: string;
     readonly ChromeVersion: string;
@@ -66,12 +67,13 @@ interface IAppPackageJSON {
 }
 
 // Is app packaged?
+const __platform__ = process.platform
 let __isPackaged__;
 const __exeName__ = $Path.basename(process.execPath).toLowerCase();
 if (process.type === "browser") {
-    __isPackaged__ = process.platform === 'win32' ? __exeName__ !== "electron.exe" : __exeName__ !== "electron";
+    __isPackaged__ = __platform__ === 'win32' ? __exeName__ !== "electron.exe" : __exeName__ !== "electron";
 } else {
-    __isPackaged__ = process.platform === 'win32' ? __exeName__ !== "electron.exe" : __exeName__ !== "electron helper (renderer)";
+    __isPackaged__ = __platform__ === 'win32' ? __exeName__ !== "electron.exe" : __exeName__ !== "electron helper (renderer)";
 }
 
 // Get app root path (packaged).
@@ -127,6 +129,7 @@ export const APP_INFO: IAppInfo = {
     RES_PATH: $Path.join(__appPath__, `res${$Path.sep}`),
     STYLE_PATH: $Path.join(__appPath__, `style${$Path.sep}`),
     //
+    Platform: __platform__,
     OSVersion: `${$OS.type()} ${$OS.release()} ${$OS.arch()}`,
     ElectronVersion: process.versions.electron,
     ChromeVersion: process.versions.chrome,
