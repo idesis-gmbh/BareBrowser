@@ -32,10 +32,20 @@
             "f5"
         ],
         "GoBack": [
+            "ctrl+meta+left",
             "ctrl+alt+left"
         ],
         "GoForward": [
+            "ctrl+meta+right",
             "ctrl+alt+right"
+        ],
+        "GoHome": [
+            "ctrl+meta+up",
+            "ctrl+alt+up"
+        ],
+        "GoInternalHome": [
+            "ctrl+shift+meta+up",
+            "ctrl+shift+alt+up"
         ],
         "ExitHTMLFullscreen": [
             "esc"

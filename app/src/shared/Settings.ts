@@ -83,6 +83,14 @@ export interface ISettings {
          */
         GoForward: string[],
         /**
+         * Go to home page.
+         */
+        GoHome: string[],
+        /**
+         * Go to internal home page (home:).
+         */
+        GoInternalHome: string[],
+        /**
          * Leave fullscreen view.
          */
         ExitHTMLFullscreen: string[];
@@ -210,8 +218,10 @@ export function getDefaultSettings(): ISettings {
             // InternalReload: ["mod+shift+r", "shift+f5"],
             InternalReload: [""],
             Reload: ["mod+r", "f5"],
-            GoBack: ["ctrl+alt+left"],
-            GoForward: ["ctrl+alt+right"],
+            GoBack: ["ctrl+meta+left", "ctrl+alt+left"],
+            GoForward: ["ctrl+meta+right", "ctrl+alt+right"],
+            GoHome: ["ctrl+meta+up", "ctrl+alt+up"],
+            GoInternalHome: ["ctrl+shift+meta+up", "ctrl+shift+alt+up"],
             ExitHTMLFullscreen: ["esc"],
             ToggleMenu: ["ctrl+h"],
         },
@@ -323,8 +333,10 @@ export function getSettings(configFile: string): ISettings {
             // InternalReload: $Utils.normalize(settings.ShortCuts.InternalReload, ["mod+shift+r", "shift+f5"]),
             InternalReload: $Utils.normalize(settings.ShortCuts.InternalReload, [""]),
             Reload: $Utils.normalize(settings.ShortCuts.Reload, ["mod+r", "f5"]),
-            GoBack: $Utils.normalize(settings.ShortCuts.GoBack, ["ctrl+alt+left"]),
-            GoForward: $Utils.normalize(settings.ShortCuts.GoForward, ["ctrl+alt+right"]),
+            GoBack: $Utils.normalize(settings.ShortCuts.GoBack, ["ctrl+meta+left", "ctrl+alt+left"]),
+            GoForward: $Utils.normalize(settings.ShortCuts.GoForward, ["ctrl+meta+right", "ctrl+alt+right"]),
+            GoHome: $Utils.normalize(settings.ShortCuts.GoHome, ["ctrl+meta+up", "ctrl+alt+up"]),
+            GoInternalHome: $Utils.normalize(settings.ShortCuts.GoInternalHome, ["ctrl+shift+meta+up", "ctrl+shift+alt+up"]),
             ExitHTMLFullscreen: $Utils.normalize(settings.ShortCuts.ExitHTMLFullscreen, ["esc"]),
             ToggleMenu: $Utils.normalize(settings.ShortCuts.ToggleMenu, ["ctrl+h"]),
         },

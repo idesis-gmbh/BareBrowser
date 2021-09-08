@@ -67,7 +67,7 @@ interface IAppPackageJSON {
 }
 
 // Is app packaged?
-const __platform__ = process.platform
+const __platform__ = process.platform;
 let __isPackaged__;
 const __exeName__ = $Path.basename(process.execPath).toLowerCase();
 if (process.type === "browser") {

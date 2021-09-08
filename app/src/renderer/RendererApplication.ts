@@ -177,6 +177,14 @@ export class RendererApplication {
         this.bindShortCut(this.settings.ShortCuts.GoForward, () => {
             this.goForward();
         });
+        this.bindShortCut(this.settings.ShortCuts.GoHome, () => {
+            if (this.settings.Homepage.trim() !== "") {
+                this.loadURL(this.settings.Homepage, this.settings.Homepage);
+            }
+        });
+        this.bindShortCut(this.settings.ShortCuts.GoInternalHome, () => {
+            this.loadURL("home:", "home:");
+        });
         this.bindShortCut(this.settings.ShortCuts.ExitHTMLFullscreen, () => {
             void this.webView.executeJavaScript("document.webkitExitFullscreen();", true);
         });

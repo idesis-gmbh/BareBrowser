@@ -122,9 +122,6 @@ export class DarwinMenu extends ApplicationMenu {
         windowMenu.append(new MenuItem({
             role: "front", // eslint-disable-line jsdoc/require-jsdoc
         }));
-        // windowMenu.append(this.getSeparator());
-        // windowMenu.append(this.getShowAddressBarMenu("ctrl+alt+left"));
-        // windowMenu.append(this.getSeparator());
         return new MenuItem({
             role: "window", // eslint-disable-line jsdoc/require-jsdoc
             submenu: windowMenu, // eslint-disable-line jsdoc/require-jsdoc
