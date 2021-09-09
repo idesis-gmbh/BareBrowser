@@ -12,7 +12,7 @@ if (arch === "darwin") {
     //
 } else if (arch === "linux") {
     fse.removeSync(path.join(process.argv[4], stub + "armv7l"));
-    fse.removeSync(path.join(process.argv[4], stub + "mips64el"));
+    fse.removeSync(path.join(process.argv[4], stub + "ia32"));
 } else if (arch === "win32") {
     fse.removeSync(path.join(process.argv[4], stub + "ia32"));
 } else {

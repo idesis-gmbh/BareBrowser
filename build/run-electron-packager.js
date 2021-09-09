@@ -134,7 +134,7 @@ if (exitCode === 0) {
         outputRootName + "-linux-x64",
         outputRootName + "-linux-arm64",
         outputRootName + "-linux-armv7l",
-        outputRootName + "-linux-mips64el",
+        outputRootName + "-linux-ia32",
         outputRootName + "-win32-x64",
         outputRootName + "-win32-ia32",
         outputRootName + "-win32-arm64"
