@@ -1,7 +1,59 @@
+# v2.1.0
+
+## New
+
+- BareBrowser is now also available for Linux (x64, arm64, ia32, armv7l).
+- The original URL (from the command line) is now accessible for URL handlers. Can be used to pass
+  arbitrary data to URL handlers.
+- Additional Linux compatible keyboard shortcuts.
+- New keyboard shortcuts for going to the home page and to the internal home page (`ctrl+meta+up`,
+  `ctrl+alt+up` / `ctrl+shift+meta+up`, `ctrl+shift+alt+up`).
+- `Cmd` click (Mac) or `Ctrl` click (Linux/Windows) on a link opens a new window with the target URL
+  *behind* the current active window.
+
+## Changes
+
+- Modifications for the handling of new windows (as of Electron 14.x).
+- Popup windows are now enabled by default.
+- The settings `ToggleWin32Menu` and `Win32MenuState` have been renamed to `ToggleMenu` and
+  `MenuState` since they now are valid for both Windows and Linux.
+- Updated to Electron 14.0.0 and other current Node modules.
+
+## Bugs
+
+- Fixed loading of URL handlers.
+- Documentation fix.
+
+
 # v2.0.0
 
-This version is a rewrite of almost every aspect. Please see the README file on GitHub or the
-builtin URL `bb://readme` of a standard BareBrowser distribution for detailed information.
+*This version is a rewrite of almost every aspect. Please see the README file on GitHub or the
+builtin URL `bb://readme` of a standard BareBrowser distribution for detailed information.*
+
+## New
+
+- Complete redesign of the handling of URLs. Any URL handling is now delegated 
+  to URL handlers. Every handler is a dynamically loaded small piece of JavaScript 
+  and can easily be developed by users. This makes the browser more customizable 
+  and to some extent scriptable.
+- Refactorings of most of the code base.
+- Loading indicator.
+- Display an error page with description on failed page loads.
+- Support for Apple Silicon and Windows Arm64 architectures.
+
+## Changes
+
+- Updated to Electron 13.1.3 and other current Node modules.
+- Removed dependency on Electron remote module.
+- Various other minor bugs.
+
+## Bugs
+
+- Handling of template settings file fixed and improved.
+- Permission handling eventually stopped working.
+- Logging of leftovers from clear traces.
+- Documentation fixes and improvements.
+- Various other minor bugs.
 
 
 # v1.0.4

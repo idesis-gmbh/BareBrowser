@@ -33,22 +33,28 @@ BareBrowser is meant to be a tool for specific tasks in controlled environments:
 - Open source, easily [build your own](#building) distribution with another name and/or logo.
 - ...
 
+**Note:**
+
+The Linux related parts of the following documentation are at least valid for Ubuntu 20.04, on other
+distributions the behavior of BareBrowser may differ slightly (e.g. keyboard shortcuts, default
+directories etc.).
+
 ## Installation
 
 Download one of the releases from the
 [releases](https://github.com/idesis-gmbh/BareBrowser/releases) page, unzip the file and copy the
-resulting directory to any place you like (on a local hard drive, *running BareBrowser from a network
-mount may prevent opening the developer tools and also may lead to other problems like frozen
-windows!*). On the Mac you'd probably just copy the `BareBrowser` app (inside the unzipped folder) to
-`/Applications`.
+resulting directory to any place you like (on a local hard drive, *running BareBrowser from a
+network mount may prevent opening the developer tools and also may lead to other problems like
+frozen windows!*). On the Mac you'd probably just copy the `BareBrowser` app (inside the unzipped
+folder) to `/Applications`.
 
 ## GUI Usage
 
-Just double click `BareBrowser` (Mac) or `bb.exe` (Windows). BareBrowser will start and show its
-internal home page. To show/hide the address bar press Cmd+T (Mac)/Ctrl+T (Windows). With
-Cmd+L/Ctrl+L the address bar will be shown and its entry field is focused. The address bar is very
-primitive, don't expect the same features you get from regular browsers. All it does is to try to
-auto-complete some URLs but without any sophistication.
+Just double click `BareBrowser` (Mac), execute `./bb` (Linux) or `bb.exe` (Windows). BareBrowser
+will start and show its internal home page. To show/hide the address bar press `Cmd+T`
+(Mac)/`Ctrl+T` (Linux/Windows). With `Cmd+L`/`Ctrl+L` the address bar will be shown and its entry
+field is focused. The address bar is very primitive, don't expect the same features you get from
+regular browsers. All it does is to try to auto-complete some URLs but without any sophistication.
 
 Examples:
 
@@ -91,7 +97,6 @@ are used; both are optional. All other parameters are ignored.
 - If BareBrowser is configured to prevent opening new windows, the window id parameter will be
   ignored (no window id is shown in the title bar; all commands will apply to the current active
   window).
-
 
 ### Mac
 
@@ -153,10 +158,31 @@ handling of the `SingleInstance` setting, so `open -n` can be used to pass in a 
 id.
 
 
+### Linux
+
+```text
+./bb [URL/Filename] [Window ID]
+```
+
+Examples:
+
+```text
+<install-dir>/bb www.idesis.de                   // Open in current window
+<install-dir>/bb /Users/doe/Desktop/SomePDF.pdf              "
+<install-dir>/bb ./../somedir/SomePDF.pdf                    "
+<install-dir>/bb bb://reload                     // Reload current window
+<install-dir>/bb github.com 3                    // Open github.com in window 3
+<install-dir>/bb back: 4                         // Go back in window 4
+<install-dir>/bb bb://forward 1                  // Go forward in window 1
+<install-dir>/bb 2                               // Activate window 2
+<install-dir>/bb new:github.com                  // Open github.com in new window
+<install-dir>/bb bb://close 5                    // Close window 5
+```
+
 ### Windows
 
-The behavior is the same like on the Mac, but starting BareBrowser from the command-line is
-straight forward:
+The behavior is the same like on the Mac or on Linux, but starting BareBrowser from the command-line
+is straight forward:
 
 ```text
 bb.exe [URL/Filename] [Window ID]
@@ -195,6 +221,7 @@ already running instance:
    the usual way of surrounding the URL with double quotes like `bb.exe "/c:\my path\index.html"`
    can be used.
 
+
 ### Quitting a running instance
 
 You can also quit a running instance via command-line (if `SingleInstance` is `true`, see below).
@@ -204,6 +231,12 @@ You can also quit a running instance via command-line (if `SingleInstance` is `t
 ```text
 <install-dir>/BareBrowser.app/Contents/MacOS/bb quit
 open -n -b de.idesis.barebrowser --args quit
+```
+
+**Linux:**
+
+```text
+<install-dir>/bb quit
 ```
 
 **Windows:**
@@ -232,7 +265,7 @@ command-line:
 \* If these files/URLs are actually available depends on how you build your
 [own distribution](#building).
 
-Any\** URL (web/file/builtin) can be prefixed with `new:` e. g. `bb.exe new:idesis.de`,
+Any\** URL (web/file/builtin) can be prefixed with `new:` e.g. `bb.exe new:idesis.de`,
 `bb.exe new:bb://info`. In this case the URL will be opened in a new window, provided the
 [configuration](#configuration) allows new windows to be opened. Using `new:` without adding a URL
 also works, in this case the new window either loads the home page (if configured) or a blank page.
@@ -254,6 +287,12 @@ There is only one configuration file:
 ~/Library/Application Support/de.idesis.barebrowser/settings.json
 ```
 
+**Linux:**
+
+```
+~/.config/de.idesis.barebrowser/settings.json
+```
+
 **Windows:**
 
 ```
@@ -267,6 +306,12 @@ copying it) which is located in the following directory:
 
 ```
 <install-dir>/BareBrowser.app/Contents/Resources/app.asar.unpacked/res/settings.json
+```
+
+**Linux:**
+
+```
+<install-dir>/resources/app.asar.unpacked/res/settings.json
 ```
 
 **Windows:**\*
@@ -325,15 +370,25 @@ The default configuration (from the directory above) looks like this:
       "f5"
     ],
     "GoBack": [
+      "ctrl+meta+left",
       "ctrl+alt+left"
     ],
     "GoForward": [
+      "ctrl+meta+right",
       "ctrl+alt+right"
+    ],
+    "GoHome": [
+      "ctrl+meta+up",
+      "ctrl+alt+up"
+    ],
+    "GoInternalHome": [
+      "ctrl+shift+meta+up",
+      "ctrl+shift+alt+up"
     ],
     "ExitHTMLFullscreen": [
       "esc"
     ],
-    "ToggleWin32Menu": [
+    "ToggleMenu": [
       "ctrl+h"
     ]
   },
@@ -397,7 +452,7 @@ The default configuration (from the directory above) looks like this:
   "HardwareAcceleration": true,
   "ContentProtection": false,
   "AddressBar": 2,
-  "Win32MenuState": 1,
+  "MenuState": 1,
   "Homepage": "bb://home",
   "Scheme": "bb"
 }
@@ -420,8 +475,8 @@ the values is invalid, missing or has the wrong type. For the `RequestHandlers` 
 
     Every entry is an array of strings, so you can assign multiple shortcuts to each command, (see
     `Reload`). The key `mod` (see below) is mapped to the `Command`-key on the Mac and to the
-    `Ctrl`-key on Windows. You can assign your own keyboard shortcuts to any of the keys above. For
-    available key combinations please see the documentation of
+    `Ctrl`-key on Linux/Windows. You can assign your own keyboard shortcuts to any of the keys
+    above. For available key combinations please see the documentation of
     [Mousetrap](https://craig.is/killing/mice). If you want to disable a keyboard shortcut set its
     value to `[""]`.
 
@@ -433,19 +488,25 @@ the values is invalid, missing or has the wrong type. For the `RequestHandlers` 
     Please note that there are also other common keyboard shortcuts in the main menu (for example
     for Cut, Copy, Paste etc.). Currently these menu shortcuts are not configurable.
 
-    | Key                      | Shortcuts&nbsp;(default) | Action                                                     |
-    | :----------------------- | :----------------------- | :--------------------------------------------------------- |
-    | `ToggleAddressBar`       | `mod+t`                  | Show/hide the address bar.                                 |
-    | `ToggleInternalDevTools` | `mod+shift+d`            | Show/hide the developer tools for the host window.         |
-    | `ToggleDevTools`         | `mod+d`                  | Show/hide the developer tools for the current page.        |
-    | `FocusLocationBar`       | `mod+l`                  | Show the address bar and focus it.                         |
-    | `InternalReload`         |                          | Reload the host window (only for development!).            |
-    | `NewWindow`              | `mod+n`                  | Open a new window.                                         |
-    | `Reload`                 | `mod+r, f5`              | Reload the current page.                                   |
-    | `GoBack`                 | `ctrl+alt+left`          | Go one step back in the browser history.                   |
-    | `GoForward`              | `ctrl+alt+right`         | Go one step forward in the browser history.                |
-    | `ExitHTMLFullscreen`     | `esc`                    | Leave HTML fullscreen (for example from YouTube videos).   |
-    | `ToggleWin32Menu`        | `ctrl+h`                 | Show/hide the main menu (Windows, unavailable on the Mac). |
+    | Key                      | Shortcuts&nbsp;(default)                         | Action                                                                          |
+    | :----------------------- | :----------------------------------------------- | :------------------------------------------------------------------------------ |
+    | `ToggleAddressBar`       | `mod+t`                                          | Show/hide the address bar.                                                      |
+    | `ToggleInternalDevTools` | `mod+shift+d`                                    | Show/hide the developer tools for the host window.                              |
+    | `ToggleDevTools`         | `mod+d`                                          | Show/hide the developer tools for the current page.                             |
+    | `FocusLocationBar`       | `mod+l`                                          | Show the address bar and focus it.                                              |
+    | `InternalReload`         |                                                  | Reload the host window (only for development!).                                 |
+    | `NewWindow`              | `mod+n`                                          | Open a new window.                                                              |
+    | `Reload`                 | `mod+r, f5`                                      | Reload the current page.                                                        |
+    | `GoBack`                 | `ctrl+meta+left`,<br/>`ctrl+alt+left` \*         | Go one step back in the browser history.                                        |
+    | `GoForward`              | `ctrl+meta+right`,<br/>`ctrl+alt+right` \*       | Go one step forward in the browser history.                                     |
+    | `GoHome`                 | `ctrl+meta+up`,<br/>`ctrl+alt+up` \*             | Go to the home page.                                                            |
+    | `GoHomeInternal`         | `ctrl+shift+meta+up`,<br/>`ctrl+shift+alt+up` \* | Go to BareBrowsers internal home page, [if available](#builtin-urls) (`home:`). |
+    | `ExitHTMLFullscreen`     | `esc`                                            | Leave HTML fullscreen (for example from YouTube videos).                        |
+    | `ToggleMenu`             | `ctrl+h`                                         | Show/hide the main menu (Linux/Windows, unavailable on the Mac).                |
+
+\* The shortcuts with `ctrl+alt` and `ctrl+shift+alt` do not work on some Linux systems since they
+are reserved by the operating system (e.g. Ubuntu). The same is true for `ctrl+meta+left` and
+`ctrl+meta+right` on Windows.
 
 - If `LogRequests` is `true`, BareBrowser will log extensive information about requests made by
   pages and how they have been handled by request handlers (see following chapter).
@@ -461,15 +522,17 @@ the values is invalid, missing or has the wrong type. For the `RequestHandlers` 
   set this value to any string you like. If you don't want to send a detectable user agent set this
   value to a single space (`" "`).
 
-- `Permissions` is an array of strings which controls the behavior if a web page asks for a
-  specific permission. The default is to allow fullscreen requests. If you also want to allow
-  notifications from web pages the value would be `["fullscreen", "notifications"]`. The following
-  values can be used: `clipboard-read`, `media`, `mediaKeySystem`, `geolocation`, `notifications`,
-  `midi`, `midiSysex`, `pointerLock`, `fullscreen` and `openExternal`.
+- `Permissions` is an array of strings which controls the behavior if a web page asks for a specific
+  permission. The default is to allow fullscreen requests. If you also want to allow notifications
+  from web pages the value would be `["fullscreen", "notifications"]`. The following values can be
+  used: `clipboard-read`, `media`, `mediaKeySystem`, `geolocation`, `notifications`, `midi`,
+  `midiSysex`, `pointerLock`, `fullscreen` and `openExternal`. BareBrowser currently contains no
+  code to handle any of these values in a specific way, so the default behavior from Electron
+  applies.
 
 - With `AllowPlugins` set to `true` BareBrowser should be able to load plugins.
 
-- With `AllowPopups` set to `true` the current window can open other windows (e. g. through links
+- With `AllowPopups` set to `true` the current window can open other windows (e.g. through links
   with `target="_blank"`). If this setting is `false`, *nothing* will happen if such links are
   clicked. Instead you have to click with `Shift` or `Ctrl`/`Cmd` (see below `AllowNewWindows`).
 
@@ -479,9 +542,11 @@ the values is invalid, missing or has the wrong type. For the `RequestHandlers` 
   significantly degrade the browsing experience. Prefixing URLs with `new:` (see above) also won't
   open new windows.\
   ***Note:*** To open a regular link in a new window you can click on it while holding down the
-  `Shift` or `Cmd` key on the Mac or the `Shift` or `Ctrl` key on Windows. If `AllowNewWindows` is
-  `false` clicking on a link while holding down one of these keys has no effect, instead the link
-  will be opened in the current window.
+  `Shift` or `Cmd` key on the Mac or the `Shift` or `Ctrl` key on Linux/Windows. When the `Cmd` or
+  `Ctrl` key is used, the new window will be opened *behind* the current active window (similar to
+  opening a background tab in a regular browser). If `AllowNewWindows` is `false` clicking on a link
+  while holding down one of these keys has no effect, instead the link will be opened in the current
+  window.
 
 - If `ClearTraces` is set to `true` then any temporary data like caches, local storage, cookies,
   sessions etc. will be deleted when BareBrowser is closed. Deleting means the *complete removal*(!)
@@ -491,6 +556,12 @@ the values is invalid, missing or has the wrong type. For the `RequestHandlers` 
 
   ```
   ~/Library/Application Support/de.idesis.barebrowser
+  ```
+
+  **Linux:**
+
+  ```
+  ~/.config/de.idesis.barebrowser
   ```
 
   **Windows:**
@@ -532,7 +603,7 @@ the values is invalid, missing or has the wrong type. For the `RequestHandlers` 
   be initially hidden on startup and in new windows. The value `2` shows the address bar on startup
   and in new windows. Any other value will cause the default setting (`1`) to be used.
 
-- `Win32MenuState` sets the behavior of the main menu on Windows platforms. This setting is ignored
+- `MenuState` sets the behavior of the main menu on Linux/Windows platforms. This setting is ignored
   on the Mac. `0` disables the main menu completely. Setting the value to `1` enables the main menu
   but doesn't show it on startup (see respective shortcut). `2` enables the main menu and shows it
   on startup. Any other value will cause the default setting (`1`) to be used.
@@ -570,7 +641,6 @@ handlers matches their order in `settings.json`. You register a URL handler by a
 `RequestHandlers` object in `settings.json`:
 
 ```json
-
 "RequestHandlers": [
   {
     "Load": true,
@@ -753,13 +823,13 @@ handleRequest(url, originalURL, navType) {
 If a resource is requested, the first handler in the chain will be called (function `handleRequest`)
 with the (parsed) URL, the original (unparsed) URL of the resource and a navigation type . `url`
 usually is the URL which originates from a resource in a web page. If it originates as the inital
-URL from the command line `originalURL` will contain the unparsed command line value. This can be
-used to create a proper URL since not all calling processes are able to create a correctly encoded
-URL. But you could also use it to pass arbitrary data to URL handlers that has nothing to do with
-URLs, for example `bb.exe "doSomething=10,20"`. In this case you would have to implement your own
-handling since `url` would contain `https://dosomething%3D10%2C20/`. In most other cases `url` and
-`originalURL` are equal. The navigation type (numeric constant) tells the handler what caused the
-request:
+URL from the command line or the URL field in the GUI `originalURL` will contain the unparsed value.
+This can be used to create a proper URL since not all calling processes are able to create a
+correctly encoded URL. But you could also use it to pass arbitrary data to URL handlers that has
+nothing to do with URLs, for example `bb.exe "doSomething=10,20"`. In this case you would have to
+implement your own handling since `url` would contain `https://dosomething%3D10%2C20/`. In most
+other cases `url` and `originalURL` are equal. The navigation type (`navType`, numeric constant)
+tells the handler what caused the request:
 
 - `NAV_LOAD` (= `0`) Initial loading of a page.
 - `NAV_RELOAD` (= `1`) Reload an already loaded page*.
@@ -773,7 +843,8 @@ and `<FORWARD>`.
 If a handler decides to handle the request it *must* call the corresponding method on the
 `webContents` object. In the case of `NAV_LOAD` this would be `this.webContents.loadURL(url);`.
 Similar handling must be done for all other types except `NAV_INTERNAL`. This type is rather
-informative, it doesn't require an action on the `webContents` object.
+informative, it doesn't require an action on the `webContents` object. If you pass non-URL data like
+in the example above, you have to handle it on your own in `handleRequest`.
 
 **Note:** Regardless of actively handling the request or not the handler **must** return a numeric
 constant which tells BareBrowser how to proceed with the request. The following return values can be
@@ -883,7 +954,7 @@ For all available request handlers see also the file `settings.json`.
   default.
 
 - `Nervous.js`\
-  See [here](#nervous--).
+  See [here](#nervous-).
 
 
 ## Building
@@ -891,8 +962,8 @@ For all available request handlers see also the file `settings.json`.
 ### Requirements
 
 [Node.js](https://nodejs.org) 10.0 or higher is required. If you want to build Windows versions on
-the Mac you also need [Wine](https://www.winehq.org) installed on your system, for example via
-[Homebrew](https://brew.sh).
+the Mac or Linux you also need [Wine](https://www.winehq.org) installed on your system, on the Mac,
+for example, via [Homebrew](https://brew.sh).
 
 
 ### Source code structure
@@ -904,14 +975,14 @@ automatically), it will contain the distribution files if you package BareBrowse
 
 The content of `./app`:
 
-| Directory           | Content                                                                                                                                                                                                                                                                                                                           |
-| :------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `_root`             | `index.html`, the page loaded by the renderer process; `home.html`, BareBrowsers internal home page; `appicon.png`, the logo of BareBrowser; the software license (`LICENSE`); the changelog of BareBrowser (`CHANGES`); the readme files (`README.md`, `README.html`); `github.css`, CSS used for `README.html` and `home.html`. |
-| `lib`               | JavaScript libraries used by BareBrowser, currently only the source files of request handlers.                                                                                                                                                                                                                                    |
-| `res`               | BareBrowser runtime settings in `settings.json`. The right place for other static resources.                                                                                                                                                                                                                                      |
-| `src`               | Source code of BareBrowser; settings for the TypeScript compiler and ESLint.                                                                                                                                                                                                                                                      |
-| `style`             | CSS and images needed by `_root/index.html`.                                                                                                                                                                                                                                                                                      |
-| File `package.json` | Configuration of BareBrowser app (name, description etc.); configuration of runtime and development dependencies (TypeScript compiler, additional Node modules etc.).                                                                                                                                                             |
+| Directory           | Content                                                                                                                                                                                                                                                                                                                                                                    |
+| :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `_root`             | `index.html`, the page loaded by the renderer process; `home.html`, BareBrowsers internal home page; `appicon.png`, the logo of BareBrowser; `dockicon.png`, the dock icon for Linux; the software license (`LICENSE`); the changelog of BareBrowser (`CHANGES`); the readme files (`README.md`, `README.html`); `github.css`, CSS used for `README.html` and `home.html`. |
+| `lib`               | JavaScript libraries used by BareBrowser, currently only the source files of request handlers.                                                                                                                                                                                                                                                                             |
+| `res`               | BareBrowser runtime settings in `settings.json`. The right place for other static resources.                                                                                                                                                                                                                                                                               |
+| `src`               | Source code of BareBrowser; settings for the TypeScript compiler and ESLint.                                                                                                                                                                                                                                                                                               |
+| `style`             | CSS and images needed by `_root/index.html`. The right place for your own CSS.                                                                                                                                                                                                                                                                                             |
+| File `package.json` | Configuration of BareBrowser app (name, description etc.); configuration of runtime and development dependencies (TypeScript compiler, additional Node modules etc.).                                                                                                                                                                                                      |
 
 **Notes:**
 
@@ -927,6 +998,10 @@ The content of `./app`:
 - `appicon.png` is mandatory and must not be renamed. The file is used for creating the Logo of
   BareBrowser and should be a 1024x1024px RGB PNG with transparency (see also
   [here](https://github.com/idesis-gmbh/png2icons)).
+- `dockicon.png` is optional. The file is used for displaying an icon in Linux docks or for window
+  decorations. A 256x256px RGB PNG with transparency is usually sufficient. If this file isn't
+  available, the build system will use a copy of `appicon.png` during packaging BareBrowser for
+  releases.
 - `README.md` is optional, it is a good place for your documentation in
   [GFM](https://github.github.com/gfm/) format. If you change the name, you won't be able to display
   it with the builtin URLs `bb://readme.md`, `readme.md:`.
@@ -1024,27 +1099,30 @@ of the fields:
   fail. `47.11a` also works on the Mac while building for Windows doesn't break but it will be
   transformed to `47.11.0.0`.
 
-- `identifier` will be used for the user data directory in `~/Library/Application Support` (Mac) and
-  `%APPDATA%` (Windows). Make sure, that you use a unique identifier (which also doesn't contain
-  characters unsuitable for filenames)!
+- `identifier` will be used for the user data directory in `~/Library/Application Support` (Mac),
+  `~/.config` (Linux) and `%APPDATA%` (Windows). Make sure, that you use a unique identifier (which
+  also doesn't contain characters unsuitable for filenames)!
 
 - `identifierRoot`, optional. If this value is available and it is not an empty string (trimmed) it
-  will be used as the name for a parent directory in `~/Library/Application Support` (Mac) and
-  `%APPDATA%` (Windows) in which the directory denoted by `identifier` is created. This name also
-  must not contain characters unsuitable for filenames. Suppose the value is `ACME Corp` and
-  `identifier` is `SuperBrowser`, then the follwing directory would be created for BareBrowsers user
-  data:
+  will be used as the name for a parent directory in `~/Library/Application Support` (Mac),
+  `~/.config` (Linux) and `%APPDATA%` (Windows) in which the directory denoted by `identifier` is
+  created. This name also must not contain characters unsuitable for filenames. Suppose the value is
+  `ACME Corp` and `identifier` is `SuperBrowser`, then the follwing directory would be created for
+  BareBrowsers user data:
 
   **Mac**:\
   `~/Library/Application Support/ACME Corp/SuperBrowser`
 
+  **Linux**:\
+  `~/.config/ACME Corp/SuperBrowser`
+
   **Windows**:\
   `%APPDATA%\ACME Corp\SuperBrowser`
 
-  Without `identifierRoot` the directories `~/Library/Application Support/SuperBrowser` and
-  `%APPDATA%\SuperBrowser` would be created. `identifierRoot` is useful if, for example, an
-  organization wants to keep the user data directories of all their internal applications under a
-  single common directory. 
+  Without `identifierRoot` the directories `~/Library/Application Support/SuperBrowser`,
+  `~/.config/SuperBrowser` and `%APPDATA%\SuperBrowser` would be created. `identifierRoot` is useful
+  if, for example, an organization wants to keep the user data directories of all their internal
+  applications under a single common directory.
 
 - `executableName` will be used for the name of the primary executable. Do not add an extension like
   `.exe`, on building for Windows this will be done automatically. Also do not use the value
@@ -1056,12 +1134,15 @@ of the fields:
   `electron` and `eslint` are the absolute minimum. Removing `eslint-plugin-jsdoc` means changing
   the ESLint configuration.
 
-- `config.arch` can be `x64`, `arm64`, `ia32` or any combination of these values, if you want to
-  build releases for multiple architectures (comma-delimited). `ia32` is only valid for building a
-  32-bit Windows version. If it's used when building a Mac version a warning will be emitted on the
-  console and this architecture will be ignored. If, for example, `config.arch` is
-  `x64,arm64,ia32` and `Make:all` (see below) is used on a Mac, the build system will generate 5
-  releases, 2 for macOS (`x64`, `arm64`) and 3 for Windows (`x64`, `arm64`, `ia32`).
+- `config.arch` can be `x64`, `arm64`, `ia32`, `armv7l` or any combination of these values, if you
+  want to build releases for multiple architectures (comma-delimited). `ia32` is only valid for
+  building a 32-bit Windows version. It can also be used for Linux but currently there is no
+  official support by Electron Packager and it is also deprecated. `armv7l` is only available for
+  Linux. If an architecture is given, that is not available for a platform a warning will be emitted
+  on the console and this architecture will be ignored. If, for example, `config.arch` is
+  `x64,arm64,ia32` and `Make:all` (see below) is used on a Mac, the build system will generate 8
+  releases, 2 for macOS (`x64`, `arm64`), 3 for Linux (`x64`, `arm64`, `ia32`) and 3 for Windows
+  (`x64`, `arm64`, `ia32`).
 
 - `config.pkgParams` can be modified, please refer to Electron packager. `--asar.unpackDir`
   currently keeps the directories `./app/res` and `./app/lib/RequestHandlers` out of the packed
@@ -1106,19 +1187,28 @@ all start with a capital letter. These are the tasks you'd normaly use during de
 | :-------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Watch`         | Starts all of the watch tasks which are configured in `package.json` in parallel.                                                                         |
 | `Start:Build`   | Runs the current compiled state of BareBrowser from the directory `./out`.                                                                                |
-| `Start:Release` | Runs the packaged BareBrowser from the directory `./release` (created by the `Make*` tasks).\*                                                            |
+| `Start:Release` | Runs the packaged BareBrowser from the directory `./release` (created by the `Make*` tasks). \*                                                           |
 | `Build`         | Complete refresh of the build system files, based on the settings in `./app/package.json`.                                                                |
 | `Compile`       | Compiles the complete source code (main and renderer process, preload script).                                                                            |
 | `Clean`         | Cleans everything (including the `release` directory). After cleaning you must run the `Build` and `Compile` tasks again to be able to use `Start:Build`. |
 | `Make`          | Packages BareBrowser for your platform (auto-detected).                                                                                                   |
-| `Make:Windows`  | Packages BareBrowser for Windows (can be used on Windows *and* on the Mac).                                                                               |
-| `Make:Mac`      | Packages BareBrowser for the Mac (can't be used on Windows).                                                                                              |
-| `Make:All`      | Packages BareBrowser for the Mac *and* for Windows (can only be used on the Mac).                                                                         |
+| `Make:Mac`      | Packages BareBrowser for the Mac. \**                                                                                                                     |
+| `Make:Linux`    | Packages BareBrowser for Linux. \***                                                                                                                      |
+| `Make:Windows`  | Packages BareBrowser for Windows.                                                                                                                         |
+| `Make:All`      | Packages BareBrowser for the Mac, Linux and Windows. \****                                                                                                |
 | `Lint`          | Executes source code linting with ESLint (based on the settings in `./app/src/eslintrc.json`.)                                                            |
 
 \* `Start:Release` currently will always pick a release that matches the current Node.js processor
 architecture. If, for example, you are developing on a Mac with Apple Silicon and `config.arch` is
 only `x64` running `Start:Release` will fail.
+
+\** Can't be used on Windows due to the symlinks created by Electron Packer in the output (the build
+system will output a warning on the console).
+
+\*** If used on Windows you may have to set the executable attribute with `chmod +x bb` after copying
+the release to a Linux machine.
+
+\**** Can't be used on Windows due to \*2.
 
 It's highly recommended that you start the `Watch` task. This task watches for file changes in
 `./app/package.json` and all of the directories below `./app`. On a change it immediately executes
@@ -1138,11 +1228,6 @@ up-to-date state in `./out`, ready for running with `Start:Build`.
   `m:darwin:pkg` to quickly package BareBrowser for the Mac (provided the necessary `Build` and
   `Compile` tasks have been run before). This is much faster than running `Make`, although `Make` is
   safer because it ensures, that everything was cleaned and setup properly.
-- If a Windows version is packaged on a Mac with Apple Silicon (ARM64) the build system will patch
-  the `node-rcedit` module (a dependency of Electron Packager, see this
-  [bug](https://github.com/electron/node-rcedit/issues/83)), otherwise setting the icon for the
-  generated Windows executable would fail. In future versions of Electron Packager this may be no
-  longer necessary.
 
 The repo contains a Visual Studio Code workspace file (`BareBrowser.code-workspace`). It contains
 the necessary settings to enable live linting based on `./app/src/eslintrc.json` in VS Code and a
