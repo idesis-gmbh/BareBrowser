@@ -146,14 +146,16 @@ export class MainApplication {
 
     /**
      * Create a browser window.
+     * @param behindCurrent If `true`, the window will be created behind the current topmost window.
      * @returns The newly created browser windows.
      */
-    private async createWindow(): Promise<BrowserWindow> {
+    private async createWindow(behindCurrent = false): Promise<BrowserWindow> {
         console.log("Creating new window...");
         /* eslint-disable jsdoc/require-jsdoc */
         const bwOptions: Electron.BrowserWindowConstructorOptions = {
             width: this.settings.Window.Width,
             height: this.settings.Window.Height,
+            show: !behindCurrent,
             webPreferences: {
                 nodeIntegration: true,
                 webviewTag: true,
@@ -198,6 +200,17 @@ export class MainApplication {
         this.setWindowTitle(window, APP_INFO.ProductName);
         // Load
         await window.loadURL($URL.format(urlObject));
+        if (behindCurrent) {
+            const current = BrowserWindow.getFocusedWindow();
+            if (current) {
+                window.showInactive();
+                current.moveTop();
+                this.setForegoundWindow(current);
+            } else {
+                // Safe fallback
+                window.show();
+            }
+        }
         // Tell renderer its own window id.
         window.webContents.send(IPC_MAIN_RENDERER, IPC.WINDOW_CREATED, window.id);
         console.log("Creating new window done.");
@@ -732,7 +745,7 @@ export class MainApplication {
                 "other"].includes(details.disposition)) {
                 this.currentUrlItem = getURLItem(this.handleBuiltinURLs(details.url), this.settings.Scheme);
                 if (this.settings.AllowNewWindows) {
-                    void this.createWindow();
+                    void this.createWindow(details.disposition === "background-tab");
                 } else {
                     setImmediate(() => {
                         this.openFileOrURL(this.currentUrlItem.URL, this.currentUrlItem.IsFileURL);
