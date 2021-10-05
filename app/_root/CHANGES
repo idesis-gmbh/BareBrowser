@@ -1,3 +1,15 @@
+## v2.2.0
+
+## New
+
+- Added new configuration setting `ElectronFlags` for passing command line switches to the Electron
+  runtime.
+
+## Changes
+
+- Updated dependencies and upgraded to Electron 15.1.1.
+
+
 # v2.1.0
 
 ## New
