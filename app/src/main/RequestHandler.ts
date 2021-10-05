@@ -1,4 +1,4 @@
-import { BrowserWindow, webContents } from "electron";
+import { BrowserWindow } from "electron";
 import { ISettings } from "../shared/Settings";
 import { AnyObject } from "../shared/Types";
 
@@ -80,7 +80,7 @@ export declare class RequestHandler {
      * @param webContents The WebContents associated with the WebView tag in the browser page.
      * @param browserWindow The Electron browser window which hosts the WebView tag.
      */
-    constructor(config: AnyObject | undefined, settings: ISettings, active: boolean, webContents: webContents, browserWindow: BrowserWindow);
+    constructor(config: AnyObject | undefined, settings: ISettings, active: boolean, webContents: Electron.WebContents, browserWindow: BrowserWindow);
 
     /**
      * Set by BareBrowser on the instance after calling the constructor.

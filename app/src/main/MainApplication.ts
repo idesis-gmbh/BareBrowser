@@ -39,7 +39,7 @@ interface IBrowserWindowEvent extends Electron.Event {
  */
 interface IWindowEntry {
     Window: Electron.BrowserWindow;
-    WebViewWebContents: webContents;
+    WebViewWebContents: Electron.WebContents;
     WebViewWebContentsID: number;
     RequestHandlers: RequestHandler[];
 }
@@ -370,7 +370,7 @@ export class MainApplication {
      * @param browserWindow The browser window which hosts the webContents (of the WebView tag).
      * @returns An array of available request handler instances.
      */
-    private loadRequestHandlers(webContents: webContents, browserWindow: BrowserWindow): RequestHandler[] {
+    private loadRequestHandlers(webContents: Electron.WebContents, browserWindow: BrowserWindow): RequestHandler[] {
         const handlers = [];
         for (const handler of this.settings.RequestHandlers) {
             if (handler.Load) {
