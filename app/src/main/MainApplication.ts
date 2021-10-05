@@ -57,7 +57,7 @@ export class MainApplication {
     private settings: $Settings.ISettings;
     private currentUrlItem: IURLItem;
     private appMenu: ApplicationMenu | null = null;
-    private windows: (IWindowEntry)[] = [];
+    private windows: IWindowEntry[] = [];
 
     /**
      * Boot and set up Electron app.
@@ -410,6 +410,15 @@ export class MainApplication {
      */
     private preAppReadySetup(): void {
         this.bindEvents();
+        for (const flag of this.settings.ElectronFlags) {
+            const index = flag.indexOf("=");
+            if (index > -1) {
+                app.commandLine.appendSwitch(flag.substring(0, index), flag.substring(index + 1));
+            } else {
+                // `appendArgument` doesn't seem to work?
+                app.commandLine.appendSwitch(flag);
+            }
+        }
         if (!this.settings.HardwareAcceleration) {
             app.disableHardwareAcceleration();
         }

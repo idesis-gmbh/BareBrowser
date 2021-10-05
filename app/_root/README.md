@@ -43,10 +43,10 @@ directories etc.).
 
 Download one of the releases from the
 [releases](https://github.com/idesis-gmbh/BareBrowser/releases) page, unzip the file and copy the
-resulting directory to any place you like (on a local hard drive, *running BareBrowser from a
-network mount may prevent opening the developer tools and also may lead to other problems like
-frozen windows!*). On the Mac you'd probably just copy the `BareBrowser` app (inside the unzipped
-folder) to `/Applications`.
+resulting directory to any place you like (preferably on a local hard drive, running BareBrowser
+from a network mount needs additional `ElectronFlags` [configuration settings](#configuration)). On
+the Mac you'd probably just copy the `BareBrowser` app (inside the unzipped folder) to
+`/Applications`.
 
 ## GUI Usage
 
@@ -449,6 +449,7 @@ The default configuration (from the directory above) looks like this:
   "SingleInstance": true,
   "FocusOnNewURL": true,
   "DarwinForceFocus": false,
+  "ElectronFlags": [],
   "HardwareAcceleration": true,
   "ContentProtection": false,
   "AddressBar": 2,
@@ -588,6 +589,13 @@ are reserved by the operating system (e.g. Ubuntu). The same is true for `ctrl+m
   bringing the app to the foreground doesn't always work, in most cases this can be fixed by setting
   `DarwinForceFocus` to `true` although it isn't recommended according to this
   [documentation](https://www.electronjs.org/docs/api/app#appfocusoptions).
+
+- With `ElectronFlags` (an array of strings) you can pass additional command line
+  switches/parameters to the Electron runtime. A comprehensive list can be found here:
+  [Supported Command Line Switches](https://www.electronjs.org/docs/latest/api/command-line-switches/).
+  One example is `"ElectronFlags": ["--no-sandbox"],` which enables running BareBrowser from a
+  network drive.\
+  ***Note: for security reasons using `--no-sandbox` is strongly discouraged!***
 
 - On some systems you may encounter graphics artifacts in web pages, in such cases you can try to
   set `HardwareAcceleration` to `false`.

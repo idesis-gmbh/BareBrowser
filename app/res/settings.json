@@ -111,6 +111,7 @@
     "SingleInstance": true,
     "FocusOnNewURL": true,
     "DarwinForceFocus": false,
+    "ElectronFlags": [],
     "HardwareAcceleration": true,
     "ContentProtection": false,
     "AddressBar": 2,

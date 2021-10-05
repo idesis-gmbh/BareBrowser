@@ -165,6 +165,11 @@ export interface ISettings {
      */
     DarwinForceFocus: boolean;
     /**
+     * Array of values passed on to Electron as additional command line switches/params.
+     * See https://www.electronjs.org/docs/latest/api/command-line-switches
+     */
+    ElectronFlags: string[];
+    /**
      * Enable hardware acceleration.
      */
     HardwareAcceleration: boolean;
@@ -280,6 +285,7 @@ export function getDefaultSettings(): ISettings {
         SingleInstance: true,
         FocusOnNewURL: true,
         DarwinForceFocus: false,
+        ElectronFlags: [],
         HardwareAcceleration: true,
         ContentProtection: false,
         AddressBar: 2,
@@ -352,6 +358,7 @@ export function getSettings(configFile: string): ISettings {
         SingleInstance: $Utils.normalize(settings.SingleInstance, true),
         FocusOnNewURL: $Utils.normalize(settings.FocusOnNewURL, true),
         DarwinForceFocus: $Utils.normalize(settings.DarwinForceFocus, false),
+        ElectronFlags: $Utils.normalize(settings.ElectronFlags, []),
         HardwareAcceleration: $Utils.normalize(settings.HardwareAcceleration, true),
         ContentProtection: $Utils.normalize(settings.ContentProtection, false),
         AddressBar: $Utils.normalize(settings.AddressBar, 2),
