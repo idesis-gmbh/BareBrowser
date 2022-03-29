@@ -130,7 +130,7 @@ export class MainApplication {
                 .replace(/'$/, "");
         }
         /* eslint-disable jsdoc/require-jsdoc */
-        return {
+        return <ICmdLineArgs>{
             URL: URL,
             WindowID: Math.trunc(windowId)
         };
