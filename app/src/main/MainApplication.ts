@@ -727,8 +727,7 @@ export class MainApplication {
         });
         // A different URL origin will cause a new handler chain to be started (through openFileOrURL).
         webContents.on("will-navigate", (willNavigateEvent: Electron.Event, url: string) => {
-            //@ts-ignore
-            const srcURL = willNavigateEvent.sender.getURL(); // eslint-disable-line
+            const srcURL = (willNavigateEvent as Electron.Event & { sender: { getURL: () => string; }; }).sender.getURL();
             if (isSameOrigin(srcURL, url)) {
                 if (this.settings.LogRequests) { console.log(`WILL-NAVIGATE from ${srcURL} to ${new $URL.URL(url).toString()}, same origin, passing`); }
             } else {
