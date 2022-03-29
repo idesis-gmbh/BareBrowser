@@ -159,7 +159,6 @@ export class MainApplication {
             webPreferences: {
                 nodeIntegration: true,
                 webviewTag: true,
-                nativeWindowOpen: true,
                 contextIsolation: false,
             },
             icon: APP_INFO.Platform === "linux" ? $Path.join(APP_INFO.APP_PATH_PKG, "dockicon.png") : undefined,
@@ -719,7 +718,6 @@ export class MainApplication {
             wp.nodeIntegrationInSubFrames = false;
             wp.nodeIntegrationInWorker = false;
             wp.sandbox = true;
-            wp.nativeWindowOpen = true;
             wp.contextIsolation = false;
             wp.webSecurity = true;
             wp.experimentalFeatures = false;
