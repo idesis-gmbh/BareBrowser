@@ -222,7 +222,7 @@ export class MainApplication {
      * @param appIdentifier The apps identifier.
      */
     private setAppPaths(appIdentifierParent: string, appIdentifier: string): void {
-        // Unfortunately this is created to early, so it must be deleted later.
+        // Unfortunately this is created too early, so it must be deleted later.
         const initialUserDataDir = $Path.join(app.getPath("userData"));
         // An application name from 'package.json' may be too short to be unambigous and therefore
         // could lead to conflicts in ~/Library/Application Support/ or %APPDATA%, so the value of
@@ -451,7 +451,7 @@ export class MainApplication {
             copyright: `${APP_INFO.Copyright}, ${APP_INFO.CompanyName}`,
             authors: [APP_INFO.AuthorName],
             website: APP_INFO.Homepage,
-            iconPath: APP_INFO.APP_PATH_PKG + 'appicon.png'
+            iconPath: APP_INFO.APP_PATH_PKG + "appicon.png"
             /* eslint-enable */
         });
         // Handlers on the default session.
@@ -772,12 +772,11 @@ export class MainApplication {
         const windowId: number = args[0] as number;
         const msgId: number = args[1] as number;
         const params: unknown[] = args.slice(2);
-        let windowEntry: IWindowEntry | undefined;
+        let windowEntry = this.getBrowserWindowEntry(windowId);
         // const ipcMessage = getIPCMessage(msgId);
         switch (msgId) {
             // Return the current (last) URLItem
             case IPC.LOAD_URL:
-                windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
                     const loadURL = getURLItem(this.handleBuiltinURLs(params[0] as string), this.settings.Scheme);
                     // Must be patched to the original URL which is passed as `params[1]` by the
@@ -790,14 +789,12 @@ export class MainApplication {
                 break;
 
             case IPC.RELOAD_URL:
-                windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
                     this.handleRequest("<RELOAD>", "<RELOAD>", windowEntry.WebViewWebContentsID, NavigationType.RELOAD);
                 }
                 break;
 
             case IPC.GO_BACK:
-                windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
                     if (windowEntry.WebViewWebContents.canGoBack()) {
                         this.handleRequest("<BACK>", "<BACK>", windowEntry.WebViewWebContentsID, NavigationType.BACK);
@@ -806,7 +803,6 @@ export class MainApplication {
                 break;
 
             case IPC.GO_FORWARD:
-                windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
                     if (windowEntry.WebViewWebContents.canGoForward()) {
                         this.handleRequest("<FORWARD>", "<FORWARD>", windowEntry.WebViewWebContentsID, NavigationType.FORWARD);
@@ -867,7 +863,6 @@ export class MainApplication {
                 }
                 break;
 
-
             // Set the id of the webContents of the webview tag which is hosted in the browser window.
             case IPC.RENDERER_READY:
                 const _window = BrowserWindow.fromId(windowId);
@@ -886,7 +881,6 @@ export class MainApplication {
 
             // Set new window title of calling renderer process
             case IPC.SET_WINDOW_TITLE:
-                windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
                     this.setWindowTitle(windowEntry.Window, params[0] as string);
                 }

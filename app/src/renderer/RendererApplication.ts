@@ -244,7 +244,7 @@ export class RendererApplication {
 
     /**
      * Set a new title for this window.
-     * @param title The new window title
+     * @param title The new window title.
      */
     private setWindowTitle(title: string) {
         ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.SET_WINDOW_TITLE, title);
