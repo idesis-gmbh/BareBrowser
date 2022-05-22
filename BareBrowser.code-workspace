@@ -31,8 +31,15 @@
             "package.json": true,
             "package-lock.json": true
         },
+        "[typescript]": {
+            "editor.defaultFormatter": "vscode.typescript-language-features",
+            "editor.formatOnSave": true,
+            "editor.codeActionsOnSave": {
+                "source.organizeImports": true
+            }
+        },
         "eslint.options": {
-            "configFile": "./build/tmp/eslintrc.json",
+            "overrideConfigFile":"./build/tmp/eslintrc.json",
         },
         "-eslint.format.enable": true,
         "eslint.validate": [
