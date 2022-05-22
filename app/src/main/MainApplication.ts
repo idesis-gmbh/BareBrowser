@@ -1,5 +1,5 @@
 import { spawn } from "child_process";
-import { app, BrowserWindow, ipcMain, Menu, protocol, screen, session, webContents } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, MenuItem, Params, protocol, screen, session, webContents } from "electron";
 import { HandlerDetails } from "electron/main";
 import { Readable } from "stream";
 import { APP_INFO } from "../shared/AppInfo";
@@ -886,6 +886,13 @@ export class MainApplication {
                 }
                 break;
 
+            // Show context menu.
+            case IPC.SHOW_CONTEXT_MENU:
+                if (windowEntry) {
+                    this.onPopupMenu(params[0] as Params, windowEntry);
+                }
+                break;
+
             default:
                 event.returnValue = false;
                 console.warn(format("Unknown/unhandled IPC message received from renderer: %d %d. ", windowId, msgId, ...params));
@@ -1182,6 +1189,64 @@ export class MainApplication {
             }
             this.windows.splice(index, 1);
         }
+    }
+
+    /**
+     * Shows a context menu if the user right clicks somewhere in the loaded page.
+     * @param contextMenuParams The context menu params as given by the renderer process.
+     * @param windowEntry The corresponding window entry.
+     */
+    private onPopupMenu(contextMenuParams: Electron.Params, windowEntry: IWindowEntry): void {
+        /* eslint-disable jsdoc/require-jsdoc */
+        // `role` doesn't work properly in stand alone popup menus so let's steal its native
+        // translations and use the usual keyboard shortcuts.
+        const editMenu = new Menu();
+        const undoMenu = new MenuItem({
+            label: new MenuItem({ role: "undo" }).label,
+            accelerator: "CmdOrCtrl+Z",
+            enabled: contextMenuParams.editFlags.canUndo,
+            click: () => { windowEntry.WebViewWebContents.undo(); },
+        });
+        editMenu.append(undoMenu);
+        const redoMenu = new MenuItem({
+            label: new MenuItem({ role: "redo" }).label,
+            accelerator: "CmdOrCtrl+Shift+Z",
+            enabled: contextMenuParams.editFlags.canRedo,
+            click: () => { windowEntry.WebViewWebContents.redo(); },
+        });
+        editMenu.append(redoMenu);
+        editMenu.append(new MenuItem({ type: "separator" }));
+        const cutMenu = new MenuItem({
+            label: new MenuItem({ role: "cut" }).label,
+            accelerator: "CmdOrCtrl+X",
+            enabled: contextMenuParams.editFlags.canCut,
+            click: () => { windowEntry.WebViewWebContents.cut(); },
+        });
+        editMenu.append(cutMenu);
+        const copyMenu = new MenuItem({
+            label: new MenuItem({ role: "copy" }).label,
+            accelerator: "CmdOrCtrl+C",
+            enabled: contextMenuParams.editFlags.canCopy,
+            click: () => { windowEntry.WebViewWebContents.copy(); }
+        });
+        editMenu.append(copyMenu);
+        const pasteMenu = new MenuItem({
+            label: new MenuItem({ role: "paste" }).label,
+            accelerator: "CmdOrCtrl+V",
+            enabled: contextMenuParams.editFlags.canPaste,
+            click: () => { windowEntry.WebViewWebContents.paste(); }
+        });
+        editMenu.append(pasteMenu);
+        editMenu.append(new MenuItem({ type: "separator" }));
+        const selectAllMenu = new MenuItem({
+            label: new MenuItem({ role: "selectAll" }).label,
+            accelerator: "CmdOrCtrl+A",
+            enabled: contextMenuParams.editFlags.canSelectAll,
+            click: () => { windowEntry.WebViewWebContents.selectAll(); }
+        });
+        editMenu.append(selectAllMenu);
+        editMenu.popup({ window: windowEntry.Window });
+        /* eslint-enable */
     }
 
     /**

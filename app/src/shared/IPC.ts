@@ -49,7 +49,8 @@ export const enum IPC {
     GET_SCROLL_OFFSET,
     SET_SCROLL_OFFSET,
     SCROLL_TO_OFFSET,
-    KEYBOARD_EVENT
+    KEYBOARD_EVENT,
+    SHOW_CONTEXT_MENU
 }
 
 /* eslint-disable jsdoc/require-jsdoc */
@@ -135,6 +136,10 @@ export const IPC_KEYBOARD_EVENT: IIPCMessage = {
     Id: IPC.KEYBOARD_EVENT,
     Text: "",
 };
+export const IPC_SHOW_CONTEXT_MENU: IIPCMessage = {
+    Id: IPC.SHOW_CONTEXT_MENU,
+    Text: "",
+};
 /* eslint-enable */
 
 /** 
@@ -162,6 +167,7 @@ export function getIPCMessage(id: number): IIPCMessage {
         case IPC.SET_SCROLL_OFFSET: return IPC_SET_SCROLL_OFFSET;
         case IPC.SCROLL_TO_OFFSET: return IPC_SCROLL_TO_OFFSET;
         case IPC.KEYBOARD_EVENT: return IPC_KEYBOARD_EVENT;
+        case IPC.SHOW_CONTEXT_MENU: return IPC_SHOW_CONTEXT_MENU;
         // eslint-disable-next-line jsdoc/require-jsdoc
         default: return { Id: IPC.UNKNOWN, Text: `Unknown IPC message (ID ${id}) received with params:` };
     }
