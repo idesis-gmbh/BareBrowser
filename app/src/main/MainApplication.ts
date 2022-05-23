@@ -551,7 +551,7 @@ export class MainApplication {
     }
 
     /**
-     * Transform builtin URLs like `about:*`, `./out/` etc.
+     * Transform builtin URLs like `info:*`, `./out/` etc.
      * @param url The URL to be transformed.
      * @returns The transformed URL.
      */

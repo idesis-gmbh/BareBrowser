@@ -24,7 +24,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "test": "npm run cmd --  electron ./out/ https://github.com/idesis-gmbh/BareBrowser",
+    "test": "npm run cmd --  electron ./out/ 'https://github.com/idesis-gmbh/BareBrowser'",
     "test_settings": "npm run cmd --  electron ./out/ settings:",
     "test_info:": "npm run cmd --  electron ./out/ bb://info:",
     "test_close:": "npm run cmd --  electron ./out/ bb://close 1",
