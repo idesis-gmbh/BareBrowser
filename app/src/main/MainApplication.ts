@@ -256,30 +256,37 @@ export class MainApplication {
      * @returns The loaded app settings.
      */
     private getSettings(): $Settings.ISettings {
-        let result: $Settings.ISettings = $Settings.getDefaultSettings();
+        let result = $Settings.getDefaultSettings();
         let hasUserSettings = false;
         try {
             // First, update existing user settings from the template or create
             // them, if they don't exist. Only possible, if a template exists.
             if ($FSE.existsSync(this.settingsTemplateFile)) {
-                // There are no user settings, create them from the template
+                // There are no user settings, create them from the template.
                 if (!$FSE.existsSync(this.settingsFile)) {
                     $FSE.copyFileSync(this.settingsTemplateFile, this.settingsFile);
-                } else
-                    // If the template is newer than the user settings overwrite them with the template
-                    if ($FSE.statSync(this.settingsTemplateFile).mtime > $FSE.statSync(this.settingsFile).mtime) {
-                        // Make backup
-                        const backupFilename: string = $Path.join(
-                            this.userDataDirectory,
-                            "settings-"
-                            + new Date().toISOString().replace("T", "_").replace(/:/g, "-").replace(/.[0-9]{3}Z/g, "")
-                            + ".json");
-                        $FSE.copyFileSync(this.settingsFile, backupFilename);
-                        // New settings from template
-                        $FSE.copyFileSync(this.settingsTemplateFile, this.settingsFile);
-                    }
+                }
+                // If the template is newer than the user settings merge them with the template.
+                else if ($FSE.statSync(this.settingsTemplateFile).mtime > $FSE.statSync(this.settingsFile).mtime) {
+                    // Make backup.
+                    const backupFilename: string = $Path.join(
+                        this.userDataDirectory,
+                        "settings-"
+                        + new Date().toISOString().replace("T", "_").replace(/:/g, "-").replace(/.[0-9]{3}Z/g, "")
+                        + ".json");
+                    $FSE.copyFileSync(this.settingsFile, backupFilename);
+                    // Merge settings from potentially new settings (with different properties) to
+                    // the current settings and save them. This is done with raw file read methods
+                    // since `getSettings` applies numerous checks and modifies the loaded JSON if
+                    // necessary.
+                    const currentSettings = $FSE.readJSONSync(this.settingsFile) as $Settings.ISettings;
+                    const templateSettings = $FSE.readJSONSync(this.settingsTemplateFile) as $Settings.ISettings;
+                    $Settings.mergeSettings(templateSettings, currentSettings);
+                    $FSE.writeJSONSync(this.settingsFile, currentSettings, { spaces: 4 }); // eslint-disable-line jsdoc/require-jsdoc
+                }
                 hasUserSettings = true;
             }
+            // Get/use new/current settings.
             if (hasUserSettings || $FSE.existsSync(this.settingsFile)) {
                 result = $Settings.getSettings(this.settingsFile);
             } else {
@@ -1064,9 +1071,11 @@ export class MainApplication {
                         maybeReturnFileConent(`${APP_INFO.APP_PATH_PKG}home.html`, originalURL/* , "text/html" */);
                         return;
                     case "settings":
-                        if (maybeReturnFileConent(this.settingsFile, originalURL/* , "text/html" */)) {
-                            this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | Settings`);
-                        }
+                        callback({
+                            mimeType: "application/json",
+                            data: Readable.from(Buffer.from(JSON.stringify(this.settings, null, 2)))
+                        });
+                        this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | Settings`);
                         return;
                     case "info":
                         callback({

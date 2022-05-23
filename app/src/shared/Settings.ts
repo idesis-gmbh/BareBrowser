@@ -372,3 +372,43 @@ export function getSettings(configFile: string): ISettings {
     }
     return settings;
 }
+
+/**
+ * Merge settings. Currently this is an overly simple process which just adds new properties or
+ * overwrites existing properties with the same name but where the type has changed.
+ * @param from The settings to be merged into `to`.
+ * @param to The settings which will be merged with `from`.
+ */
+export function mergeSettings(from: ISettings, to: ISettings): void {
+    for (const fromKey in from) {
+        if (Object.prototype.hasOwnProperty.call(from, fromKey)) {
+            // Not in current settings => add.
+            if (!Object.prototype.hasOwnProperty.call(to, fromKey)) {
+                // @ts-ignore
+                to[fromKey] = from[<keyof ISettings>fromKey];
+            }
+            // @ts-ignore
+            // Array and not array => add. Note: This is currently *very* primitive since it doesn't
+            // go through the array elements.
+            else if ((Array.isArray(from[fromKey]) && !Array.isArray(to[fromKey]))) {
+                // @ts-ignore
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                to[fromKey] = from[fromKey];
+            }
+            // @ts-ignore
+            // Different type.
+            else if (typeof from[fromKey] !== typeof to[fromKey]) {
+                // @ts-ignore
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                to[fromKey] = from[fromKey];
+            }
+            // @ts-ignore
+            // Dive into sub object.
+            else if (typeof from[fromKey] === "object") {
+                // @ts-ignore
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                mergeSettings(from[fromKey], to[fromKey]);
+            }
+        }
+    }
+}
