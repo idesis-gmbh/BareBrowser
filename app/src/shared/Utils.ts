@@ -62,35 +62,40 @@ export function requireJSONFile<T>(fileName: string): T {
  */
 export const MIME_TYPES: Record<string, string> = {
     /* eslint-disable jsdoc/require-jsdoc */
-    "mp3": "audio/mp3",
-    "wav": "audio/wav",
-    "mid": "audio/midi",
-    "midi": "audio/midi",
-    "m4a": "audio/x-m4a",
-    "aac": "audio/aac",
-    "ogg": "audio/ogg",
-    "mp4": "video/mp4",
-    "mov": "video/mp4",
-    "mpg": "video/mpeg",
-    "mpeg": "video/mpeg",
-    "pdf": "application/pdf",
-    "gif": "image/gif",
-    "png": "image/png",
-    "jpg": "image/jpeg",
-    "jpeg": "image/jpeg",
-    "bmp": "image/bmp",
-    "tif": "image/tiff",
-    "tiff": "image/tiff",
-    "svg": "image/svg+xml",
-    "svgz": "image/svg+xml",
-    "txt": "text/plain",
-    "md": "text/plain",
-    "css": "text/css",
-    "htm": "text/html",
-    "html": "text/html",
-    "js": "text/javascript",
-    "json": "application/json",
-    "xml": "text/xml",
+    MP3: "audio/mp3",
+    WAV: "audio/wav",
+    MID: "audio/midi",
+    MIDI: "audio/midi",
+    M4A: "audio/x-m4a",
+    AAC: "audio/aac",
+    OGG: "audio/ogg",
+    MP4: "video/mp4",
+    MOV: "video/mp4",
+    MPG: "video/mpeg",
+    MPEG: "video/mpeg",
+    PDF: "application/pdf",
+    BMP: "image/bmp",
+    GIF: "image/gif",
+    HEIC: "image/heic",
+    HEIF: "image/heif",
+    JPG: "image/jpeg",
+    JPEG: "image/jpeg",
+    PNG: "image/png",
+    SVG: "image/svg+xml",
+    SVGZ: "image/svg+xml",
+    TIF: "image/tiff",
+    TIFF: "image/tiff",
+    WEBP: "image/webp",
+    TXT: "text/plain",
+    MD: "text/markdown",
+    CSS: "text/css",
+    HTM: "text/html",
+    HTML: "text/html",
+    JS: "text/javascript",
+    JSON: "application/json",
+    XML: "text/xml",
+    ZIP: "application/zip",
+    BINARY: "application/octet-stream"
     /* eslint-enable */
 };
 
@@ -100,7 +105,7 @@ export const MIME_TYPES: Record<string, string> = {
  * @returns The resolved MIME tye or undefined.
  */
 export function getMimeTypeFromFileExtension(extension: string): string | undefined {
-    return MIME_TYPES[extension.replace(".", "").toLowerCase()];
+    return MIME_TYPES[extension.replace(".", "").toUpperCase()];
 }
 
 /**
