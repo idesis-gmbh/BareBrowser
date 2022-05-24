@@ -100,7 +100,7 @@
     "b:lib": "shx   mkdir -p ./out/ && shx rm -rf ./out/lib/   && npm run cmd --  -f ./app/lib/   shx cp -rf ./app/lib/   ./out/",
     "b:res": "shx   mkdir -p ./out/ && shx rm -rf ./out/res/   && npm run cmd --  -f ./app/res/   shx cp -rf ./app/res/   ./out/",
     "prebuild": "echo ///// Updating/pruning npm modules, copying app resources...",
-    "build": "npm-run-all -p b:app-package.json b:root b:style b:lib b:res ",
+    "build": "npm-run-all -s b:app-package.json b:root b:style b:lib b:res ",
     "//##### Watch for changes": "#####",
     "w:eslint.json": "onchange \"./app/src/eslintrc.json\" -v --await-write-finish 300 --  shx cp ./app/src/eslintrc.json ./build/tmp",
     "w:app-package.json": "onchange \"./app/package.json\" -v --await-write-finish 300 --  npm-run-all b:app-package.json",
