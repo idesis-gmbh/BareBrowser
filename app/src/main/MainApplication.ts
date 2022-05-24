@@ -26,11 +26,20 @@ interface ICmdLineArgs {
 }
 
 /**
- * Current Electron TypeScript definitions lack a proper definition for on close window events.
- * @see onWindowClose and onWindowFocus
+ * Current Electron TypeScript definitions lack a proper definition for on 'close' window events.
+ * @see `onWindowClose` and `onWindowFocus`.
  */
 interface IBrowserWindowEvent extends Electron.Event {
     sender: Electron.BrowserWindow;
+}
+
+/**
+ * Current Electron TypeScript definitions lack a proper definition for on 'context-menu' window
+ * events.
+ * @see `onRendererPopupMenu`.
+ */
+interface IWebContentsEvent extends Electron.Event {
+    sender: Electron.WebContents;
 }
 
 /**
@@ -184,9 +193,11 @@ export class MainApplication {
         // Create the browser window ...
         const window: BrowserWindow = new BrowserWindow(bwOptions);
         window.setContentProtection(this.settings.ContentProtection);
-        // ... bind close and focus handlers to it ...
+        // ... bind close, focus and context menu handlers to it ...
         window.on("closed", this.onWindowClosed.bind(this));
         window.on("focus", this.onWindowFocus.bind(this));
+        // @ts-ignore Why isn't this properly typed in electron.d.ts?
+        window.webContents.on("context-menu", this.onRendererPopupMenu.bind(this));
         /* eslint-disable jsdoc/require-jsdoc */
         // ... and load index.html.
         const urlObject: $URL.UrlObject = {
@@ -896,7 +907,7 @@ export class MainApplication {
             // Show context menu.
             case IPC.SHOW_CONTEXT_MENU:
                 if (windowEntry) {
-                    this.onPopupMenu(params[0] as Params, windowEntry);
+                    this.onWebViewPopupMenu(windowEntry, params[0] as Params);
                 }
                 break;
 
@@ -1201,11 +1212,30 @@ export class MainApplication {
     }
 
     /**
-     * Shows a context menu if the user right clicks somewhere in the loaded page.
+     * Shows a context menu if the user right clicks somewhere in the renderer window (for example
+     * in the address bar).
+     * @param event The context menu event.
      * @param contextMenuParams The context menu params as given by the renderer process.
-     * @param windowEntry The corresponding window entry.
      */
-    private onPopupMenu(contextMenuParams: Electron.Params, windowEntry: IWindowEntry): void {
+    private onRendererPopupMenu(event: IWebContentsEvent, contextMenuParams: Electron.Params): void {
+        this.onContextMenuPopup(event.sender, contextMenuParams);
+    }
+
+    /**
+     * Shows a context menu if the user right clicks somewhere in the loaded page.
+     * @param windowEntry The corresponding window entry.
+     * @param contextMenuParams The context menu params as given by the renderer process.
+     */
+    private onWebViewPopupMenu(windowEntry: IWindowEntry, contextMenuParams: Electron.Params): void {
+        this.onContextMenuPopup(windowEntry.WebViewWebContents, contextMenuParams);
+    }
+
+    /**
+     * Shows a context menu.
+     * @param webContents The corresponding Electron webContents.
+     * @param contextMenuParams The context menu params as given by the renderer process.
+     */
+    private onContextMenuPopup(webContents: Electron.WebContents, contextMenuParams: Electron.Params): void {
         /* eslint-disable jsdoc/require-jsdoc */
         // `role` doesn't work properly in stand alone popup menus so let's steal its native
         // translations and use the usual keyboard shortcuts.
@@ -1214,14 +1244,14 @@ export class MainApplication {
             label: new MenuItem({ role: "undo" }).label,
             accelerator: "CmdOrCtrl+Z",
             enabled: contextMenuParams.editFlags.canUndo,
-            click: () => { windowEntry.WebViewWebContents.undo(); },
+            click: () => { webContents.undo(); },
         });
         editMenu.append(undoMenu);
         const redoMenu = new MenuItem({
             label: new MenuItem({ role: "redo" }).label,
             accelerator: "CmdOrCtrl+Shift+Z",
             enabled: contextMenuParams.editFlags.canRedo,
-            click: () => { windowEntry.WebViewWebContents.redo(); },
+            click: () => { webContents.redo(); },
         });
         editMenu.append(redoMenu);
         editMenu.append(new MenuItem({ type: "separator" }));
@@ -1229,21 +1259,21 @@ export class MainApplication {
             label: new MenuItem({ role: "cut" }).label,
             accelerator: "CmdOrCtrl+X",
             enabled: contextMenuParams.editFlags.canCut,
-            click: () => { windowEntry.WebViewWebContents.cut(); },
+            click: () => { webContents.cut(); },
         });
         editMenu.append(cutMenu);
         const copyMenu = new MenuItem({
             label: new MenuItem({ role: "copy" }).label,
             accelerator: "CmdOrCtrl+C",
             enabled: contextMenuParams.editFlags.canCopy,
-            click: () => { windowEntry.WebViewWebContents.copy(); }
+            click: () => { webContents.copy(); }
         });
         editMenu.append(copyMenu);
         const pasteMenu = new MenuItem({
             label: new MenuItem({ role: "paste" }).label,
             accelerator: "CmdOrCtrl+V",
             enabled: contextMenuParams.editFlags.canPaste,
-            click: () => { windowEntry.WebViewWebContents.paste(); }
+            click: () => { webContents.paste(); }
         });
         editMenu.append(pasteMenu);
         editMenu.append(new MenuItem({ type: "separator" }));
@@ -1251,10 +1281,14 @@ export class MainApplication {
             label: new MenuItem({ role: "selectAll" }).label,
             accelerator: "CmdOrCtrl+A",
             enabled: contextMenuParams.editFlags.canSelectAll,
-            click: () => { windowEntry.WebViewWebContents.selectAll(); }
+            click: () => { webContents.selectAll(); }
         });
         editMenu.append(selectAllMenu);
-        editMenu.popup({ window: windowEntry.Window });
+        // `popup()` also works with
+        // - popup({ window: Electron.BrowserWindow }) *and*
+        // - popup({ window: Electron.WebContents })
+        // but only with Electron.BrowserWindow is documented.
+        editMenu.popup();
         /* eslint-enable */
     }
 
