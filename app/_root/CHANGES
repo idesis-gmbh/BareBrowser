@@ -12,7 +12,7 @@
   current version. Instead such changes have to be applied manually in `settings.json` (see docs).
   A future version may introduce a procedure to overwrite/correct/reset existing user settings
   with a special file that could be part of a new version.
-- Updated dependencies and upgraded to Electron 18.2.4.
+- Updated dependencies and upgraded to Electron 18.3.0.
 
 
 ## v2.2.0
