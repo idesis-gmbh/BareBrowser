@@ -244,7 +244,7 @@ export class RendererApplication {
 
     /**
      * Set a new title for this window.
-     * @param title The new window title
+     * @param title The new window title.
      */
     private setWindowTitle(title: string) {
         ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.SET_WINDOW_TITLE, title);
@@ -518,6 +518,10 @@ export class RendererApplication {
         webView.addEventListener("page-title-updated", this.onWebViewPageTitleUpdated.bind(this), false);
         webView.addEventListener("update-target-url", this.onWebViewUpdateTargetURL.bind(this), false);
         webView.addEventListener("ipc-message", this.onWebViewIPCMessage.bind(this), false);
+        webView.addEventListener('context-menu', (e: Electron.ContextMenuEvent) => {
+            e.preventDefault();
+            ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.SHOW_CONTEXT_MENU, e.params);
+        });
         return webView;
     }
 

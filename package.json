@@ -24,7 +24,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "test": "npm run cmd --  electron ./out/ https://github.com/idesis-gmbh/BareBrowser",
+    "test": "npm run cmd --  electron ./out/ 'https://github.com/idesis-gmbh/BareBrowser'",
     "test_settings": "npm run cmd --  electron ./out/ settings:",
     "test_info:": "npm run cmd --  electron ./out/ bb://info:",
     "test_close:": "npm run cmd --  electron ./out/ bb://close 1",
@@ -100,7 +100,7 @@
     "b:lib": "shx   mkdir -p ./out/ && shx rm -rf ./out/lib/   && npm run cmd --  -f ./app/lib/   shx cp -rf ./app/lib/   ./out/",
     "b:res": "shx   mkdir -p ./out/ && shx rm -rf ./out/res/   && npm run cmd --  -f ./app/res/   shx cp -rf ./app/res/   ./out/",
     "prebuild": "echo ///// Updating/pruning npm modules, copying app resources...",
-    "build": "npm-run-all -p b:app-package.json b:root b:style b:lib b:res ",
+    "build": "npm-run-all -s b:app-package.json b:root b:style b:lib b:res ",
     "//##### Watch for changes": "#####",
     "w:eslint.json": "onchange \"./app/src/eslintrc.json\" -v --await-write-finish 300 --  shx cp ./app/src/eslintrc.json ./build/tmp",
     "w:app-package.json": "onchange \"./app/package.json\" -v --await-write-finish 300 --  npm-run-all b:app-package.json",
@@ -144,16 +144,16 @@
     "make": "node -e \"require('child_process').spawnSync((process.platform == 'win32') ? 'npm.cmd' : 'npm', ['run', 'm:' + process.platform], {shell: true, stdio: 'inherit'});\""
   },
   "dependencies": {
-    "@octokit/core": "3.5.1",
-    "electron-packager": "15.3.0",
-    "fs-extra": "10.0.0",
+    "@octokit/core": "3.6.0",
+    "electron-packager": "15.5.1",
+    "fs-extra": "10.1.0",
     "npm-run-all": "4.1.5",
     "onchange": "7.1.0",
     "png2icons": "2.0.1",
-    "removeNPMAbsolutePaths": "2.0.0",
-    "rollup": "2.56.3",
-    "shx": "0.3.3",
-    "terser": "5.7.2",
-    "tsc-watch": "4.5.0"
+    "removeNPMAbsolutePaths": "3.0.0",
+    "rollup": "2.74.1",
+    "shx": "0.3.4",
+    "terser": "5.13.1",
+    "tsc-watch": "5.0.3"
   }
 }

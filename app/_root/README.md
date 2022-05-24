@@ -43,10 +43,10 @@ directories etc.).
 
 Download one of the releases from the
 [releases](https://github.com/idesis-gmbh/BareBrowser/releases) page, unzip the file and copy the
-resulting directory to any place you like (on a local hard drive, *running BareBrowser from a
-network mount may prevent opening the developer tools and also may lead to other problems like
-frozen windows!*). On the Mac you'd probably just copy the `BareBrowser` app (inside the unzipped
-folder) to `/Applications`.
+resulting directory to any place you like (preferably on a local hard drive, running BareBrowser
+from a network mount needs additional `ElectronFlags` [configuration settings](#configuration)). On
+the Mac you'd probably just copy the `BareBrowser` app (inside the unzipped folder) to
+`/Applications`.
 
 ## GUI Usage
 
@@ -324,14 +324,19 @@ c:\Program Files\BareBrowser-x.y.z-win32-x64\resources\app.asar.unpacked\res\set
 
 If you want to prepare a deplyoment on multiple machines in an organization you can install a copy
 of BareBrowser on your machine, adjust the settings to your needs and then deploy this copy to the
-target machines. On the target machines these settings will then be used as the initial default
+target machines. On the target machines these settings will then be used as the *initial* default
 settings.
 
-If you later modify the template settings file (in the installation directory) it will be copied
-again to the user data directory (on restarting BareBrowser) overwriting an already existing user
-settings file but only if the template settings file is newer than the user settings file. A backup
-is created before overwriting the older user settings file (for example
-`settings-2021-06-22_19-51-52.json`).
+If you install/deploy a newer version of BareBrowser over an existing one, settings that are not
+present in the older version (e.g. a new configurable feature has been introduced) will be added to
+the existing user settings file. At the same time a backup of the old user settings file is created
+(for example `settings-2022-05-24_16-04-03.json`). **Note:** This is only done, if the settings file
+coming with the new BareBrowser version is *newer* than the existing user settings file.
+
+In older versions of BareBrowser the user settings file was always overwritten on
+installing/deploying a new version. If you have used this (rather radical) 'feature' to 'deploy'
+new/changed user settings, this is no longer possible, instead changes to user settings files have
+to be done manually in the directory of the file on the respective machine.
 
 The default configuration (from the directory above) looks like this:
 
@@ -449,6 +454,7 @@ The default configuration (from the directory above) looks like this:
   "SingleInstance": true,
   "FocusOnNewURL": true,
   "DarwinForceFocus": false,
+  "ElectronFlags": [],
   "HardwareAcceleration": true,
   "ContentProtection": false,
   "AddressBar": 2,
@@ -589,6 +595,13 @@ are reserved by the operating system (e.g. Ubuntu). The same is true for `ctrl+m
   `DarwinForceFocus` to `true` although it isn't recommended according to this
   [documentation](https://www.electronjs.org/docs/api/app#appfocusoptions).
 
+- With `ElectronFlags` (an array of strings) you can pass additional command line
+  switches/parameters to the Electron runtime. A comprehensive list can be found here:
+  [Supported Command Line Switches](https://www.electronjs.org/docs/latest/api/command-line-switches/).
+  One example is `"ElectronFlags": ["--no-sandbox"],` which enables running BareBrowser from a
+  network drive.\
+  ***Note: for security reasons using `--no-sandbox` is strongly discouraged!***
+
 - On some systems you may encounter graphics artifacts in web pages, in such cases you can try to
   set `HardwareAcceleration` to `false`.
 
@@ -696,29 +709,38 @@ class MyRequestHandler {
     this.settings = settings;
     this.webContents = webContents;
     this.browserWindow = browserWindow;
-    console.log(`${this.className}: Instance created with config (Active=${active}): ${JSON.stringify(this.config, 2)}`);
+    this.winId = this.browserWindow.id;
+    this.log(`Instance created with config (Active=${active}): ${JSON.stringify(this.config, 2)}`);
   }
 
   handleRequest(url, originalURL, navType) {
     switch (navType) {
       case NAV_LOAD:
-        console.log(`${this.className}: Loading ${url}`);
+        this.log(`Loading ${url}`);
         this.webContents.loadURL(url, { userAgent: this.config.UserAgent });
         break;
       case NAV_BACK:
         if (this.webContents.canGoBack()) {
-            console.log(`${this.className}: Going back`);
+            this.log("Going back");
             this.webContents.goBack();
         }
         break;
       case NAV_FORWARD:
       case NAV_RELOAD:
-        console.log(`${this.className}: FORBIDDEN`);
+        this.log("FORBIDDEN");
         return REQ_DENY;
       case NAV_INTERNAL:
-        console.log(`${this.className}: Allowing request ${url}`);
+        this.log(`Allowing request ${url}`);
     }
     return REQ_ALLOW;
+  }
+
+  log(msg, error) {
+    if (error) {
+      console.error(`${this.className} (${this.winId}): ${msg}\n`, error);
+    } else if (this.config.Log) {
+      console.log(`${this.className} (${this.winId}): ${msg}`);
+    }
   }
 
   dispose() {
@@ -776,7 +798,8 @@ constructor(config, settings, active, webContents, browserWindow) {
   this.settings = settings;
   this.webContents = webContents;
   this.browserWindow = browserWindow;
-  console.log(`${className}: Instance created with config (Active=${active}): ${JSON.stringify(this.config, 2)}`);
+  this.winId = this.browserWindow.id;     // Not required, only used for logging.
+  this.log(`Instance created with config (Active=${active}): ${JSON.stringify(this.config, 2)}`);
 }
 ```
 
@@ -800,21 +823,21 @@ Every handler gets passed the following parameters in its constructor:
 handleRequest(url, originalURL, navType) {
   switch (navType) {
     case NAV_LOAD:
-      console.log(`${className}: Loading ${url}`);
+      this.log(`Loading ${url}`);
       this.webContents.loadURL(url, { userAgent: this.config.UserAgent });
       break;
     case NAV_BACK:
       if (this.webContents.canGoBack()) {
-          console.log(`${className}: Going back`);
+          this.log("Going back");
           this.webContents.goBack();
       }
       break;
     case NAV_FORWARD:
     case NAV_RELOAD:
-      console.log(`${className}: FORBIDDEN`);
+      this.log("FORBIDDEN");
       return REQ_DENY;
     case NAV_INTERNAL:
-      console.log(`${className}: Allowing request ${url}`);
+      this.log(`Allowing request ${url}`);
   }
   return REQ_ALLOW;
 }
@@ -961,9 +984,9 @@ For all available request handlers see also the file `settings.json`.
 
 ### Requirements
 
-[Node.js](https://nodejs.org) 10.0 or higher is required. If you want to build Windows versions on
-the Mac or Linux you also need [Wine](https://www.winehq.org) installed on your system, on the Mac,
-for example, via [Homebrew](https://brew.sh).
+[Node.js](https://nodejs.org) 10.12.0 or higher is required. If you want to build Windows versions
+on the Mac or Linux you also need [Wine](https://www.winehq.org) installed on your system, on the
+Mac, for example, via [Homebrew](https://brew.sh).
 
 
 ### Source code structure
@@ -1035,8 +1058,8 @@ Configuration is entirely done in `./app/package.json`:
   "productName": "BareBrowser",
   "description": "A minimalist browser for specific tasks in controlled environments.",
   "companyname": "idesis GmbH",
-  "copyright": "©2021 idesis GmbH",
-  "version": "2.1.0",
+  "copyright": "©2022 idesis GmbH",
+  "version": "2.3.0",
   "-buildVersion": 4367,
   "identifier": "de.idesis.barebrowser",
   "identifierRoot": "",
@@ -1064,19 +1087,19 @@ Configuration is entirely done in `./app/package.json`:
   "license": "MIT",
   "main": "./bin/MainProcess.js",
   "dependencies": {
-    "fs-extra": "10.0.0",
+    "fs-extra": "10.0.1",
     "mousetrap": "1.6.5"
   },
   "devDependencies": {
-    "@types/fs-extra": "9.0.12",
-    "@types/mousetrap": "1.6.8",
-    "@types/node": "14.17.3",
-    "@typescript-eslint/eslint-plugin": "4.30.0",
-    "@typescript-eslint/parser": "4.30.0",
-    "electron": "14.0.0",
-    "eslint-plugin-jsdoc": "36.0.8",
-    "eslint": "7.32.0",
-    "typescript": "4.4.2"
+    "@types/fs-extra": "9.0.13",
+    "@types/mousetrap": "1.6.9",
+    "@types/node": "16.11.7",
+    "@typescript-eslint/eslint-plugin": "5.26.0",
+    "@typescript-eslint/parser": "5.26.0",
+    "electron": "18.2.4",
+    "eslint-plugin-jsdoc": "39.3.0",
+    "eslint": "8.16.0",
+    "typescript": "4.6.4"
   },
   "config": {
     "arch": "x64,arm64",
@@ -1208,7 +1231,7 @@ system will output a warning on the console).
 \*** If used on Windows you may have to set the executable attribute with `chmod +x bb` after copying
 the release to a Linux machine.
 
-\**** Can't be used on Windows due to \*2.
+\**** Can't be used on Windows due to \**.
 
 It's highly recommended that you start the `Watch` task. This task watches for file changes in
 `./app/package.json` and all of the directories below `./app`. On a change it immediately executes
@@ -1237,7 +1260,7 @@ explorer.
 
 ## License
 
-MIT ©2021 [idesis GmbH](https://www.idesis.de), Sabinastraße 27, D-45136 Essen.
+MIT ©2022 [idesis GmbH](https://www.idesis.de), Sabinastraße 27, D-45136 Essen.
 
 <br/><br/><br/><br/>
 

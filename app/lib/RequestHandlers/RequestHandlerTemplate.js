@@ -22,7 +22,7 @@ class RequestHandlerTemplate {
         this.webContents = webContents;
         this.browserWindow = browserWindow;
         this.winId = this.browserWindow.id;
-        console.log(`${this.className} (${this.winId}): Instance created with config (Active=${active}): ${JSON.stringify(this.config, 2)}`);
+        this.log(`Instance created with config (Active=${active}): ${JSON.stringify(this.config, 2)}`);
     }
 
     /**

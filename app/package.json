@@ -3,8 +3,8 @@
   "productName": "BareBrowser",
   "description": "A minimalist browser for specific tasks in controlled environments.",
   "companyname": "idesis GmbH",
-  "copyright": "©2021 idesis GmbH",
-  "version": "2.1.0",
+  "copyright": "©2022 idesis GmbH",
+  "version": "2.3.0",
   "-buildVersion": 4367,
   "identifier": "de.idesis.barebrowser",
   "identifierRoot": "",
@@ -32,19 +32,19 @@
   "license": "MIT",
   "main": "./bin/MainProcess.js",
   "dependencies": {
-    "fs-extra": "10.0.0",
+    "fs-extra": "10.1.0",
     "mousetrap": "1.6.5"
   },
   "devDependencies": {
-    "@types/fs-extra": "9.0.12",
-    "@types/mousetrap": "1.6.8",
-    "@types/node": "14.17.3",
-    "@typescript-eslint/eslint-plugin": "4.30.0",
-    "@typescript-eslint/parser": "4.30.0",
-    "electron": "14.0.0",
-    "eslint-plugin-jsdoc": "36.0.8",
-    "eslint": "7.32.0",
-    "typescript": "4.4.2"
+    "@types/fs-extra": "9.0.13",
+    "@types/mousetrap": "1.6.9",
+    "@types/node": "16.11.26",
+    "@typescript-eslint/eslint-plugin": "5.26.0",
+    "@typescript-eslint/parser": "5.26.0",
+    "electron": "18.3.0",
+    "eslint-plugin-jsdoc": "39.3.2",
+    "eslint": "8.16.0",
+    "typescript": "4.6.4"
   },
   "config": {
     "arch": "x64,arm64",

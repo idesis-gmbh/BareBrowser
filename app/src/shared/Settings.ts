@@ -165,6 +165,11 @@ export interface ISettings {
      */
     DarwinForceFocus: boolean;
     /**
+     * Array of values passed on to Electron as additional command line switches/params.
+     * See https://www.electronjs.org/docs/latest/api/command-line-switches
+     */
+    ElectronFlags: string[];
+    /**
      * Enable hardware acceleration.
      */
     HardwareAcceleration: boolean;
@@ -280,6 +285,7 @@ export function getDefaultSettings(): ISettings {
         SingleInstance: true,
         FocusOnNewURL: true,
         DarwinForceFocus: false,
+        ElectronFlags: [],
         HardwareAcceleration: true,
         ContentProtection: false,
         AddressBar: 2,
@@ -352,6 +358,7 @@ export function getSettings(configFile: string): ISettings {
         SingleInstance: $Utils.normalize(settings.SingleInstance, true),
         FocusOnNewURL: $Utils.normalize(settings.FocusOnNewURL, true),
         DarwinForceFocus: $Utils.normalize(settings.DarwinForceFocus, false),
+        ElectronFlags: $Utils.normalize(settings.ElectronFlags, []),
         HardwareAcceleration: $Utils.normalize(settings.HardwareAcceleration, true),
         ContentProtection: $Utils.normalize(settings.ContentProtection, false),
         AddressBar: $Utils.normalize(settings.AddressBar, 2),
@@ -364,4 +371,44 @@ export function getSettings(configFile: string): ISettings {
         settings.MenuState = 1;
     }
     return settings;
+}
+
+/**
+ * Merge settings. Currently this is an overly simple process which just adds new properties or
+ * overwrites existing properties with the same name but where the type has changed.
+ * @param from The settings to be merged into `to`.
+ * @param to The settings which will be merged with `from`.
+ */
+export function mergeSettings(from: ISettings, to: ISettings): void {
+    for (const fromKey in from) {
+        if (Object.prototype.hasOwnProperty.call(from, fromKey)) {
+            // Not in current settings => add.
+            if (!Object.prototype.hasOwnProperty.call(to, fromKey)) {
+                // @ts-ignore
+                to[fromKey] = from[<keyof ISettings>fromKey];
+            }
+            // @ts-ignore
+            // Array and not array => add. Note: This is currently *very* primitive since it doesn't
+            // go through the array elements.
+            else if ((Array.isArray(from[fromKey]) && !Array.isArray(to[fromKey]))) {
+                // @ts-ignore
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                to[fromKey] = from[fromKey];
+            }
+            // @ts-ignore
+            // Different type.
+            else if (typeof from[fromKey] !== typeof to[fromKey]) {
+                // @ts-ignore
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                to[fromKey] = from[fromKey];
+            }
+            // @ts-ignore
+            // Dive into sub object.
+            else if (typeof from[fromKey] === "object") {
+                // @ts-ignore
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                mergeSettings(from[fromKey], to[fromKey]);
+            }
+        }
+    }
 }

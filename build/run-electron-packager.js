@@ -23,6 +23,16 @@ const apppj = fse.readJsonSync(process.argv[2]);
 // Default params
 const packagerParams = apppj.config.pkgParams.split(" ");
 packagerParams.push(`--platform=${targetPlatform}`);
+if (targetPlatform === "darwin") {
+    // No support for armv7l and ia32.
+    apppj.config.arch = apppj.config.arch.split(",").map(e => e.trim()).filter(e => { return (e === "x64") || (e === "arm64"); }).join();
+} else if (targetPlatform === "linux") {
+    // Linux/ia32 support is deprecated.
+    apppj.config.arch = apppj.config.arch.split(",").map(e => e.trim()).filter(e => e !== "ia32").join();
+} else if (targetPlatform === "win32") {
+    // No support for armv7l.
+    apppj.config.arch = apppj.config.arch.split(",").map(e => e.trim()).filter(e => e !== "armv7l").join();
+}
 packagerParams.push(
     "./out/",
     `"${apppj.productName}"`,

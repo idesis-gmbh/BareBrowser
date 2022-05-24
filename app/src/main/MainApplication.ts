@@ -1,5 +1,5 @@
 import { spawn } from "child_process";
-import { app, BrowserWindow, ipcMain, Menu, protocol, screen, session, webContents } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, MenuItem, Params, protocol, screen, session, webContents } from "electron";
 import { HandlerDetails } from "electron/main";
 import { Readable } from "stream";
 import { APP_INFO } from "../shared/AppInfo";
@@ -26,11 +26,20 @@ interface ICmdLineArgs {
 }
 
 /**
- * Current Electron TypeScript definitions lack a proper definition for on close window events.
- * @see onWindowClose and onWindowFocus
+ * Current Electron TypeScript definitions lack a proper definition for on 'close' window events.
+ * @see `onWindowClose` and `onWindowFocus`.
  */
 interface IBrowserWindowEvent extends Electron.Event {
     sender: Electron.BrowserWindow;
+}
+
+/**
+ * Current Electron TypeScript definitions lack a proper definition for on 'context-menu' window
+ * events.
+ * @see `onRendererPopupMenu`.
+ */
+interface IWebContentsEvent extends Electron.Event {
+    sender: Electron.WebContents;
 }
 
 /**
@@ -39,7 +48,7 @@ interface IBrowserWindowEvent extends Electron.Event {
  */
 interface IWindowEntry {
     Window: Electron.BrowserWindow;
-    WebViewWebContents: webContents;
+    WebViewWebContents: Electron.WebContents;
     WebViewWebContentsID: number;
     RequestHandlers: RequestHandler[];
 }
@@ -57,7 +66,7 @@ export class MainApplication {
     private settings: $Settings.ISettings;
     private currentUrlItem: IURLItem;
     private appMenu: ApplicationMenu | null = null;
-    private windows: (IWindowEntry)[] = [];
+    private windows: IWindowEntry[] = [];
 
     /**
      * Boot and set up Electron app.
@@ -130,7 +139,7 @@ export class MainApplication {
                 .replace(/'$/, "");
         }
         /* eslint-disable jsdoc/require-jsdoc */
-        return {
+        return <ICmdLineArgs>{
             URL: URL,
             WindowID: Math.trunc(windowId)
         };
@@ -159,7 +168,6 @@ export class MainApplication {
             webPreferences: {
                 nodeIntegration: true,
                 webviewTag: true,
-                nativeWindowOpen: true,
                 contextIsolation: false,
             },
             icon: APP_INFO.Platform === "linux" ? $Path.join(APP_INFO.APP_PATH_PKG, "dockicon.png") : undefined,
@@ -185,9 +193,11 @@ export class MainApplication {
         // Create the browser window ...
         const window: BrowserWindow = new BrowserWindow(bwOptions);
         window.setContentProtection(this.settings.ContentProtection);
-        // ... bind close and focus handlers to it ...
+        // ... bind close, focus and context menu handlers to it ...
         window.on("closed", this.onWindowClosed.bind(this));
         window.on("focus", this.onWindowFocus.bind(this));
+        // @ts-ignore Why isn't this properly typed in electron.d.ts?
+        window.webContents.on("context-menu", this.onRendererPopupMenu.bind(this));
         /* eslint-disable jsdoc/require-jsdoc */
         // ... and load index.html.
         const urlObject: $URL.UrlObject = {
@@ -223,7 +233,7 @@ export class MainApplication {
      * @param appIdentifier The apps identifier.
      */
     private setAppPaths(appIdentifierParent: string, appIdentifier: string): void {
-        // Unfortunately this is created to early, so it must be deleted later.
+        // Unfortunately this is created too early, so it must be deleted later.
         const initialUserDataDir = $Path.join(app.getPath("userData"));
         // An application name from 'package.json' may be too short to be unambigous and therefore
         // could lead to conflicts in ~/Library/Application Support/ or %APPDATA%, so the value of
@@ -257,30 +267,37 @@ export class MainApplication {
      * @returns The loaded app settings.
      */
     private getSettings(): $Settings.ISettings {
-        let result: $Settings.ISettings = $Settings.getDefaultSettings();
+        let result = $Settings.getDefaultSettings();
         let hasUserSettings = false;
         try {
             // First, update existing user settings from the template or create
             // them, if they don't exist. Only possible, if a template exists.
             if ($FSE.existsSync(this.settingsTemplateFile)) {
-                // There are no user settings, create them from the template
+                // There are no user settings, create them from the template.
                 if (!$FSE.existsSync(this.settingsFile)) {
                     $FSE.copyFileSync(this.settingsTemplateFile, this.settingsFile);
-                } else
-                    // If the template is newer than the user settings overwrite them with the template
-                    if ($FSE.statSync(this.settingsTemplateFile).mtime > $FSE.statSync(this.settingsFile).mtime) {
-                        // Make backup
-                        const backupFilename: string = $Path.join(
-                            this.userDataDirectory,
-                            "settings-"
-                            + new Date().toISOString().replace("T", "_").replace(/:/g, "-").replace(/.[0-9]{3}Z/g, "")
-                            + ".json");
-                        $FSE.copyFileSync(this.settingsFile, backupFilename);
-                        // New settings from template
-                        $FSE.copyFileSync(this.settingsTemplateFile, this.settingsFile);
-                    }
+                }
+                // If the template is newer than the user settings merge them with the template.
+                else if ($FSE.statSync(this.settingsTemplateFile).mtime > $FSE.statSync(this.settingsFile).mtime) {
+                    // Make backup.
+                    const backupFilename: string = $Path.join(
+                        this.userDataDirectory,
+                        "settings-"
+                        + new Date().toISOString().replace("T", "_").replace(/:/g, "-").replace(/.[0-9]{3}Z/g, "")
+                        + ".json");
+                    $FSE.copyFileSync(this.settingsFile, backupFilename);
+                    // Merge settings from potentially new settings (with different properties) to
+                    // the current settings and save them. This is done with raw file read methods
+                    // since `getSettings` applies numerous checks and modifies the loaded JSON if
+                    // necessary.
+                    const currentSettings = $FSE.readJSONSync(this.settingsFile) as $Settings.ISettings;
+                    const templateSettings = $FSE.readJSONSync(this.settingsTemplateFile) as $Settings.ISettings;
+                    $Settings.mergeSettings(templateSettings, currentSettings);
+                    $FSE.writeJSONSync(this.settingsFile, currentSettings, { spaces: 4 }); // eslint-disable-line jsdoc/require-jsdoc
+                }
                 hasUserSettings = true;
             }
+            // Get/use new/current settings.
             if (hasUserSettings || $FSE.existsSync(this.settingsFile)) {
                 result = $Settings.getSettings(this.settingsFile);
             } else {
@@ -370,7 +387,7 @@ export class MainApplication {
      * @param browserWindow The browser window which hosts the webContents (of the WebView tag).
      * @returns An array of available request handler instances.
      */
-    private loadRequestHandlers(webContents: webContents, browserWindow: BrowserWindow): RequestHandler[] {
+    private loadRequestHandlers(webContents: Electron.WebContents, browserWindow: BrowserWindow): RequestHandler[] {
         const handlers = [];
         for (const handler of this.settings.RequestHandlers) {
             if (handler.Load) {
@@ -410,6 +427,15 @@ export class MainApplication {
      */
     private preAppReadySetup(): void {
         this.bindEvents();
+        for (const flag of this.settings.ElectronFlags) {
+            const index = flag.indexOf("=");
+            if (index > -1) {
+                app.commandLine.appendSwitch(flag.substring(0, index), flag.substring(index + 1));
+            } else {
+                // `appendArgument` doesn't seem to work?
+                app.commandLine.appendSwitch(flag);
+            }
+        }
         if (!this.settings.HardwareAcceleration) {
             app.disableHardwareAcceleration();
         }
@@ -443,7 +469,7 @@ export class MainApplication {
             copyright: `${APP_INFO.Copyright}, ${APP_INFO.CompanyName}`,
             authors: [APP_INFO.AuthorName],
             website: APP_INFO.Homepage,
-            iconPath: APP_INFO.APP_PATH_PKG + 'appicon.png'
+            iconPath: APP_INFO.APP_PATH_PKG + "appicon.png"
             /* eslint-enable */
         });
         // Handlers on the default session.
@@ -536,7 +562,7 @@ export class MainApplication {
     }
 
     /**
-     * Transform builtin URLs like `about:*`, `./out/` etc.
+     * Transform builtin URLs like `info:*`, `./out/` etc.
      * @param url The URL to be transformed.
      * @returns The transformed URL.
      */
@@ -710,7 +736,6 @@ export class MainApplication {
             wp.nodeIntegrationInSubFrames = false;
             wp.nodeIntegrationInWorker = false;
             wp.sandbox = true;
-            wp.nativeWindowOpen = true;
             wp.contextIsolation = false;
             wp.webSecurity = true;
             wp.experimentalFeatures = false;
@@ -720,8 +745,7 @@ export class MainApplication {
         });
         // A different URL origin will cause a new handler chain to be started (through openFileOrURL).
         webContents.on("will-navigate", (willNavigateEvent: Electron.Event, url: string) => {
-            //@ts-ignore
-            const srcURL = willNavigateEvent.sender.getURL(); // eslint-disable-line
+            const srcURL = (willNavigateEvent as Electron.Event & { sender: { getURL: () => string; }; }).sender.getURL();
             if (isSameOrigin(srcURL, url)) {
                 if (this.settings.LogRequests) { console.log(`WILL-NAVIGATE from ${srcURL} to ${new $URL.URL(url).toString()}, same origin, passing`); }
             } else {
@@ -766,12 +790,11 @@ export class MainApplication {
         const windowId: number = args[0] as number;
         const msgId: number = args[1] as number;
         const params: unknown[] = args.slice(2);
-        let windowEntry: IWindowEntry | undefined;
+        let windowEntry = this.getBrowserWindowEntry(windowId);
         // const ipcMessage = getIPCMessage(msgId);
         switch (msgId) {
             // Return the current (last) URLItem
             case IPC.LOAD_URL:
-                windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
                     const loadURL = getURLItem(this.handleBuiltinURLs(params[0] as string), this.settings.Scheme);
                     // Must be patched to the original URL which is passed as `params[1]` by the
@@ -784,14 +807,12 @@ export class MainApplication {
                 break;
 
             case IPC.RELOAD_URL:
-                windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
                     this.handleRequest("<RELOAD>", "<RELOAD>", windowEntry.WebViewWebContentsID, NavigationType.RELOAD);
                 }
                 break;
 
             case IPC.GO_BACK:
-                windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
                     if (windowEntry.WebViewWebContents.canGoBack()) {
                         this.handleRequest("<BACK>", "<BACK>", windowEntry.WebViewWebContentsID, NavigationType.BACK);
@@ -800,7 +821,6 @@ export class MainApplication {
                 break;
 
             case IPC.GO_FORWARD:
-                windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
                     if (windowEntry.WebViewWebContents.canGoForward()) {
                         this.handleRequest("<FORWARD>", "<FORWARD>", windowEntry.WebViewWebContentsID, NavigationType.FORWARD);
@@ -861,7 +881,6 @@ export class MainApplication {
                 }
                 break;
 
-
             // Set the id of the webContents of the webview tag which is hosted in the browser window.
             case IPC.RENDERER_READY:
                 const _window = BrowserWindow.fromId(windowId);
@@ -880,9 +899,15 @@ export class MainApplication {
 
             // Set new window title of calling renderer process
             case IPC.SET_WINDOW_TITLE:
-                windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
                     this.setWindowTitle(windowEntry.Window, params[0] as string);
+                }
+                break;
+
+            // Show context menu.
+            case IPC.SHOW_CONTEXT_MENU:
+                if (windowEntry) {
+                    this.onWebViewPopupMenu(windowEntry, params[0] as Params);
                 }
                 break;
 
@@ -1057,9 +1082,11 @@ export class MainApplication {
                         maybeReturnFileConent(`${APP_INFO.APP_PATH_PKG}home.html`, originalURL/* , "text/html" */);
                         return;
                     case "settings":
-                        if (maybeReturnFileConent(this.settingsFile, originalURL/* , "text/html" */)) {
-                            this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | Settings`);
-                        }
+                        callback({
+                            mimeType: "application/json",
+                            data: Readable.from(Buffer.from(JSON.stringify(this.settings, null, 2)))
+                        });
+                        this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | Settings`);
                         return;
                     case "info":
                         callback({
@@ -1182,6 +1209,87 @@ export class MainApplication {
             }
             this.windows.splice(index, 1);
         }
+    }
+
+    /**
+     * Shows a context menu if the user right clicks somewhere in the renderer window (for example
+     * in the address bar).
+     * @param event The context menu event.
+     * @param contextMenuParams The context menu params as given by the renderer process.
+     */
+    private onRendererPopupMenu(event: IWebContentsEvent, contextMenuParams: Electron.Params): void {
+        this.onContextMenuPopup(event.sender, contextMenuParams);
+    }
+
+    /**
+     * Shows a context menu if the user right clicks somewhere in the loaded page.
+     * @param windowEntry The corresponding window entry.
+     * @param contextMenuParams The context menu params as given by the renderer process.
+     */
+    private onWebViewPopupMenu(windowEntry: IWindowEntry, contextMenuParams: Electron.Params): void {
+        this.onContextMenuPopup(windowEntry.WebViewWebContents, contextMenuParams);
+    }
+
+    /**
+     * Shows a context menu.
+     * @param webContents The corresponding Electron webContents.
+     * @param contextMenuParams The context menu params as given by the renderer process.
+     */
+    private onContextMenuPopup(webContents: Electron.WebContents, contextMenuParams: Electron.Params): void {
+        /* eslint-disable jsdoc/require-jsdoc */
+        // `role` doesn't work properly in stand alone popup menus so let's steal its native
+        // translations and use the usual keyboard shortcuts.
+        const editMenu = new Menu();
+        const undoMenu = new MenuItem({
+            label: new MenuItem({ role: "undo" }).label,
+            accelerator: "CmdOrCtrl+Z",
+            enabled: contextMenuParams.editFlags.canUndo,
+            click: () => { webContents.undo(); },
+        });
+        editMenu.append(undoMenu);
+        const redoMenu = new MenuItem({
+            label: new MenuItem({ role: "redo" }).label,
+            accelerator: "CmdOrCtrl+Shift+Z",
+            enabled: contextMenuParams.editFlags.canRedo,
+            click: () => { webContents.redo(); },
+        });
+        editMenu.append(redoMenu);
+        editMenu.append(new MenuItem({ type: "separator" }));
+        const cutMenu = new MenuItem({
+            label: new MenuItem({ role: "cut" }).label,
+            accelerator: "CmdOrCtrl+X",
+            enabled: contextMenuParams.editFlags.canCut,
+            click: () => { webContents.cut(); },
+        });
+        editMenu.append(cutMenu);
+        const copyMenu = new MenuItem({
+            label: new MenuItem({ role: "copy" }).label,
+            accelerator: "CmdOrCtrl+C",
+            enabled: contextMenuParams.editFlags.canCopy,
+            click: () => { webContents.copy(); }
+        });
+        editMenu.append(copyMenu);
+        const pasteMenu = new MenuItem({
+            label: new MenuItem({ role: "paste" }).label,
+            accelerator: "CmdOrCtrl+V",
+            enabled: contextMenuParams.editFlags.canPaste,
+            click: () => { webContents.paste(); }
+        });
+        editMenu.append(pasteMenu);
+        editMenu.append(new MenuItem({ type: "separator" }));
+        const selectAllMenu = new MenuItem({
+            label: new MenuItem({ role: "selectAll" }).label,
+            accelerator: "CmdOrCtrl+A",
+            enabled: contextMenuParams.editFlags.canSelectAll,
+            click: () => { webContents.selectAll(); }
+        });
+        editMenu.append(selectAllMenu);
+        // `popup()` also works with
+        // - popup({ window: Electron.BrowserWindow }) *and*
+        // - popup({ window: Electron.WebContents })
+        // but only with Electron.BrowserWindow is documented.
+        editMenu.popup();
+        /* eslint-enable */
     }
 
     /**
