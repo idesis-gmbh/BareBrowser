@@ -7,4 +7,4 @@ The complete documentation can be found [here](app/_root/README.md) (file `READM
 
 ## License
 
-MIT ©2021 [idesis GmbH](https://www.idesis.de), Sabinastraße 27, D-45136 Essen.
+MIT ©2022 [idesis GmbH](https://www.idesis.de), Sabinastraße 27, D-45136 Essen.

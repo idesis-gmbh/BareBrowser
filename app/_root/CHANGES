@@ -1,3 +1,20 @@
+## v2.3.0
+
+## New
+
+- Added a simple standard context menu on mouse right click.
+
+## Changes
+
+- Existing settings will no longer be overwritten when updating to a new version, which was too
+  radical. The new procedure will just add new settings (if introduced by a new version) to the
+  existing ones. Therefore it's no longer possible to 'update' user settings by re-deploying the
+  current version. Instead such changes have to be applied manually in `settings.json` (see docs).
+  A future version may introduce a procedure to overwrite/correct/reset existing user settings
+  with a special file that could be part of a new version.
+- Updated dependencies and upgraded to Electron 18.2.4.
+
+
 ## v2.2.0
 
 ## New
