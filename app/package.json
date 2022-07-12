@@ -4,7 +4,7 @@
   "description": "A minimalist browser for specific tasks in controlled environments.",
   "companyname": "idesis GmbH",
   "copyright": "©2022 idesis GmbH",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "-buildVersion": 4367,
   "identifier": "de.idesis.barebrowser",
   "identifierRoot": "",
