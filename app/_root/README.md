@@ -984,7 +984,7 @@ For all available request handlers see also the file `settings.json`.
 
 ### Requirements
 
-[Node.js](https://nodejs.org) 10.12.0 or higher is required. If you want to build Windows versions
+[Node.js](https://nodejs.org) 13.0.0 or higher is required. If you want to build Windows versions
 on the Mac or Linux you also need [Wine](https://www.winehq.org) installed on your system, on the
 Mac, for example, via [Homebrew](https://brew.sh).
 
