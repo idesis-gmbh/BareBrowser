@@ -730,7 +730,8 @@ export class MainApplication {
     private onWebContentsCreated(_event: Electron.Event, webContents: Electron.WebContents): void {
         // Secure the webview tag.
         webContents.on("will-attach-webview", (_e: Electron.Event, wp: Electron.WebPreferences, _params: Record<string, string>): void => {
-            delete wp.preload;
+            // No longer works beginning with Electron 19.0.0
+            // delete wp.preload;
             wp.backgroundThrottling = false;
             wp.nodeIntegration = false;
             wp.nodeIntegrationInSubFrames = false;
