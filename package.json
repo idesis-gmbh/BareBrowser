@@ -153,7 +153,7 @@
     "removeNPMAbsolutePaths": "3.0.0",
     "rollup": "2.76.0",
     "shx": "0.3.4",
-    "terser": "5.14.1",
+    "terser": "5.14.2",
     "tsc-watch": "5.0.3"
   }
 }
