@@ -109,7 +109,7 @@ export class MainApplication {
     }
 
     /**
-     * 
+     * Parse command line parameters.
      * @param args Parse command line arguments
      * @returns An object with the URL to be opened and an optional target window id.
      */
@@ -998,7 +998,7 @@ export class MainApplication {
      * @param details Request details.
      * @param cb Callback with response if request should be canceled.
      */
-    private onBeforeRequest(details: Electron.OnBeforeRequestListenerDetails, cb: (resp: Electron.Response) => void) {
+    private onBeforeRequest(details: Electron.OnBeforeRequestListenerDetails, cb: (resp: Electron.CallbackResponse) => void) {
         const url: string = details.url;
         let cancelRequest = true;
         try {
