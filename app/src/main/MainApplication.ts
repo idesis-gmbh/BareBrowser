@@ -1270,6 +1270,13 @@ export class MainApplication {
             click: () => { webContents.copy(); }
         });
         editMenu.append(copyMenu);
+        const copyImageMenu = new MenuItem({
+            label: "Copy image",
+            accelerator: "CmdOrCtrl+Shift+C",
+            enabled: contextMenuParams.hasImageContents,
+            click: () => { webContents.copyImageAt(contextMenuParams.x, contextMenuParams.y); }
+        });
+        editMenu.append(copyImageMenu);
         const pasteMenu = new MenuItem({
             label: new MenuItem({ role: "paste" }).label,
             accelerator: "CmdOrCtrl+V",

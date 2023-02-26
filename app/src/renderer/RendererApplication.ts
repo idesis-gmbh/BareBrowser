@@ -520,6 +520,7 @@ export class RendererApplication {
         webView.addEventListener("ipc-message", this.onWebViewIPCMessage.bind(this), false);
         webView.addEventListener('context-menu', (e: Electron.ContextMenuEvent) => {
             e.preventDefault();
+            e.stopImmediatePropagation();
             ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.SHOW_CONTEXT_MENU, e.params);
         });
         return webView;
