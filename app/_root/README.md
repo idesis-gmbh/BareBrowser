@@ -39,6 +39,22 @@ The Linux related parts of the following documentation are at least valid for Ub
 distributions the behavior of BareBrowser may differ slightly (e.g. keyboard shortcuts, default
 directories etc.).
 
+## Compatibility
+
+BareBrowser runs on macOS, Windows and Linux platforms. The supported OS versions depend on the
+version of the underlying Electron platform but in general the current release of BareBrowser should
+run on
+
+- macOS High Sierra (10.13) and newer,
+- Windows 10 and newer,
+- Linux
+    - Ubuntu 14.04 and newer
+    - Fedora 24 and newer
+    - Debian 8 and newer.
+
+In order to support older OS versions you could change the underlying Electron platform to older
+(and unsupported) versions, see [Building](#building).
+
 ## Installation
 
 Download one of the releases from the
@@ -1260,7 +1276,10 @@ explorer.
 
 ## License
 
-MIT ©2022 [idesis GmbH](https://www.idesis.de), Sabinastraße 27, D-45136 Essen.
+MIT ©2023 [idesis GmbH](https://www.idesis.de), Max-Keith-Straße 66 (E 11), D-45136 Essen.
+
+Development kindly supported by [VISUS Health IT GmbH](https://www.visus.com), Gesundheitscampus-Süd
+15, D-44801 Bochum.
 
 <br/><br/><br/><br/>
 
