@@ -54,7 +54,7 @@ class DefaultRequestHandler {
      * 
      * The request/navigation can be issued by
      * - clicking on a link in page which is already loaded,
-     * - the page itslef, e.g. JavaScript,
+     * - the page itself, e.g. JavaScript,
      * - through the command line,
      * - through the address bar or
      * - through the back/forward button/keyboard shortcuts.

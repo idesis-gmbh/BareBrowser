@@ -87,7 +87,7 @@ are used; both are optional. All other parameters are ignored.
   existing window id is given, the command will be ignored.
 - If a window id is given and found, BareBrowser will first make the corresponding window the top
   most window of all BareBrowser windows. If the window also will be focused depends on the setting
-  `FocusOnNewURL`. This is regardless of wether a URL was given or not, so instead of giving a URL
+  `FocusOnNewURL`. This is regardless of whether a URL was given or not, so instead of giving a URL
   you can also use a window id only to activate a BareBrowser window.
 - If both URL and window id are omitted, BareBrowser just starts with a new window. If
   `SingleInstance` is set to `true` (see [Configuration](#configuration)) BareBrowser doesn't start,
@@ -215,7 +215,7 @@ already running instance:
    `bb.exe https://github.com 3` wouldn't work but `bb.exe 'https://github.com' 3` does. *This colon
    problem also happens on initially starting BareBrowser/Electron!*
 2. If a URL contains spaces put it inside single *and* double quotes, for example
-   `bb.exe "'/c:\my path\index.html'"`. This is regardless of wether a window id is given or not.
+   `bb.exe "'/c:\my path\index.html'"`. This is regardless of whether a window id is given or not.
    Alternatively you could use `bb.exe /c:\my%20path\index.html` (replacing spaces with `%20`). This
    problem doesn't occur on *initially* starting BareBrowser with a path that contains spaces, so
    the usual way of surrounding the URL with double quotes like `bb.exe "/c:\my path\index.html"`
@@ -808,7 +808,7 @@ Every handler gets passed the following parameters in its constructor:
 - `config`: The `Config` object of the handler itself (if configured in `settings.json`) or
   `undefined` if it isn't available there.
 - `settings`: The content of `settings.json` as an object.
-- `active`: A boolean flag telling if the handler is active. If `false`, its `handleRequest`
+- `active`: A boolean flag indicating if the handler is active. If `false`, its `handleRequest`
   function won't be called by BareBrowser.
 - `webContents`: A reference to the [webContents](https://www.electronjs.org/docs/api/web-contents)
   object which is bound to the webview tag in the Electron browser window.
@@ -1109,7 +1109,7 @@ Configuration is entirely done in `./app/package.json`:
 ```
 
 Most of the fields are self-explanatory, the complete documentation can be found at the
-[Electron Packager](https://github.com/electron/electron-packager) website. Further notes on some
+[Electron Packager](https://github.com/electron/electron-packager) web site. Further notes on some
 of the fields:
 
 - `productName` is the product name visible for the end user.

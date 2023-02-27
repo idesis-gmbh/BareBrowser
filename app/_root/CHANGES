@@ -1,4 +1,11 @@
-## v2.3.0
+# v2.3.1
+
+## Changes
+
+- Updated dependencies and upgraded to Electron 19.0.8.
+
+
+# v2.3.0
 
 ## New
 
@@ -15,7 +22,7 @@
 - Updated dependencies and upgraded to Electron 18.3.0.
 
 
-## v2.2.0
+# v2.2.0
 
 ## New
 
