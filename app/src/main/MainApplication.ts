@@ -962,10 +962,12 @@ export class MainApplication {
             }
         }
         // Ask all associated handlers to handle the request.
+        // eslint-disable-next-line jsdoc/require-jsdoc
+        const urlObject = { URL: url };
         for (const handler of handlers) {
             if (handler.IsActive) {
                 const currentHandlerName: string = handler.constructor.name;
-                const handleResult: RequestResult = handler.handleRequest(url, originalURL, navType);
+                const handleResult: RequestResult = handler.handleRequest(urlObject, originalURL, navType);
                 const msg = `Result from ${currentHandlerName} (${webContentsId}):`;
                 switch (handleResult) {
                     case RequestResult.ERROR:

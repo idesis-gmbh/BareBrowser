@@ -38,6 +38,13 @@ export enum NavigationType {
 }
 
 /**
+ * Passed to `handleRequest()` of every request handler. The property is the URL of the requested
+ * resource. A request handler can modify `URL`, for example to redirect to another resource or to
+ * modify query parameters before the request is passed to the next handler in the chain.
+ */
+export type URLObject = { URL: string; };
+
+/**
  *  Possible return values of function `handleRequest` of a request handler class.
  */
 export enum RequestResult {
@@ -91,7 +98,8 @@ export declare class RequestHandler {
     /**
      * Mandatory.
      * Handle the request for a given URL.
-     * @param url The URL of the requested resource.
+     * @param urlObj {object} An object with a single property `URL` of type string. The property is
+     * the URL of the requested resource.
      * @param originalURL The original URL (e. g. from the command line).
      * @param navigationType The type of the request/navigation issued.
      * See enum `NavigationType` above for possible values.
@@ -107,7 +115,7 @@ export declare class RequestHandler {
      * appropriately through calling methods on `this.webContents`, see also:
      * https://www.electronjs.org/docs/api/web-contents
      */
-    public handleRequest(url: string, originalURL: string, navigationType: NavigationType): RequestResult;
+    public handleRequest(urlObj: URLObject, originalURL: string, navigationType: NavigationType): RequestResult;
 
     /**
      * Mandatory.

@@ -28,8 +28,8 @@ class RequestHandlerTemplate {
     /**
      * @see DefaultRequestHandler.js
      */
-    handleRequest(url, originalURL, navType) {
-        this.log(`(${navType}) ${url}`);
+    handleRequest(urlObj, originalURL, navType) {
+        this.log(`(${navType}) ${urlObj.URL}`);
         switch (navType) {
             case NAV_LOAD:
             case NAV_RELOAD:

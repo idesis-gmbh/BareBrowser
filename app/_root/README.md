@@ -661,6 +661,7 @@ for request handlers are for example:
 - Logging of URLs.
 - Restricting access to a set of predefined URLs.
 - Open a URL or, if it is are already opened, execute some JavaScript in the page instead.
+- Use/add/remove custom URL parameters to execute special tasks.
 - Run tests on a page.
 - Modify the user agent for a URL.
 - Redirect a URL to another URL.
@@ -729,7 +730,8 @@ class MyRequestHandler {
     this.log(`Instance created with config (Active=${active}): ${JSON.stringify(this.config, 2)}`);
   }
 
-  handleRequest(url, originalURL, navType) {
+  handleRequest(urlObj, originalURL, navType) {
+    const url = urlObj.URL;
     switch (navType) {
       case NAV_LOAD:
         this.log(`Loading ${url}`);
@@ -836,7 +838,8 @@ Every handler gets passed the following parameters in its constructor:
 
 ```javascript
 // Mandatory
-handleRequest(url, originalURL, navType) {
+handleRequest(urlObj, originalURL, navType) {
+  const url = urlObj.URL;
   switch (navType) {
     case NAV_LOAD:
       this.log(`Loading ${url}`);
@@ -860,15 +863,50 @@ handleRequest(url, originalURL, navType) {
 ```
 
 If a resource is requested, the first handler in the chain will be called (function `handleRequest`)
-with the (parsed) URL, the original (unparsed) URL of the resource and a navigation type . `url`
-usually is the URL which originates from a resource in a web page. If it originates as the inital
-URL from the command line or the URL field in the GUI `originalURL` will contain the unparsed value.
-This can be used to create a proper URL since not all calling processes are able to create a
-correctly encoded URL. But you could also use it to pass arbitrary data to URL handlers that has
-nothing to do with URLs, for example `bb.exe "doSomething=10,20"`. In this case you would have to
-implement your own handling since `url` would contain `https://dosomething%3D10%2C20/`. In most
-other cases `url` and `originalURL` are equal. The navigation type (`navType`, numeric constant)
-tells the handler what caused the request:
+with the parsed URL (`urlObj`), the original unparsed URL of the resource (`originalURL`) and a
+navigation type (`navType`).
+
+
+**`urlObj`**
+
+`urlObj` is an object with a single string property named `URL` that contains the address of the
+resource to be loaded. `urlObj.URL` *is intentionally a writable property!* If a request handler
+changes the value of `URL` during `handleRequest`, the changed value will be passed to the next
+handler in the chain. For example, if the first handler in the chain gets passed the object
+`{ URL: "https://example.com?x=100&y=200" }` it could easily change the value of `URL` to
+`"https://example.com"` and set the current window position to the left and top coordinates `100`
+and `200`. The following handler would then receive the object `{ URL: "https://example.com" }` and
+it could again modify the value of `URL` in its implementation of `handleRequest` and so on. A
+complete example can be found in `lib/RequestHandlers/samples/WindowBoundsRequestHandler.js`. This
+sample handler can be activated by adding the following lines to the `RequestHandlers` object
+(*before* the default request handler):
+
+```json
+{
+  "Load": true,
+  "Active": true,
+  "Source": "./lib/RequestHandlers/samples/WindowBoundsRequestHandler.js"
+},
+```
+
+You can now see what happens, if you open a web site with four custom URL parameters added, e.g.
+`https://github.com/idesis-gmbh/BareBrowser?_wbx=100&_wby=100&_wbw=800&_wbh=800`.
+
+
+**`originalURL`**
+
+Usually the content of `urlObj.URL` originates from a resource in a web page. But if `urlObj.URL`
+comes from the initial URL from the command line or the URL field in the GUI, `originalURL` will
+contain the unparsed value. `originalURL` can be used to create a proper URL since not all calling
+processes are able to create a correctly encoded URL. But you could also use it to pass arbitrary
+data to URL handlers that has nothing to do with URLs, for example `bb.exe "doSomething=10,20"`. In
+this case you would have to implement your own handling since `url` would contain
+`https://dosomething%3D10%2C20/`. In most other cases `urlObj.URL` and `originalURL` are equal.
+
+
+**`navType`**
+
+The navigation type (numeric constant) tells the handler what caused the request:
 
 - `NAV_LOAD` (= `0`) Initial loading of a page.
 - `NAV_RELOAD` (= `1`) Reload an already loaded page*.
@@ -876,11 +914,11 @@ tells the handler what caused the request:
 - `NAV_FORWARD` (= `3`) Go forward in the browser history*.
 - `NAV_INTERNAL` (= `4`) Issued by a page itself during loading CSS, JavaScript, images etc.
 
-\* On these naviagtion types `url` and `originalURL` contain the atificial URLs `<RELOAD>`, `<BACK>`
-and `<FORWARD>`.
+\* On these navigation types `urlObj.URL` and `originalURL` contain the atificial URLs `<RELOAD>`,
+`<BACK>` and `<FORWARD>`.
 
-If a handler decides to handle the request it *must* call the corresponding method on the
-`webContents` object. In the case of `NAV_LOAD` this would be `this.webContents.loadURL(url);`.
+If a handler decides to handle the request it *must* call the corresponding method on the object
+`webContents`. In the case of `NAV_LOAD` this would be `this.webContents.loadURL(urlObj.URL)`.
 Similar handling must be done for all other types except `NAV_INTERNAL`. This type is rather
 informative, it doesn't require an action on the `webContents` object. If you pass non-URL data like
 in the example above, you have to handle it on your own in `handleRequest`.
@@ -891,10 +929,10 @@ used:
 
 - `REQ_ERROR` (= `0`) An error occured handling the request. BareBrowser won't call the next
   handler.
-- `REQ_NONE` (= `1`) The handler doesn't handle the request. BareBrowser will call the next handler
-  with the same URL.
-- `REQ_CONTINUE` (= `2`) Purely informative: the handler has done something with the given resource
-  and allows the request. BareBrowser will call the next handler with the same URL.
+- `REQ_NONE` (= `1`) The handler doesn't handle the request (and shouldn't change `urlObj.URL`).
+  BareBrowser will call the next handler with the same URL.
+- `REQ_CONTINUE` (= `2`) Rather informative: the handler has done something with the given resource
+  (including rewriting `urlObj.URL`) and allows the request. BareBrowser will call the next handler.
 - `REQ_ALLOW` (= `3`) The handler allows the request. BareBrowser won't call the next handler.
 - `REQ_DENY` (= `4`) The handler denies the request. BareBrowser won't call the next handler.
 
@@ -933,7 +971,7 @@ dispose() {
   the next handlers in the chain:
 
     ```javascript
-    handleRequest(url, originalURL, navType) {
+    handleRequest(urlObj, originalURL, navType) {
       if (navType === NAV_FORWARD) {
         return REQ_DENY;
       };
@@ -991,6 +1029,9 @@ For all available request handlers see also the file `settings.json`.
   or active, BareBrowser won't load anything, if other handlers are also not loaded/active. With
   `Config.Log` request logging can be turned on/off (default). The handler is loaded and active by
   default.
+
+- `WindowBoundsRequestHandler.js`\
+  See [Handling requests](#handling-requests).
 
 - `Nervous.js`\
   See [here](#nervous-).
@@ -1074,8 +1115,8 @@ Configuration is entirely done in `./app/package.json`:
   "productName": "BareBrowser",
   "description": "A minimalist browser for specific tasks in controlled environments.",
   "companyname": "idesis GmbH",
-  "copyright": "©2022 idesis GmbH",
-  "version": "2.3.0",
+  "copyright": "©2023 idesis GmbH",
+  "version": "3.0.0",
   "-buildVersion": 4367,
   "identifier": "de.idesis.barebrowser",
   "identifierRoot": "",
@@ -1103,19 +1144,19 @@ Configuration is entirely done in `./app/package.json`:
   "license": "MIT",
   "main": "./bin/MainProcess.js",
   "dependencies": {
-    "fs-extra": "10.0.1",
+    "fs-extra": "11.1.0",
     "mousetrap": "1.6.5"
   },
   "devDependencies": {
-    "@types/fs-extra": "9.0.13",
-    "@types/mousetrap": "1.6.9",
-    "@types/node": "16.11.7",
-    "@typescript-eslint/eslint-plugin": "5.26.0",
-    "@typescript-eslint/parser": "5.26.0",
-    "electron": "18.2.4",
-    "eslint-plugin-jsdoc": "39.3.0",
-    "eslint": "8.16.0",
-    "typescript": "4.6.4"
+    "@types/fs-extra": "11.0.1",
+    "@types/mousetrap": "1.6.11",
+    "@types/node": "18.14.2",
+    "@typescript-eslint/eslint-plugin": "5.54.0",
+    "@typescript-eslint/parser": "5.54.0",
+    "electron": "23.1.1",
+    "eslint-plugin-jsdoc": "40.0.0",
+    "eslint": "8.35.0",
+    "typescript": "4.9.5"
   },
   "config": {
     "arch": "x64,arm64",

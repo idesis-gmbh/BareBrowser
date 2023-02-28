@@ -17,7 +17,8 @@ class Nervous {
         console.log(`${this.className} (${this.winId}): Nervously waiting for input...`);
     }
 
-    handleRequest(url, originalURL, navType) {
+    handleRequest(urlObj, originalURL, navType) {
+        const url = urlObj.URL;
         if (navType === NAV_LOAD) {
             try {
                 if (url.startsWith(`${this.settings.Scheme}://`)) {

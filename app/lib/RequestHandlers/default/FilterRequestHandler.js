@@ -33,10 +33,10 @@ class FilterRequestHandler {
     /**
      * @see DefaultRequestHandler.js
      */
-    handleRequest(url, originalURL, navType) {
-        const logURL = url === originalURL ? url : `${url} (${originalURL})`;
+    handleRequest(urlObj, originalURL, navType) {
+        const logURL = urlObj.URL === originalURL ? urlObj.URL : `${urlObj.URL} (${originalURL})`;
         for (const regExp of this.filters) {
-            if (regExp.test(url)) {
+            if (regExp.test(urlObj.URL)) {
                 if (this.config.LogAllow) {
                     this.log(`ALLOW ${logURL}`);
                 }

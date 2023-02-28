@@ -24,8 +24,8 @@ class LoggerRequestHandler {
     /**
      * @see DefaultRequestHandler.js
      */
-    handleRequest(url, originalURL, navType) {
-        const logURL = url === originalURL ? url : `${url} (${originalURL})`;
+    handleRequest(urlObj, originalURL, navType) {
+        const logURL = urlObj.URL === originalURL ? urlObj.URL : `${urlObj.URL} (${originalURL})`;
         switch (navType) {
             case NAV_LOAD:
                 this.log(`LOAD    => ${logURL}`);
