@@ -155,10 +155,10 @@ class DefaultRequestHandler {
      * Can also be used to clean up other things a handler may have allocated.
      */
     dispose() {
-        this.config = null;
-        this.settings = null;
-        this.webContents = null;
-        this.browserWindow = null;
+        this.config = undefined;
+        this.settings = undefined;
+        this.webContents = undefined;
+        this.browserWindow = undefined;
     }
 }
 

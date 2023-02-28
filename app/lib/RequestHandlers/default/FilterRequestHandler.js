@@ -66,8 +66,8 @@ class FilterRequestHandler {
      * @see DefaultRequestHandler.js
      */
     dispose() {
-        this.config = null;
-        this.settings = null;
+        this.config = undefined;
+        this.settings = undefined;
     }
 }
 

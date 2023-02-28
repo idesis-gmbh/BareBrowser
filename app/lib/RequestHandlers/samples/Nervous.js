@@ -69,8 +69,8 @@ class Nervous {
     }
 
     dispose() {
-        this.settings = null;
-        this.browserWindow = null;
+        this.settings = undefined;
+        this.browserWindow = undefined;
     }
 }
 
