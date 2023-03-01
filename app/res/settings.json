@@ -5,7 +5,15 @@
         "LeftTopOfCurrentScreen": true,
         "Width": 1280,
         "Height": 900,
-        "NewRelativeToCurrent": true
+        "NewRelativeToCurrent": true,
+        "LastWindowPosition": {
+            "Restore": false,
+            "Left": 10,
+            "Top": 10,
+            "Width": 1280,
+            "Height": 900,
+            "State": 0
+        }
     },
     "ShortCuts": {
         "Global": true,

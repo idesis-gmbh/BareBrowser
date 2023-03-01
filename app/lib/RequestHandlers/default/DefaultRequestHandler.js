@@ -42,7 +42,8 @@ class DefaultRequestHandler {
     /**
      * Mandatory.
      * Handle the request for a given URL.
-     * @param url {string} The URL of the requested resource.
+     * @param urlObj {object} An object with a single property `URL` of type string. The property is
+     * the URL of the requested resource.
      * @param originalURL {string} The original URL of the requested resource. On an initial load
      * request this is the raw URL as it was given on the command line. It can be used to bypass the
      * internal auto formatting of URLs which is done with Node.js' `new URL(...)` or to pass
@@ -54,7 +55,7 @@ class DefaultRequestHandler {
      * 
      * The request/navigation can be issued by
      * - clicking on a link in page which is already loaded,
-     * - the page itslef, e.g. JavaScript,
+     * - the page itself, e.g. JavaScript,
      * - through the command line,
      * - through the address bar or
      * - through the back/forward button/keyboard shortcuts.
@@ -62,8 +63,8 @@ class DefaultRequestHandler {
      * appropriately through calling methods on `this.webContents`, see also:
      * https://www.electronjs.org/docs/api/web-contents
      */
-    handleRequest(url, originalURL, navType) {
-        const logURL = url === originalURL ? url : `${url} (${originalURL})`;
+    handleRequest(urlObj, originalURL, navType) {
+        const logURL = urlObj.URL === originalURL ? urlObj.URL : `${urlObj.URL} (${originalURL})`;
         try {
             if (navType === NAV_LOAD) {
                 this.log(`Initial load request ${logURL}`);
@@ -72,7 +73,7 @@ class DefaultRequestHandler {
                 // Just load the URL
                 case NAV_LOAD:
                     this.log(`Navigating to ${logURL}`);
-                    this.webContents.loadURL(url, { userAgent: this.settings.UserAgent });
+                    this.webContents.loadURL(urlObj.URL, { userAgent: this.settings.UserAgent });
                     break;
 
                 // Reload the URL
@@ -155,10 +156,10 @@ class DefaultRequestHandler {
      * Can also be used to clean up other things a handler may have allocated.
      */
     dispose() {
-        this.config = null;
-        this.settings = null;
-        this.webContents = null;
-        this.browserWindow = null;
+        this.config = undefined;
+        this.settings = undefined;
+        this.webContents = undefined;
+        this.browserWindow = undefined;
     }
 }
 

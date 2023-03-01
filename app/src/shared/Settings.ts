@@ -37,6 +37,26 @@ export interface ISettings {
          * Open new window with an offset relative to the current window (Left and Top).
          */
         NewRelativeToCurrent: boolean;
+        /**
+         * Position and state of the last window before the app was closed.
+         */
+        LastWindowPosition: {
+            /**
+             * Restore last window position on app startup?
+             */
+            Restore: boolean;
+            /**
+             * Window coordinates.
+             */
+            Left: number; Top: number; Width: number; Height: number;
+            /**
+             * State of the window:
+             * - `-1`: Minimized.
+             * - `0`: Normal.
+             * - `1`: Maximized.
+             */
+            State: number;
+        };
     };
     /**
      * Holds the keyboard shortcuts for various actions.
@@ -212,6 +232,14 @@ export function getDefaultSettings(): ISettings {
             Width: 1280,
             Height: 900,
             NewRelativeToCurrent: true,
+            LastWindowPosition: {
+                Restore: false,
+                Left: 10,
+                Top: 10,
+                Width: 1280,
+                Height: 900,
+                State: 0
+            }
         },
         ShortCuts: {
             Global: true,
@@ -234,12 +262,12 @@ export function getDefaultSettings(): ISettings {
             {
                 Load: false,
                 Active: false,
-                Source: "../lib/RequestHandlers/RequestLoggerHandler.js"
+                Source: "./lib/RequestHandlers/default/LoggerRequestHandler.js"
             },
             {
                 Load: false,
                 Active: false,
-                Source: "../lib/RequestHandlers/FilterRequestHandler.js",
+                Source: "./lib/RequestHandlers/default/FilterRequestHandler.js",
                 Config: {
                     Filter: [
                         "^https://github.com(/.*)?",
@@ -260,7 +288,7 @@ export function getDefaultSettings(): ISettings {
             {
                 Load: false,
                 Active: false,
-                Source: "../lib/RequestHandlers/RequestHandlerTemplate.js",
+                Source: "./lib/RequestHandlers/RequestHandlerTemplate.js",
                 Config: {
                     Log: true
                 }
@@ -268,7 +296,7 @@ export function getDefaultSettings(): ISettings {
             {
                 Load: true,
                 Active: true,
-                Source: "../lib/RequestHandlers/DefaultRequestHandler.js",
+                Source: "./lib/RequestHandlers/default/DefaultRequestHandler.js",
                 Config: {
                     Log: false
                 }
@@ -322,29 +350,37 @@ export function getSettings(configFile: string): ISettings {
     /* eslint-disable jsdoc/require-jsdoc */
     settings = {
         Window: {
-            Left: $Utils.normalize(settings.Window.Left, 10),
-            Top: $Utils.normalize(settings.Window.Top, 10),
-            LeftTopOfCurrentScreen: $Utils.normalize(settings.Window.LeftTopOfCurrentScreen, true),
-            Width: $Utils.normalize(settings.Window.Width, 1280),
-            Height: $Utils.normalize(settings.Window.Height, 900),
-            NewRelativeToCurrent: $Utils.normalize(settings.Window.NewRelativeToCurrent, true),
+            Left: $Utils.normalize(settings.Window?.Left, 10),
+            Top: $Utils.normalize(settings.Window?.Top, 10),
+            LeftTopOfCurrentScreen: $Utils.normalize(settings.Window?.LeftTopOfCurrentScreen, true),
+            Width: $Utils.normalize(settings.Window?.Width, 1280),
+            Height: $Utils.normalize(settings.Window?.Height, 900),
+            NewRelativeToCurrent: $Utils.normalize(settings.Window?.NewRelativeToCurrent, true),
+            LastWindowPosition: {
+                Restore: $Utils.normalize(settings.Window?.LastWindowPosition?.Restore, false),
+                Left: $Utils.normalize(settings.Window?.LastWindowPosition?.Left, 10),
+                Top: $Utils.normalize(settings.Window?.LastWindowPosition?.Top, 10),
+                Width: $Utils.normalize(settings.Window?.LastWindowPosition?.Width, 1280),
+                Height: $Utils.normalize(settings.Window?.LastWindowPosition?.Height, 900),
+                State: $Utils.normalize(settings.Window?.LastWindowPosition?.State, 0)
+            }
         },
         ShortCuts: {
-            Global: $Utils.normalize(settings.ShortCuts.Global, true),
-            ToggleAddressBar: $Utils.normalize(settings.ShortCuts.ToggleAddressBar, ["mod+t"]),
-            ToggleInternalDevTools: $Utils.normalize(settings.ShortCuts.ToggleInternalDevTools, ["mod+shift+d"]),
-            ToggleDevTools: $Utils.normalize(settings.ShortCuts.ToggleDevTools, ["mod+d"]),
-            FocusLocationBar: $Utils.normalize(settings.ShortCuts.FocusLocationBar, ["mod+l"]),
-            NewWindow: $Utils.normalize(settings.ShortCuts.NewWindow, ["mod+n"]),
-            // InternalReload: $Utils.normalize(settings.ShortCuts.InternalReload, ["mod+shift+r", "shift+f5"]),
-            InternalReload: $Utils.normalize(settings.ShortCuts.InternalReload, [""]),
-            Reload: $Utils.normalize(settings.ShortCuts.Reload, ["mod+r", "f5"]),
-            GoBack: $Utils.normalize(settings.ShortCuts.GoBack, ["ctrl+meta+left", "ctrl+alt+left"]),
-            GoForward: $Utils.normalize(settings.ShortCuts.GoForward, ["ctrl+meta+right", "ctrl+alt+right"]),
-            GoHome: $Utils.normalize(settings.ShortCuts.GoHome, ["ctrl+meta+up", "ctrl+alt+up"]),
-            GoInternalHome: $Utils.normalize(settings.ShortCuts.GoInternalHome, ["ctrl+shift+meta+up", "ctrl+shift+alt+up"]),
-            ExitHTMLFullscreen: $Utils.normalize(settings.ShortCuts.ExitHTMLFullscreen, ["esc"]),
-            ToggleMenu: $Utils.normalize(settings.ShortCuts.ToggleMenu, ["ctrl+h"]),
+            Global: $Utils.normalize(settings.ShortCuts?.Global, true),
+            ToggleAddressBar: $Utils.normalize(settings.ShortCuts?.ToggleAddressBar, ["mod+t"]),
+            ToggleInternalDevTools: $Utils.normalize(settings.ShortCuts?.ToggleInternalDevTools, ["mod+shift+d"]),
+            ToggleDevTools: $Utils.normalize(settings.ShortCuts?.ToggleDevTools, ["mod+d"]),
+            FocusLocationBar: $Utils.normalize(settings.ShortCuts?.FocusLocationBar, ["mod+l"]),
+            NewWindow: $Utils.normalize(settings.ShortCuts?.NewWindow, ["mod+n"]),
+            // InternalReload: $Utils.normalize(settings.ShortCuts?.InternalReload, ["mod+shift+r", "shift+f5"]),
+            InternalReload: $Utils.normalize(settings.ShortCuts?.InternalReload, [""]),
+            Reload: $Utils.normalize(settings.ShortCuts?.Reload, ["mod+r", "f5"]),
+            GoBack: $Utils.normalize(settings.ShortCuts?.GoBack, ["ctrl+meta+left", "ctrl+alt+left"]),
+            GoForward: $Utils.normalize(settings.ShortCuts?.GoForward, ["ctrl+meta+right", "ctrl+alt+right"]),
+            GoHome: $Utils.normalize(settings.ShortCuts?.GoHome, ["ctrl+meta+up", "ctrl+alt+up"]),
+            GoInternalHome: $Utils.normalize(settings.ShortCuts?.GoInternalHome, ["ctrl+shift+meta+up", "ctrl+shift+alt+up"]),
+            ExitHTMLFullscreen: $Utils.normalize(settings.ShortCuts?.ExitHTMLFullscreen, ["esc"]),
+            ToggleMenu: $Utils.normalize(settings.ShortCuts?.ToggleMenu, ["ctrl+h"]),
         },
         RequestHandlers: settings.RequestHandlers,
         LogRequests: $Utils.normalize(settings.LogRequests, false),

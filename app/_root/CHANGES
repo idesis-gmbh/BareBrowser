@@ -1,4 +1,36 @@
-## v2.3.0
+# 3.0
+
+## New
+
+- A new configuration option (`Window.LastWindowPosition`) stores the position of the last active
+  browser window before the app is closed. With this option BareBrowser can apply the stored
+  position to the *very first browser window* on the next application start. For compatibility
+  reasons this feature is off by default.
+- Added 'Copy image' to context menu.
+
+## Changes
+
+- **BREAKING**: Request handler no longer receive the URL as a string in `handleRequest(...)` but
+  instead as an object with a single (string) property named `URL`. This URL property is writeable
+  and can be modified or rewritten for subsequent handlers in the chain. For an example see the
+  sample request handler in `lib/RequestHandlers/samples/WindowBoundsRequestHandler.js`.\
+  *All your own or customized request handlers **must** be adapted to this new behaviour!*\
+  Usually this is a matter of adding one or two lines of code.
+- **BREAKING** Updated dependencies and upgraded to Electron 23.1.1. This is a breaking change
+  because Electron 23.x dropped support for Windows 7, 8, 8.1, Windows Server 2012 and 2012 R2. If
+  you need to support these older Windows versions you may build your own version of BareBrowser and
+  use Electron 22.x or 21.x which are still supported (see
+  [Electron releases](https://releases.electronjs.org)).
+
+
+# v2.3.1
+
+## Changes
+
+- Updated dependencies and upgraded to Electron 19.0.8.
+
+
+# v2.3.0
 
 ## New
 
@@ -15,7 +47,7 @@
 - Updated dependencies and upgraded to Electron 18.3.0.
 
 
-## v2.2.0
+# v2.2.0
 
 ## New
 
