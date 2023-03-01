@@ -3,8 +3,8 @@
   "productName": "BareBrowser",
   "description": "A minimalist browser for specific tasks in controlled environments.",
   "companyname": "idesis GmbH",
-  "copyright": "©2022 idesis GmbH",
-  "version": "2.3.1",
+  "copyright": "©2023 idesis GmbH",
+  "version": "3.0.0",
   "-buildVersion": 4367,
   "identifier": "de.idesis.barebrowser",
   "identifierRoot": "",
@@ -47,7 +47,7 @@
     "typescript": "4.9.5"
   },
   "config": {
-    "arch": "x64,arm64",
+    "arch": "x64,arm64,armv7l,ia32",
     "pkgParams": "--quiet --asar.unpackDir=\"{res,lib/RequestHandlers}\""
   }
 }
