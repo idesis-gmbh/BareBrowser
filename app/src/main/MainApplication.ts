@@ -1,5 +1,5 @@
 import { spawn } from "child_process";
-import { app, BrowserWindow, ipcMain, Menu, MenuItem, Params, protocol, screen, session, webContents } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, Menu, MenuItem, Params, protocol, Rectangle, screen, session, webContents } from "electron";
 import { HandlerDetails } from "electron/main";
 import { Readable } from "stream";
 import { APP_INFO } from "../shared/AppInfo";
@@ -26,8 +26,9 @@ interface ICmdLineArgs {
 }
 
 /**
- * Current Electron TypeScript definitions lack a proper definition for on 'close' window events.
- * @see `onWindowClose` and `onWindowFocus`.
+ * Current Electron TypeScript definitions lack proper definitions for on 'close', 'closed' and
+ * 'focus' window events.
+ * @see `onWindowClose`, `onWindowClosed` and `onWindowFocus`.
  */
 interface IBrowserWindowEvent extends Electron.Event {
     sender: Electron.BrowserWindow;
@@ -67,6 +68,8 @@ export class MainApplication {
     private currentUrlItem: IURLItem;
     private appMenu: ApplicationMenu | null = null;
     private windows: IWindowEntry[] = [];
+    private lastClosedWindowBounds: Rectangle;
+    private lastClosedWindowState: -1 | 0 | 1 | 2;
 
     /**
      * Boot and set up Electron app.
@@ -159,43 +162,62 @@ export class MainApplication {
      * @returns The newly created browser windows.
      */
     private async createWindow(behindCurrent = false): Promise<BrowserWindow> {
+        const lastWinPos = this.settings.Window.LastWindowPosition;
+        const placeFirstWindow = lastWinPos.Restore && this.windows.length === 0;
         console.log("Creating new window...");
         /* eslint-disable jsdoc/require-jsdoc */
         const bwOptions: Electron.BrowserWindowConstructorOptions = {
-            width: this.settings.Window.Width,
-            height: this.settings.Window.Height,
-            show: !behindCurrent,
             webPreferences: {
                 nodeIntegration: true,
                 webviewTag: true,
                 contextIsolation: false,
             },
+            show: !behindCurrent,
             icon: APP_INFO.Platform === "linux" ? $Path.join(APP_INFO.APP_PATH_PKG, "dockicon.png") : undefined,
         };
         /* eslint-enable */
         const currentWindow = this.getCurrentWindow();
         const currentScreen = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
-        // New window with offset to latest current window
-        if (currentWindow && this.settings.Window.NewRelativeToCurrent) {
-            bwOptions.x = currentWindow.getBounds().x + 25;
-            bwOptions.y = currentWindow.getBounds().y + 25;
-        } else
-            // New window on current screen (the screen with the mouse cursor inside it)
-            if (this.settings.Window.LeftTopOfCurrentScreen) {
+        // Place first window?
+        if (placeFirstWindow) {
+            bwOptions.x = lastWinPos.Left;
+            bwOptions.y = lastWinPos.Top;
+            bwOptions.width = lastWinPos.Width;
+            bwOptions.height = lastWinPos.Height;
+        } else {
+            // New window with offset to latest current window
+            if (currentWindow && this.settings.Window.NewRelativeToCurrent) {
+                bwOptions.x = currentWindow.getBounds().x + 25;
+                bwOptions.y = currentWindow.getBounds().y + 25;
+            } else if (this.settings.Window.LeftTopOfCurrentScreen) {
+                // New window on current screen (the screen with the mouse cursor inside it)
                 bwOptions.x = currentScreen.bounds.x + this.settings.Window.Left;
                 bwOptions.y = currentScreen.bounds.y + this.settings.Window.Top + currentScreen.workArea.y;
-            }
-            // Default
-            else {
+            } else {
+                // Default
                 bwOptions.x = this.settings.Window.Left;
                 bwOptions.y = this.settings.Window.Top + currentScreen.workArea.y;
             }
+            bwOptions.width = this.settings.Window.Width;
+            bwOptions.height = this.settings.Window.Height;
+        }
         // Create the browser window ...
         const window: BrowserWindow = new BrowserWindow(bwOptions);
+        if (placeFirstWindow) {
+            if (lastWinPos.State === 2) {
+                window.setFullScreen(true);
+            } else if (lastWinPos.State === 1) {
+                window.maximize();
+            } else if (lastWinPos.State === -1) {
+                window.minimize();
+            }
+        }
         window.setContentProtection(this.settings.ContentProtection);
-        // ... bind close, focus and context menu handlers to it ...
-        window.on("closed", this.onWindowClosed.bind(this));
+        // ... bind focus, close, closed and context menu handlers to it ...
         window.on("focus", this.onWindowFocus.bind(this));
+        // @ts-ignore Why isn't this properly typed in electron.d.ts?
+        window.on("close", this.onWindowClose.bind(this));
+        window.on("closed", this.onWindowClosed.bind(this));
         // @ts-ignore Why isn't this properly typed in electron.d.ts?
         window.webContents.on("context-menu", this.onRendererPopupMenu.bind(this));
         /* eslint-disable jsdoc/require-jsdoc */
@@ -343,7 +365,8 @@ export class MainApplication {
     private bindEvents(): void {
         // App events
         ipcMain.on(IPC_MAIN_RENDERER, this.onIPCMain.bind(this));
-        app.on("ready", this.onAppReady.bind(this));
+        app.once("ready", this.onAppReady.bind(this));
+        app.once("before-quit", this.onBeforeQuit.bind(this));
         app.once("quit", this.onQuit.bind(this));
         app.on("activate", this.onActivate.bind(this));
         app.on("second-instance", this.onSecondInstance.bind(this)); // eslint-disable-line @typescript-eslint/no-misused-promises
@@ -794,7 +817,6 @@ export class MainApplication {
         let windowEntry = this.getBrowserWindowEntry(windowId);
         // const ipcMessage = getIPCMessage(msgId);
         switch (msgId) {
-            // Return the current (last) URLItem
             case IPC.LOAD_URL:
                 if (windowEntry) {
                     const loadURL = getURLItem(this.handleBuiltinURLs(params[0] as string), this.settings.Scheme);
@@ -1194,6 +1216,29 @@ export class MainApplication {
     }
 
     /**
+     * Called when the window is going to be closed. Store window bounds and state.
+     * @param event The event containing the calling BrowserWindow (`sender`).
+     * @see IBrowserWindowCloseEvent;
+     */
+    private onWindowClose(event: IBrowserWindowEvent): void {
+        // No need to store last window position and state.
+        if (!this.settings.Window.LastWindowPosition.Restore || this.windows.length !== 1) {
+            return;
+        }
+        const window = event.sender;
+        this.lastClosedWindowBounds = window.getBounds();
+        if (window.isFullScreen()) {
+            this.lastClosedWindowState = 2;
+        } else if (window.isMaximized()) {
+            this.lastClosedWindowState = 1;
+        } else if (window.isMinimized()) {
+            this.lastClosedWindowState = -1;
+        } else {
+            this.lastClosedWindowState = 0;
+        }
+    }
+
+    /**
      * Called when the window was closed.
      * Remove the respective window entry object and dispose its members to avoid leaks.
      * @param event The event containing the calling BrowserWindow (`sender`).
@@ -1303,6 +1348,54 @@ export class MainApplication {
     }
 
     /**
+     * Emitted before the application starts closing its windows and before the app quits. Used to
+     * store the bounds and state of the last active window.
+     * @param _event An Electron event.
+     */
+    private onBeforeQuit(_event: Electron.Event): void {
+        // No need to store last window position and state.
+        if (!this.settings.Window.LastWindowPosition.Restore) {
+            return;
+        }
+        try {
+            // If `this.windows.length === 0` the values for `lastClosedWindowBounds` and
+            // `lastClosedWindowState` have been set in `onWindowClose`.
+            if (this.windows.length > 0) {
+                const window = this.windows[this.windows.length - 1].Window;
+                this.lastClosedWindowBounds = window.getBounds();
+                if (window.isFullScreen()) {
+                    this.lastClosedWindowState = 2;
+                } else if (window.isMaximized()) {
+                    this.lastClosedWindowState = 1;
+                } else if (window.isMinimized()) {
+                    this.lastClosedWindowState = -1;
+                } else {
+                    this.lastClosedWindowState = 0;
+                }
+            }
+            this.settings.Window.LastWindowPosition = {
+                /* eslint-disable jsdoc/require-jsdoc */
+                Restore: this.settings.Window.LastWindowPosition.Restore,
+                Left: this.lastClosedWindowBounds.x,
+                Top: this.lastClosedWindowBounds.y,
+                Width: this.lastClosedWindowBounds.width,
+                Height: this.lastClosedWindowBounds.height,
+                State: this.lastClosedWindowState
+                /* eslint-enable */
+            };
+            // eslint-disable-next-line jsdoc/require-jsdoc
+            $FSE.writeJSONSync(this.settingsFile, this.settings, { spaces: 4 });
+        } catch (error: unknown) {
+            console.error(error);
+            if (error instanceof Error) {
+                dialog.showErrorBox("Error saving settings", error.stack ? `${error.message}\n${error.stack}` : error.message);
+            } else {
+                dialog.showErrorBox("Error saving settings", JSON.stringify(error));
+            }
+        }
+    }
+
+    /**
      * If ClearTraces is true spawn another instance to enable removing all temporary data. This is
      * currently impossible from within this instance (some files/directories can't be deleted.)
      * @param _event An Electron event.
@@ -1316,5 +1409,4 @@ export class MainApplication {
             childProcess.unref();
         }
     }
-
 }

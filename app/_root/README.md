@@ -364,7 +364,15 @@ The default configuration (from the directory above) looks like this:
     "LeftTopOfCurrentScreen": true,
     "Width": 1280,
     "Height": 900,
-    "NewRelativeToCurrent": true
+    "NewRelativeToCurrent": true,
+    "LastWindowPosition": {
+      "Restore": false,
+      "Left": 10,
+      "Top": 10,
+      "Width": 1280,
+      "Height": 900,
+      "State": 0
+    }
   },
   "ShortCuts": {
     "Global": true,
@@ -489,6 +497,12 @@ the values is invalid, missing or has the wrong type. For the `RequestHandlers` 
   values are calculated relative to the screen on which the mouse cursor is visible. If
   `NewRelativeToCurrent` is `true`, `Left` and `Top` are calculated relative to the current active
   window of BareBrowser (by adding 25 pixel to the top and left position of this window).
+
+- The `LastWindowPosition` sub-object of the `Window` object holds the position and state of the
+  last active browser window before the app is closed. The possible values for `State` are `-1`
+  (minimized), `1` (maximized), `2` (fullscreen) and `0` (normal window state). If `Restore` is set
+  to `true`, BareBrowser will try to open the *very first window* at this position on the next
+  application start. Further new windows are handled according to the `Window` settings as before.
 
 - The `ShortCuts` object configures the available keyboard shortcuts. The value of `Global` controls
   how keyboard shortcuts are enabled/disabled. With `false` all shortcuts are disabled if the URL

@@ -37,6 +37,26 @@ export interface ISettings {
          * Open new window with an offset relative to the current window (Left and Top).
          */
         NewRelativeToCurrent: boolean;
+        /**
+         * Position and state of the last window before the app was closed.
+         */
+        LastWindowPosition: {
+            /**
+             * Restore last window position on app startup?
+             */
+            Restore: boolean;
+            /**
+             * Window coordinates.
+             */
+            Left: number; Top: number; Width: number; Height: number;
+            /**
+             * State of the window:
+             * - `-1`: Minimized.
+             * - `0`: Normal.
+             * - `1`: Maximized.
+             */
+            State: number;
+        };
     };
     /**
      * Holds the keyboard shortcuts for various actions.
@@ -212,6 +232,14 @@ export function getDefaultSettings(): ISettings {
             Width: 1280,
             Height: 900,
             NewRelativeToCurrent: true,
+            LastWindowPosition: {
+                Restore: false,
+                Left: 10,
+                Top: 10,
+                Width: 1280,
+                Height: 900,
+                State: 0
+            }
         },
         ShortCuts: {
             Global: true,
@@ -328,6 +356,14 @@ export function getSettings(configFile: string): ISettings {
             Width: $Utils.normalize(settings.Window?.Width, 1280),
             Height: $Utils.normalize(settings.Window?.Height, 900),
             NewRelativeToCurrent: $Utils.normalize(settings.Window?.NewRelativeToCurrent, true),
+            LastWindowPosition: {
+                Restore: $Utils.normalize(settings.Window?.LastWindowPosition?.Restore, false),
+                Left: $Utils.normalize(settings.Window?.LastWindowPosition?.Left, 10),
+                Top: $Utils.normalize(settings.Window?.LastWindowPosition?.Top, 10),
+                Width: $Utils.normalize(settings.Window?.LastWindowPosition?.Width, 1280),
+                Height: $Utils.normalize(settings.Window?.LastWindowPosition?.Height, 900),
+                State: $Utils.normalize(settings.Window?.LastWindowPosition?.State, 0)
+            }
         },
         ShortCuts: {
             Global: $Utils.normalize(settings.ShortCuts?.Global, true),
