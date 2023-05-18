@@ -904,7 +904,7 @@ sample handler can be activated by adding the following lines to the `RequestHan
 ```
 
 You can now see what happens, if you open a web site with four custom URL parameters added, e.g.
-`https://github.com/idesis-gmbh/BareBrowser?_wbx=100&_wby=100&_wbw=800&_wbh=800`.
+`https://github.com/idesis-gmbh/BareBrowser?_wbx=100&_wby=100&_wbw=800&_wbh=800&_setFocus`.
 
 
 **`originalURL`**
