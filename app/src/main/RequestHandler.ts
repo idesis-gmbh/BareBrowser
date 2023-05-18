@@ -42,7 +42,7 @@ export enum NavigationType {
  * resource. A request handler can modify `URL`, for example to redirect to another resource or to
  * modify query parameters before the request is passed to the next handler in the chain.
  */
-export type URLObject = { URL: string; };
+export type URLObject = { URL: string; }; // eslint-disable-line jsdoc/require-jsdoc
 
 /**
  *  Possible return values of function `handleRequest` of a request handler class.

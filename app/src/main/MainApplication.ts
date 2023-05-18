@@ -19,9 +19,9 @@ import { NavigationType, RequestHandler, RequestResult } from "./RequestHandler"
  * Primitive command-line object.
  */
 interface ICmdLineArgs {
-    // Url to be opened.
+    /** Url to be opened. */
     URL: string;
-    // Id of target window.
+    /** Id of target window. */
     WindowID: number;
 }
 
@@ -31,6 +31,7 @@ interface ICmdLineArgs {
  * @see `onWindowClose`, `onWindowClosed` and `onWindowFocus`.
  */
 interface IBrowserWindowEvent extends Electron.Event {
+    /** The event sending browser window. */
     sender: Electron.BrowserWindow;
 }
 
@@ -40,6 +41,7 @@ interface IBrowserWindowEvent extends Electron.Event {
  * @see `onRendererPopupMenu`.
  */
 interface IWebContentsEvent extends Electron.Event {
+    /** The event sending web contents. */
     sender: Electron.WebContents;
 }
 
@@ -48,10 +50,12 @@ interface IWebContentsEvent extends Electron.Event {
  * and a group of request handlers.
  */
 interface IWindowEntry {
+    /* eslint-disable jsdoc/require-jsdoc */
     Window: Electron.BrowserWindow;
     WebViewWebContents: Electron.WebContents;
     WebViewWebContentsID: number;
     RequestHandlers: RequestHandler[];
+    /* eslint-enable */
 }
 
 /**
@@ -769,7 +773,7 @@ export class MainApplication {
         });
         // A different URL origin will cause a new handler chain to be started (through openFileOrURL).
         webContents.on("will-navigate", (willNavigateEvent: Electron.Event, url: string) => {
-            const srcURL = (willNavigateEvent as Electron.Event & { sender: { getURL: () => string; }; }).sender.getURL();
+            const srcURL = (willNavigateEvent as Electron.Event & { sender: { getURL: () => string; }; }).sender.getURL(); // eslint-disable-line jsdoc/require-jsdoc
             if (isSameOrigin(srcURL, url)) {
                 if (this.settings.LogRequests) { console.log(`WILL-NAVIGATE from ${srcURL} to ${new $URL.URL(url).toString()}, same origin, passing`); }
             } else {

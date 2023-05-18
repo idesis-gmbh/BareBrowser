@@ -48,7 +48,7 @@ export interface ISettings {
             /**
              * Window coordinates.
              */
-            Left: number; Top: number; Width: number; Height: number;
+            Left: number; Top: number; Width: number; Height: number; // eslint-disable-line jsdoc/require-jsdoc
             /**
              * State of the window:
              * - `-1`: Minimized.

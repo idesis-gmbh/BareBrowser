@@ -34,7 +34,6 @@ export abstract class ApplicationMenu {
      * Get the application menu.
      * Since it only contains items common to all platforms it has to be extended
      * with items specific for the respective platform (app menu, help menu, ...).
-     * @type {Menu}
      */
     public get Menu(): Menu {
         return this.mainMenu;
@@ -42,7 +41,6 @@ export abstract class ApplicationMenu {
 
     /**
      * Get the Undo menu item.
-     * @type {MenuItem}
      */
     public get Undo(): MenuItem {
         return this.undoMenu;
@@ -50,7 +48,6 @@ export abstract class ApplicationMenu {
 
     /**
      * Get the Redo menu item.
-     * @type {MenuItem}
      */
     public get Redo(): MenuItem {
         return this.redoMenu;
@@ -58,7 +55,6 @@ export abstract class ApplicationMenu {
 
     /**
      * Get the Cut menu item.
-     * @type {MenuItem}
      */
     public get Cut(): MenuItem {
         return this.cutMenu;
@@ -66,7 +62,6 @@ export abstract class ApplicationMenu {
 
     /**
      * Get the Copy menu item.
-     * @type {MenuItem}
      */
     public get Copy(): MenuItem {
         return this.copyMenu;
@@ -74,7 +69,6 @@ export abstract class ApplicationMenu {
 
     /**
      * Get/set the Paste menu item.
-     * @type {MenuItem}
      */
     public get Paste(): MenuItem {
         return this.pasteMenu;
@@ -82,7 +76,6 @@ export abstract class ApplicationMenu {
 
     /**
      * Get the Select all menu item.
-     * @type {MenuItem}
      */
     public get SelectAll(): MenuItem {
         return this.selectAllMenu;

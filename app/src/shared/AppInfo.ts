@@ -5,6 +5,7 @@ import { requireJSONFile } from "./Utils";
  * General app information.
  */
 export interface IAppInfo {
+    /* eslint-disable jsdoc/require-jsdoc */
     readonly Name: string;
     readonly ProductName: string;
     readonly Description: string;
@@ -38,6 +39,7 @@ export interface IAppInfo {
     readonly ChromeVersion: string;
     readonly NodeVersion: string;
     readonly IsPackaged: boolean;
+    /* eslint-enable */
 }
 
 /** 
@@ -45,6 +47,7 @@ export interface IAppInfo {
  * Used to create objects based on @see IAppInfo.
  */
 interface IAppPackageJSON {
+    /* eslint-disable jsdoc/require-jsdoc */
     name: string;
     productName: string;
     description: string;
@@ -64,6 +67,7 @@ interface IAppPackageJSON {
     win32InternalName: string;
     win32RequestedExecutionLevel: string;
     win32ApplicationManifest: string;
+    /* eslint-enable */
 }
 
 // Is app packaged?

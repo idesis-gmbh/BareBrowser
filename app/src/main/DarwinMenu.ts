@@ -29,7 +29,6 @@ export class DarwinMenu extends ApplicationMenu {
 
     /**
      * Get the PasteAndMatchStyle menu item.
-     * @type {MenuItem}
      */
     public get PasteAndMatchStyleMenu(): MenuItem {
         return this.pasteAndMatchStyleMenu;
