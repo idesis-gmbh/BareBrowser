@@ -176,8 +176,6 @@ export class MainApplication {
             icon: APP_INFO.Platform === "linux" ? $Path.join(APP_INFO.APP_PATH_PKG, "dockicon.png") : undefined,
         };
         /* eslint-enable */
-        const currentWindow = this.getCurrentWindow();
-        const currentScreen = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
         // Place first window?
         if (placeFirstWindow) {
             bwOptions.x = lastWinPos.Left;
@@ -186,6 +184,8 @@ export class MainApplication {
             bwOptions.height = lastWinPos.Height;
         } else {
             // New window with offset to latest current window
+            const currentWindow = this.getCurrentWindow();
+            const currentScreen = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
             if (currentWindow && this.settings.Window.NewRelativeToCurrent) {
                 bwOptions.x = currentWindow.getBounds().x + 25;
                 bwOptions.y = currentWindow.getBounds().y + 25;
