@@ -1235,7 +1235,7 @@ of the fields:
   Linux. If an architecture is given, that is not available for a platform a warning will be emitted
   on the console and this architecture will be ignored. If, for example, `config.arch` is
   `x64,arm64,ia32` and `Make:all` (see below) is used on a Mac, the build system will generate 8
-  releases, 2 for macOS (`x64`, `arm64`), 3 for Linux (`x64`, `arm64`, `ia32`) and 3 for Windows
+  releases, 2 for macOS (`x64`, `arm64`), 3 for Linux (`x64`, `arm64`, `armv7l`) and 3 for Windows
   (`x64`, `arm64`, `ia32`).
 
 - `config.pkgParams` can be modified, please refer to Electron packager. `--asar.unpackDir`
