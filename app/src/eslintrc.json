@@ -13,10 +13,11 @@
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
-    "plugin:jsdoc/recommended"
+    // "plugin:@typescript-eslint/strict",
+    "plugin:jsdoc/recommended-typescript"
   ],
   "env": {
-    "es6": true,
+    "es2021": true,
     "node": true
   },
   "ignorePatterns": [
@@ -53,12 +54,25 @@
         "contexts": [
           "Property",
           "ClassProperty:not([accessibility=\"private\"])",
+          "TSPropertySignature",
           "TSMethodSignature",
           "TSEnumDeclaration",
           "TSInterfaceDeclaration",
           "TSTypeAliasDeclaration",
           "-TSPropertySignature",
-          "ExportNamedDeclaration"
+          "ExportNamedDeclaration",
+          // @see https://github.com/gajus/eslint-plugin-jsdoc/issues/640
+          // @see https://github.com/gajus/eslint-plugin-jsdoc/issues/496#issuecomment-591204300
+          // @see https://astexplorer.net
+          "ArrowFunctionExpression",
+          "ClassDeclaration",
+          "ClassExpression",
+          "FunctionDeclaration", // function
+          "FunctionExpression",
+          "MethodDefinition",
+          "TSDeclareFunction", // function without body
+          "TSModuleDeclaration" // namespace
+          // "VariableDeclaration"
         ],
         "checkGetters": true,
         "checkSetters": true,
@@ -67,7 +81,12 @@
     ],
     "jsdoc/newline-after-description": "off",
     "jsdoc/require-param-type": "off",
-    "jsdoc/require-returns": "warn",
+    "jsdoc/require-returns": [
+      "warn",
+      {
+        "checkGetters": false
+      }
+    ],
     "jsdoc/require-returns-type": "off",
     "jsdoc/no-undefined-types": "warn"
   }
