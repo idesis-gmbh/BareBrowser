@@ -1,3 +1,14 @@
+# 3.0.2
+
+This is a pure maintenance release, mainly to keep up with newer Electron versions and to update
+some dependencies with security problems.
+
+## Changes
+
+- Updated dependencies and upgraded to Electron 24.6.5.
+- Fixed docs, updated license.
+
+
 # 3.0.1
 
 This is a pure maintenance release, mainly to keep up with newer Electron versions.

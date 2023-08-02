@@ -1130,7 +1130,7 @@ Configuration is entirely done in `./app/package.json`:
   "description": "A minimalist browser for specific tasks in controlled environments.",
   "companyname": "idesis GmbH",
   "copyright": "©2023 idesis GmbH",
-  "version": "3.0.0",
+  "version": "3.0.2",
   "-buildVersion": 4367,
   "identifier": "de.idesis.barebrowser",
   "identifierRoot": "",
@@ -1158,22 +1158,22 @@ Configuration is entirely done in `./app/package.json`:
   "license": "MIT",
   "main": "./bin/MainProcess.js",
   "dependencies": {
-    "fs-extra": "11.1.0",
+    "fs-extra": "11.1.1",
     "mousetrap": "1.6.5"
   },
   "devDependencies": {
     "@types/fs-extra": "11.0.1",
     "@types/mousetrap": "1.6.11",
-    "@types/node": "18.14.2",
-    "@typescript-eslint/eslint-plugin": "5.54.0",
-    "@typescript-eslint/parser": "5.54.0",
-    "electron": "23.1.1",
-    "eslint-plugin-jsdoc": "40.0.0",
-    "eslint": "8.35.0",
-    "typescript": "4.9.5"
+    "@types/node": "18.14.6",
+    "@typescript-eslint/eslint-plugin": "6.2.1",
+    "@typescript-eslint/parser": "6.2.1",
+    "electron": "24.6.5",
+    "eslint-plugin-jsdoc": "46.4.5",
+    "eslint": "8.46.0",
+    "typescript": "5.1.6"
   },
   "config": {
-    "arch": "x64,arm64",
+    "arch": "x64,arm64,armv7l,ia32",
     "pkgParams": "--quiet --asar.unpackDir=\"{res,lib/RequestHandlers}\""
   }
 }
@@ -1235,7 +1235,7 @@ of the fields:
   Linux. If an architecture is given, that is not available for a platform a warning will be emitted
   on the console and this architecture will be ignored. If, for example, `config.arch` is
   `x64,arm64,ia32` and `Make:all` (see below) is used on a Mac, the build system will generate 8
-  releases, 2 for macOS (`x64`, `arm64`), 3 for Linux (`x64`, `arm64`, `ia32`) and 3 for Windows
+  releases, 2 for macOS (`x64`, `arm64`), 3 for Linux (`x64`, `arm64`, `armv7l`) and 3 for Windows
   (`x64`, `arm64`, `ia32`).
 
 - `config.pkgParams` can be modified, please refer to Electron packager. `--asar.unpackDir`
