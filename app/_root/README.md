@@ -1158,22 +1158,22 @@ Configuration is entirely done in `./app/package.json`:
   "license": "MIT",
   "main": "./bin/MainProcess.js",
   "dependencies": {
-    "fs-extra": "11.1.0",
+    "fs-extra": "11.1.1",
     "mousetrap": "1.6.5"
   },
   "devDependencies": {
     "@types/fs-extra": "11.0.1",
     "@types/mousetrap": "1.6.11",
-    "@types/node": "18.14.2",
-    "@typescript-eslint/eslint-plugin": "5.54.0",
-    "@typescript-eslint/parser": "5.54.0",
-    "electron": "23.1.1",
-    "eslint-plugin-jsdoc": "40.0.0",
-    "eslint": "8.35.0",
-    "typescript": "4.9.5"
+    "@types/node": "18.14.6",
+    "@typescript-eslint/eslint-plugin": "6.2.1",
+    "@typescript-eslint/parser": "6.2.1",
+    "electron": "24.6.5",
+    "eslint-plugin-jsdoc": "46.4.5",
+    "eslint": "8.46.0",
+    "typescript": "5.1.6"
   },
   "config": {
-    "arch": "x64,arm64",
+    "arch": "x64,arm64,armv7l,ia32",
     "pkgParams": "--quiet --asar.unpackDir=\"{res,lib/RequestHandlers}\""
   }
 }
