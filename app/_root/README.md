@@ -1163,13 +1163,13 @@ Configuration is entirely done in `./app/package.json`:
   },
   "devDependencies": {
     "@types/fs-extra": "11.0.2",
-    "@types/mousetrap": "1.6.11",
+    "@types/mousetrap": "1.6.12",
     "@types/node": "18.14.6",
-    "@typescript-eslint/eslint-plugin": "6.7.2",
-    "@typescript-eslint/parser": "6.7.2",
-    "electron": "24.8.3",
-    "eslint-plugin-jsdoc": "46.8.1",
-    "eslint": "8.49.0",
+    "@typescript-eslint/eslint-plugin": "6.7.5",
+    "@typescript-eslint/parser": "6.7.5",
+    "electron": "24.8.8",
+    "eslint-plugin-jsdoc": "46.8.2",
+    "eslint": "8.51.0",
     "typescript": "5.2.2"
   },
   "config": {
