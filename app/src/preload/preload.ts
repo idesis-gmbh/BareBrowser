@@ -3,7 +3,7 @@ import { Point } from "electron/main";
 import { IPC, IPC_WEBVIEW_RENDERER } from "../shared/IPC";
 
 /**
- * Communication between the webview tag and the browseer window.
+ * Communication between the webview tag and the browser window.
  */
 ipcRenderer.on(IPC_WEBVIEW_RENDERER, function (_event: Electron.IpcRendererEvent, ...args: unknown[]) {
     if (args[0] === IPC.SCROLL_TO_OFFSET) {

@@ -1130,7 +1130,7 @@ Configuration is entirely done in `./app/package.json`:
   "description": "A minimalist browser for specific tasks in controlled environments.",
   "companyname": "idesis GmbH",
   "copyright": "©2023 idesis GmbH",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "-buildVersion": 4367,
   "identifier": "de.idesis.barebrowser",
   "identifierRoot": "",
@@ -1162,15 +1162,15 @@ Configuration is entirely done in `./app/package.json`:
     "mousetrap": "1.6.5"
   },
   "devDependencies": {
-    "@types/fs-extra": "11.0.1",
-    "@types/mousetrap": "1.6.11",
+    "@types/fs-extra": "11.0.2",
+    "@types/mousetrap": "1.6.12",
     "@types/node": "18.14.6",
-    "@typescript-eslint/eslint-plugin": "6.2.1",
-    "@typescript-eslint/parser": "6.2.1",
-    "electron": "24.6.5",
-    "eslint-plugin-jsdoc": "46.4.5",
-    "eslint": "8.46.0",
-    "typescript": "5.1.6"
+    "@typescript-eslint/eslint-plugin": "6.7.5",
+    "@typescript-eslint/parser": "6.7.5",
+    "electron": "24.8.8",
+    "eslint-plugin-jsdoc": "46.8.2",
+    "eslint": "8.51.0",
+    "typescript": "5.2.2"
   },
   "config": {
     "arch": "x64,arm64,armv7l,ia32",
