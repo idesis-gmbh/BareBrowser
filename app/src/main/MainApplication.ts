@@ -1,5 +1,5 @@
 import { spawn } from "child_process";
-import { app, BrowserWindow, dialog, ipcMain, Menu, MenuItem, Params, protocol, Rectangle, screen, session, webContents } from "electron";
+import { app, BrowserWindow, ContextMenuParams, dialog, ipcMain, Menu, MenuItem, protocol, Rectangle, screen, session, webContents } from "electron";
 import { HandlerDetails } from "electron/main";
 import { Readable } from "stream";
 import { APP_INFO } from "../shared/AppInfo";
@@ -26,26 +26,6 @@ interface ICmdLineArgs {
 }
 
 /**
- * Current Electron TypeScript definitions lack proper definitions for on 'close', 'closed' and
- * 'focus' window events.
- * @see `onWindowClose`, `onWindowClosed` and `onWindowFocus`.
- */
-interface IBrowserWindowEvent extends Electron.Event {
-    /** The event sending browser window. */
-    sender: Electron.BrowserWindow;
-}
-
-/**
- * Current Electron TypeScript definitions lack a proper definition for on 'context-menu' window
- * events.
- * @see `onRendererPopupMenu`.
- */
-interface IWebContentsEvent extends Electron.Event {
-    /** The event sending web contents. */
-    sender: Electron.WebContents;
-}
-
-/**
  * Holds a BrowserWindow, the webContents of the webview tag hosted by the browser window
  * and a group of request handlers.
  */
@@ -56,6 +36,39 @@ interface IWindowEntry {
     WebViewWebContentsID: number;
     RequestHandlers: RequestHandler[];
     /* eslint-enable */
+}
+
+/**
+ * Class that holds an instance of a browser window.
+ */
+class Renderer {
+    private window: BrowserWindow;
+
+    /**
+     * Create renderer with a browser window.
+     * @param owner The instance of `MainApplication` that owns this renderer.
+     * @param bwOptions Options for creating the browser window.
+     */
+    constructor(
+        private owner: MainApplication,
+        private bwOptions: Electron.BrowserWindowConstructorOptions
+    ) {
+        this.window = new BrowserWindow(this.bwOptions);
+        this.window.on("focus", () => this.owner.onWindowFocus(this.window));
+        this.window.on("close", () => this.owner.onWindowClose(this.window));
+        this.window.on("closed", () => this.owner.onWindowClosed(this.window));
+        this.window.webContents.on("context-menu", (ev: Electron.Event, params: ContextMenuParams) => {
+            ev.preventDefault();
+            this.owner.onRendererPopupMenu(this.window.webContents, params);
+        });
+    }
+
+    /**
+     * Get the browser window of this renderer instance.
+     */
+    public get Window(): BrowserWindow {
+        return this.window;
+    }
 }
 
 /**
@@ -205,52 +218,45 @@ export class MainApplication {
             bwOptions.width = this.settings.Window.Width;
             bwOptions.height = this.settings.Window.Height;
         }
-        // Create the browser window ...
-        const window: BrowserWindow = new BrowserWindow(bwOptions);
+        // Create a renderer instance with a browser window ...
+        const renderer: Renderer = new Renderer(this, bwOptions);
         if (placeFirstWindow) {
             if (lastWinPos.State === 2) {
-                window.setFullScreen(true);
+                renderer.Window.setFullScreen(true);
             } else if (lastWinPos.State === 1) {
-                window.maximize();
+                renderer.Window.maximize();
             } else if (lastWinPos.State === -1) {
-                window.minimize();
+                renderer.Window.minimize();
             }
         }
-        window.setContentProtection(this.settings.ContentProtection);
-        // ... bind focus, close, closed and context menu handlers to it ...
-        window.on("focus", this.onWindowFocus.bind(this));
-        // @ts-ignore Why isn't this properly typed in electron.d.ts?
-        window.on("close", this.onWindowClose.bind(this));
-        window.on("closed", this.onWindowClosed.bind(this));
-        // @ts-ignore Why isn't this properly typed in electron.d.ts?
-        window.webContents.on("context-menu", this.onRendererPopupMenu.bind(this));
-        /* eslint-disable jsdoc/require-jsdoc */
+        renderer.Window.setContentProtection(this.settings.ContentProtection);
         // ... and load index.html.
         const urlObject: $URL.UrlObject = {
+            /* eslint-disable jsdoc/require-jsdoc */
             pathname: $Path.join(__dirname, "..", "index.html"),
             protocol: "file:",
             slashes: true,
+            /* eslint-enable */
         };
-        /* eslint-enable */
         // Set title to product name from ../package.json
-        this.setWindowTitle(window, APP_INFO.ProductName);
-        // Load
-        await window.loadURL($URL.format(urlObject));
+        this.setWindowTitle(renderer.Window, APP_INFO.ProductName);
+        // Load initial URL.
+        await renderer.Window.loadURL($URL.format(urlObject));
         if (behindCurrent) {
             const current = BrowserWindow.getFocusedWindow();
             if (current) {
-                window.showInactive();
+                renderer.Window.showInactive();
                 current.moveTop();
                 this.setForegoundWindow(current);
             } else {
                 // Safe fallback
-                window.show();
+                renderer.Window.show();
             }
         }
         // Tell renderer its own window id.
-        window.webContents.send(IPC_MAIN_RENDERER, IPC.WINDOW_CREATED, window.id);
+        renderer.Window.webContents.send(IPC_MAIN_RENDERER, IPC.WINDOW_CREATED, renderer.Window.id);
         console.log("Creating new window done.");
-        return window;
+        return renderer.Window;
     }
 
     /**
@@ -772,8 +778,8 @@ export class MainApplication {
             wp.allowRunningInsecureContent = false;
         });
         // A different URL origin will cause a new handler chain to be started (through openFileOrURL).
-        webContents.on("will-navigate", (willNavigateEvent: Electron.Event, url: string) => {
-            const srcURL = (willNavigateEvent as Electron.Event & { sender: { getURL: () => string; }; }).sender.getURL(); // eslint-disable-line jsdoc/require-jsdoc
+        webContents.on("will-navigate", (willNavigateEvent, url: string) => {
+            const srcURL = willNavigateEvent.url;
             if (isSameOrigin(srcURL, url)) {
                 if (this.settings.LogRequests) { console.log(`WILL-NAVIGATE from ${srcURL} to ${new $URL.URL(url).toString()}, same origin, passing`); }
             } else {
@@ -934,7 +940,7 @@ export class MainApplication {
             // Show context menu.
             case IPC.SHOW_CONTEXT_MENU:
                 if (windowEntry) {
-                    this.onWebViewPopupMenu(windowEntry, params[0] as Params);
+                    this.onWebViewPopupMenu(windowEntry.WebViewWebContents, params[0] as ContextMenuParams);
                 }
                 break;
 
@@ -1213,23 +1219,21 @@ export class MainApplication {
     /**
      * Called when the window is focused.
      * Used to move the calling window to the end of the internal window list.
-     * @param event The event containing the calling BrowserWindow (`sender`).
+     * @param window The calling BrowserWindow.
      */
-    private onWindowFocus(event: IBrowserWindowEvent): void {
-        this.setForegoundWindow(event.sender);
+    public onWindowFocus(window: BrowserWindow): void {
+        this.setForegoundWindow(window);
     }
 
     /**
      * Called when the window is going to be closed. Store window bounds and state.
-     * @param event The event containing the calling BrowserWindow (`sender`).
-     * @see IBrowserWindowCloseEvent;
+     * @param window The calling BrowserWindow.
      */
-    private onWindowClose(event: IBrowserWindowEvent): void {
+    public onWindowClose(window: BrowserWindow): void {
         // No need to store last window position and state.
         if (!this.settings.Window.LastWindowPosition.Restore || this.windows.length !== 1) {
             return;
         }
-        const window = event.sender;
         this.lastClosedWindowBounds = window.getBounds();
         if (window.isFullScreen()) {
             this.lastClosedWindowState = 2;
@@ -1245,11 +1249,10 @@ export class MainApplication {
     /**
      * Called when the window was closed.
      * Remove the respective window entry object and dispose its members to avoid leaks.
-     * @param event The event containing the calling BrowserWindow (`sender`).
-     * @see IBrowserWindowCloseEvent;
+     * @param window The calling BrowserWindow.
      */
-    private onWindowClosed(event: IBrowserWindowEvent): void {
-        const index: number = this.windows.findIndex(entry => entry.Window === event.sender);
+    public onWindowClosed(window: BrowserWindow): void {
+        const index: number = this.windows.findIndex(entry => entry.Window === window);
         if (index !== -1) {
             const windowEntry = this.windows[index];
             // @ts-ignore
@@ -1266,20 +1269,20 @@ export class MainApplication {
     /**
      * Shows a context menu if the user right clicks somewhere in the renderer window (for example
      * in the address bar).
-     * @param event The context menu event.
+     * @param webContents The web contents of the browser window (renderer).
      * @param contextMenuParams The context menu params as given by the renderer process.
      */
-    private onRendererPopupMenu(event: IWebContentsEvent, contextMenuParams: Electron.Params): void {
-        this.onContextMenuPopup(event.sender, contextMenuParams);
+    public onRendererPopupMenu(webContents: Electron.WebContents, contextMenuParams: ContextMenuParams): void {
+        this.onContextMenuPopup(webContents, contextMenuParams);
     }
 
     /**
      * Shows a context menu if the user right clicks somewhere in the loaded page.
-     * @param windowEntry The corresponding window entry.
+     * @param webContents The web contents of the loaded page.
      * @param contextMenuParams The context menu params as given by the renderer process.
      */
-    private onWebViewPopupMenu(windowEntry: IWindowEntry, contextMenuParams: Electron.Params): void {
-        this.onContextMenuPopup(windowEntry.WebViewWebContents, contextMenuParams);
+    private onWebViewPopupMenu(webContents: Electron.WebContents, contextMenuParams: ContextMenuParams): void {
+        this.onContextMenuPopup(webContents, contextMenuParams);
     }
 
     /**
@@ -1287,7 +1290,7 @@ export class MainApplication {
      * @param webContents The corresponding Electron webContents.
      * @param contextMenuParams The context menu params as given by the renderer process.
      */
-    private onContextMenuPopup(webContents: Electron.WebContents, contextMenuParams: Electron.Params): void {
+    private onContextMenuPopup(webContents: Electron.WebContents, contextMenuParams: ContextMenuParams): void {
         /* eslint-disable jsdoc/require-jsdoc */
         // `role` doesn't work properly in stand alone popup menus so let's steal its native
         // translations and use the usual keyboard shortcuts.
