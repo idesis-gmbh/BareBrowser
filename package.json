@@ -90,13 +90,13 @@
     "lint": "shx cp ./app/src/eslintrc.json ./build/tmp && cd ./build/tmp && npx eslint -c eslintrc.json --parser-options=project:../../app/src/tsconfig.json --ext .ts ../../app/src/",
     "//##### Build": "#####",
     "b:prep-dev-nm": "shx mkdir -p ./build/tmp/ && shx cp -rf ./app/package.json ./app/src/eslintrc.json ./build/tmp/",
-    "b:make-dev-nm": "cd ./build/tmp/ && npm i --production && npm prune",
+    "b:make-dev-nm": "cd ./build/tmp/ && npm i --omit=dev && npm prune",
     "b:prep-out-nm": "shx mkdir -p ./out/ && shx cp -rf ./app/package.json ./out/",
-    "b:make-out-nm": "cd ./out/ && npm i --production && removeNPMAbsolutePaths . --force --fields _where _args",
+    "b:make-out-nm": "cd ./out/ && npm i --omit=dev && removeNPMAbsolutePaths . --force --fields _where _args",
     "b:strip-out-pj": "node ./build/build-app-package-json.js ./out/package.json && shx rm -rf ./out/package-lock.json",
     "b:app-package.json": "npm-run-all -s b:prep-dev-nm b:make-dev-nm b:prep-out-nm b:make-out-nm b:strip-out-pj",
     "preb:root": "shx mkdir -p ./out/ && node ./build/clean-app-root-files.js ./out/ bin lib node_modules res style package.json package-lock.json",
-    "b:root": "shx cp -rf ./app/_root/* ./out/ && node ./build/make-readme-html.js ./out/README.md",
+    "b:root": "shx cp -rf ./app/_root/* ./out/ && node ./build/make-readme-html.mjs ./out/README.md",
     "b:style": "shx mkdir -p ./out/ && shx rm -rf ./out/style/ && npm run cmd --  -f ./app/style/ shx cp -rf ./app/style/ ./out/",
     "b:lib": "shx   mkdir -p ./out/ && shx rm -rf ./out/lib/   && npm run cmd --  -f ./app/lib/   shx cp -rf ./app/lib/   ./out/",
     "b:res": "shx   mkdir -p ./out/ && shx rm -rf ./out/res/   && npm run cmd --  -f ./app/res/   shx cp -rf ./app/res/   ./out/",
@@ -145,16 +145,16 @@
     "make": "node -e \"require('child_process').spawnSync((process.platform == 'win32') ? 'npm.cmd' : 'npm', ['run', 'm:' + process.platform], {shell: true, stdio: 'inherit'});\""
   },
   "dependencies": {
-    "@octokit/core": "4.2.4",
+    "@octokit/core": "6.1.2",
     "electron-packager": "17.1.2",
     "fs-extra": "11.2.0",
     "npm-run-all": "4.1.5",
     "onchange": "7.1.0",
     "png2icons": "2.0.1",
     "removeNPMAbsolutePaths": "3.0.1",
-    "rollup": "4.22.4",
+    "rollup": "4.29.1",
     "shx": "0.3.4",
-    "terser": "5.34.0",
-    "tsc-watch": "6.2.0"
+    "terser": "5.37.0",
+    "tsc-watch": "6.2.1"
   }
 }
