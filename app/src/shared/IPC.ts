@@ -148,7 +148,7 @@ export const IPC_SHOW_CONTEXT_MENU: IIPCMessage = {
  * @returns An IPC message object matching the given id.
  */
 export function getIPCMessage(id: number): IIPCMessage {
-    switch (id) {
+    switch (<IPC>id) {
         case IPC.ERROR: return IPC_ERROR;
         case IPC.DEBUG: return IPC_DEBUG;
         case IPC.LOAD_URL: return IPC_LOAD_URL_ITEM;

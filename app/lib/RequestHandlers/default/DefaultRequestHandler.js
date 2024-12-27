@@ -75,14 +75,12 @@ class DefaultRequestHandler {
                     this.log(`Navigating to ${logURL}`);
                     this.webContents.loadURL(urlObj.URL, { userAgent: this.settings.UserAgent });
                     break;
-
                 // Reload the URL
                 case NAV_RELOAD:
                     this.log(`Reloading ${this.webContents.getURL()}`);
                     this.webContents.setUserAgent(this.settings.UserAgent);
                     this.webContents.reload(); // Or better `reloadIgnoringCache()`?
                     break;
-
                 // Go back
                 case NAV_BACK:
                     if (this.webContents.canGoBack()) {
@@ -90,7 +88,6 @@ class DefaultRequestHandler {
                         this.webContents.goBack();
                     }
                     break;
-
                 // Go forward
                 case NAV_FORWARD:
                     if (this.webContents.canGoForward()) {
@@ -98,7 +95,6 @@ class DefaultRequestHandler {
                         this.webContents.goForward();
                     }
                     break;
-
                 // Implicitly NAV_INTERNAL. Issued, for example, if the
                 // page itself requests a resource (CSS, JavaScript, ...).
                 default:
