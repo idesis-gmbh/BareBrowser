@@ -30,19 +30,15 @@ class LoggerRequestHandler {
             case NAV_LOAD:
                 this.log(`LOAD    => ${logURL}`);
                 break;
-
             case NAV_RELOAD:
                 this.log(`RELOAD  => ${logURL}`);
                 break;
-
             case NAV_BACK:
                 this.log(`BACK    => ${logURL}`);
                 break;
-
             case NAV_FORWARD:
                 this.log(`FORWARD => ${logURL}`);
                 break;
-
             default:
                 this.log(`REQUEST => ${logURL}`);
                 break;

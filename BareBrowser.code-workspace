@@ -35,17 +35,17 @@
             "editor.defaultFormatter": "vscode.typescript-language-features",
             "editor.formatOnSave": true,
             "editor.codeActionsOnSave": {
-                "source.organizeImports": true
+                "source.organizeImports": "explicit"
             }
         },
         "eslint.options": {
             "overrideConfigFile":"./build/tmp/eslintrc.json",
         },
-        "-eslint.format.enable": true,
         "eslint.validate": [
             "typescript"
         ],
-        "eslint.alwaysShowStatus": true,
+        "eslint.enable": true,
+        "-eslint.format.enable": true,
         "eslint.nodePath": "./build/tmp",
     },
     "extensions": {

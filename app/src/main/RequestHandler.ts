@@ -3,7 +3,7 @@ import { ISettings } from "../shared/Settings";
 import { AnyObject } from "../shared/Types";
 
 /**
- * Request handlers/request handling
+ * Request handlers/request handling.
  */
 
 /**
@@ -11,28 +11,25 @@ import { AnyObject } from "../shared/Types";
  */
 export enum NavigationType {
     /**
-     * Request for loading a page/resource.
-     * Issued by the address bar, the home page or the command line.
+     * Request for loading a page/resource. Issued by the address bar, the home page or the command
+     * line.
      */
     LOAD = 0,
     /**
-     * Request for reloading a page/resource.
-     * Issued by a keyboard shortcut.
+     * Request for reloading a page/resource. Issued by a keyboard shortcut.
      */
     RELOAD,
     /**
-     * Go back in the browser history.
-     * Issued by the back button or a keyboard shortcut.
+     * Go back in the browser history. Issued by the back button or a keyboard shortcut.
      */
     BACK,
     /**
-     * Go forward in the browser history.
-     * Issued by the forward button or a keyboard shortcut.
+     * Go forward in the browser history. Issued by the forward button or a keyboard shortcut.
      */
     FORWARD,
     /**
-     * Not strictly a naviagtion. In almost all cases issued by the page itself,
-     * if it tres to load resources.
+     * Not strictly a naviagtion. In almost all cases issued by the page itself, if it tres to load
+     * resources.
      */
     INTERNAL,
 }
@@ -76,8 +73,7 @@ export enum RequestResult {
  */
 export declare class RequestHandler {
     /**
-     * Mandatory.
-     * Request handler constructor.
+     * Mandatory. Request handler constructor.
      * @param config A configuration for this request handler. Passed in from its own section in
      * `settings.json`. Can be undefined.
      * @param settings The settings of BareBrowser (`settings.json`). Can be used to override global
@@ -90,21 +86,20 @@ export declare class RequestHandler {
     constructor(config: AnyObject | undefined, settings: ISettings, active: boolean, webContents: Electron.WebContents, browserWindow: BrowserWindow);
 
     /**
-     * Set by BareBrowser on the instance after calling the constructor.
-     * The status is also given in the contructor.
+     * Set by BareBrowser on the instance after calling the constructor. The status is also given in
+     * the contructor.
      */
     public IsActive: boolean;
 
     /**
-     * Mandatory.
-     * Handle the request for a given URL.
+     * Mandatory. Handle the request for a given URL.
      * @param urlObj {object} An object with a single property `URL` of type string. The property is
      * the URL of the requested resource.
      * @param originalURL The original URL (e. g. from the command line).
      * @param navigationType The type of the request/navigation issued.
      * See enum `NavigationType` above for possible values.
-     * @returns A RequestResult which tells BareBrowser how to proceed with the request.
-     * See enum `RequestResult` above for possible values.\
+     * @returns A RequestResult which tells BareBrowser how to proceed with the request. See enum
+     * `RequestResult` above for possible values.\
      * The request/navigation can be issued by
      * - clicking on a link in page which is already loaded,
      * - the page itslef, e.g. JavaScript,
@@ -118,12 +113,11 @@ export declare class RequestHandler {
     public handleRequest(urlObj: URLObject, originalURL: string, navigationType: NavigationType): RequestResult;
 
     /**
-     * Mandatory.
-     * Will be called before the handler is destroyed.
-     * Free resources to avoid memory leaks and other problems. Especially webContents and
-     * browserWindow are tied to a BrowserWindow object which can be closed by users. On
-     * closing a BrowserWindow this method will be called on every associated request handler.
-     * Can also be used to clean up other things a handler may have allocated.
+     * Mandatory. Will be called before the handler is destroyed. Free resources to avoid memory
+     * leaks and other problems. Especially `webContents` and `browserWindow` are tied to a
+     * BrowserWindow object which can be closed by users. On closing a browser window this method
+     * will be called on every associated request handler. Can also be used to clean up other things
+     * a handler may have allocated.
      */
     public dispose(): void;
 }

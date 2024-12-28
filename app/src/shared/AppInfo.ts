@@ -19,15 +19,20 @@ export interface IAppInfo {
     readonly Homepage: string;
     readonly AuthorName: string;
     readonly AuthorEmail: string;
-    // - If the app is packaged, the following paths point to directories inside the file `app.asar`.
-    // - In development mode (not packaged) they point to real directories (./out/...).
+    /**
+     * - In a packaged app the following paths point to directories inside the file `app.asar`.
+     * - In development mode (not packaged) they point to real directories (`./out/...`).
+     */
     readonly APP_PATH_PKG: string;
     readonly LIB_PATH_PKG: string;
     readonly RES_PATH_PKG: string;
     readonly STYLE_PATH_PKG: string;
-    // If the following paths exist in the real file system during runtime depends entirely on how
-    // the app is packaged, see param `--asar.unpackDir` in config.pkgParams in package.json.
-    // In development mode, they are mapped to real directories (./out/...)
+    readonly UserDataDir: string;
+    /**
+     * If the following paths exist in the real file system during runtime depends entirely on how
+     * the app is packaged, see param `--asar.unpackDir` in config.pkgParams in `package.json`. In
+     * development mode, they are mapped to real directories (./out/...)
+     */
     readonly APP_PATH: string;
     readonly RES_PATH: string;
     readonly LIB_PATH: string;
@@ -43,8 +48,8 @@ export interface IAppInfo {
 }
 
 /** 
- * The structure of the package.json file for the app.
- * Used to create objects based on @see IAppInfo.
+ * The structure of the file `package.json` for the app. Used to create objects based on `IAppInfo`.
+ * @see IAppInfo.
  */
 interface IAppPackageJSON {
     /* eslint-disable jsdoc/require-jsdoc */
@@ -70,23 +75,20 @@ interface IAppPackageJSON {
     /* eslint-enable */
 }
 
-// Is app packaged?
+// Is the app packaged?
 const __platform__ = process.platform;
-let __isPackaged__;
 const __exeName__ = $Path.basename(process.execPath).toLowerCase();
-if (process.type === "browser") {
-    __isPackaged__ = __platform__ === 'win32' ? __exeName__ !== "electron.exe" : __exeName__ !== "electron";
-} else {
-    __isPackaged__ = __platform__ === 'win32' ? __exeName__ !== "electron.exe" : __exeName__ !== "electron helper (renderer)";
-}
+const __isPackaged__ = process.type === "browser"
+    ? __platform__ === 'win32' ? __exeName__ !== "electron.exe" : __exeName__ !== "electron"
+    : __platform__ === 'win32' ? __exeName__ !== "electron.exe" : __exeName__ !== "electron helper (renderer)";
 
 // Get app root path (packaged).
 let __appPathPkg__ = "";
 if (process.type === "browser") {
-    // Assumes, that MainProcess.js is always located in ./bin/
+    // Assumes, that MainProcess.js is always located in `./bin/`
     __appPathPkg__ = $Path.join(__dirname, "/../");
 } else {
-    // A Renderer process has this as a command line argument.
+    // A renderer process has this as a command line argument.
     for (const arg of process.argv) {
         if (arg.startsWith("--app-path=")) {
             __appPathPkg__ = $Path.join(arg.substring(11), $Path.sep);
@@ -95,18 +97,15 @@ if (process.type === "browser") {
     }
 }
 // Get app root path (unpackaged).
-let __appPath__;
-if (__isPackaged__) {
-    __appPath__ = $Path.join($Path.resolve(__appPathPkg__, `../app.asar.unpacked/`), $Path.sep);
-} else {
-    __appPath__ = __appPathPkg__;
-}
+const __appPath__ = __isPackaged__
+    ? $Path.join($Path.resolve(__appPathPkg__, `../app.asar.unpacked/`), $Path.sep)
+    : __appPathPkg__;
 
-// Load package.json of the app.
+// Load `package.json` of the app.
 const __packageJSON__ = requireJSONFile<IAppPackageJSON>($Path.resolve(__appPathPkg__, "package.json"));
 
 /**
- * Constant holding common app information, partially read from package.json.
+ * Constant holding common app information, partially read from `package.json`.
  */
 export const APP_INFO: IAppInfo = {
     /* eslint-disable jsdoc/require-jsdoc */
@@ -123,11 +122,12 @@ export const APP_INFO: IAppInfo = {
     Homepage: __packageJSON__.homepage,
     AuthorName: __packageJSON__.author.name,
     AuthorEmail: __packageJSON__.author.email,
-    // See interface IAppInfo for these paths.
+    // See interface `IAppInfo` for these paths.
     APP_PATH_PKG: __appPathPkg__,
     LIB_PATH_PKG: $Path.join(__appPathPkg__, `lib${$Path.sep}`),
     RES_PATH_PKG: $Path.join(__appPathPkg__, `res${$Path.sep}`),
     STYLE_PATH_PKG: $Path.join(__appPathPkg__, `style${$Path.sep}`),
+    UserDataDir: "", // Set later by the app.
     APP_PATH: __appPath__,
     LIB_PATH: $Path.join(__appPath__, `lib${$Path.sep}`),
     RES_PATH: $Path.join(__appPath__, `res${$Path.sep}`),

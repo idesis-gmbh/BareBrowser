@@ -4,10 +4,9 @@ import { ISettings } from "../shared/Settings";
 import { MainApplication } from "./MainApplication";
 
 /**
- * General application menu (items) on all platforms
+ * General application menu (items) on all platforms.
  */
 export abstract class ApplicationMenu {
-
     /**
      * Basic menu common for all platforms.
      */
@@ -18,22 +17,20 @@ export abstract class ApplicationMenu {
     private copyMenu: MenuItem;
     private pasteMenu: MenuItem;
     private selectAllMenu: MenuItem;
-
-    //private showAddressBarMenu: MenuItem;
+    // private showAddressBarMenu: MenuItem;
 
     /**
      * Build basic main menu parts common for all platforms.
-     * appName can be used for building special menu item entries.
      * @param mainApp Instance of MainApplication.
      * @param settings The application settings.
-     * @param appName The name of the application.
+     * @param appName The name of the application. `appName` can be used for building special menu
+     * item entries.
      */
     constructor(protected mainApp: MainApplication, protected settings: ISettings, protected appName: string) { }
 
     /**
-     * Get the application menu.
-     * Since it only contains items common to all platforms it has to be extended
-     * with items specific for the respective platform (app menu, help menu, ...).
+     * Get the application menu. Since it only contains items common to all platforms it has to be
+     * extended with items specific for the respective platform (app menu, help menu, ...).
      */
     public get Menu(): Menu {
         return this.mainMenu;
@@ -87,47 +84,50 @@ export abstract class ApplicationMenu {
      */
     public getEditMenu(): Menu {
         const editMenu = new Menu();
+        /* eslint-disable jsdoc/require-jsdoc */
         this.undoMenu = new MenuItem({
-            role: "undo", // eslint-disable-line jsdoc/require-jsdoc
+            role: "undo",
         });
         editMenu.append(this.undoMenu);
         this.redoMenu = new MenuItem({
-            role: "redo", // eslint-disable-line jsdoc/require-jsdoc
+            role: "redo",
         });
         editMenu.append(this.redoMenu);
         editMenu.append(this.getSeparator());
         this.cutMenu = new MenuItem({
-            role: "cut", // eslint-disable-line jsdoc/require-jsdoc
+            role: "cut",
         });
         editMenu.append(this.cutMenu);
         this.copyMenu = new MenuItem({
-            role: "copy", // eslint-disable-line jsdoc/require-jsdoc
+            role: "copy",
         });
         editMenu.append(this.copyMenu);
         this.pasteMenu = new MenuItem({
-            role: "paste", // eslint-disable-line jsdoc/require-jsdoc
+            role: "paste",
         });
         editMenu.append(this.pasteMenu);
         this.selectAllMenu = new MenuItem({
-            role: "selectAll", // eslint-disable-line jsdoc/require-jsdoc
+            role: "selectAll",
         });
         editMenu.append(this.selectAllMenu);
+        /* eslint-enable */
         return editMenu;
     }
 
     /**
      * Show hide address bar.
-     * @param acceleratorStr Keyboard shortcut
+     * @param acceleratorStr Keyboard shortcut.
      * @returns Show hide address bar menu item.
      */
     public getShowAddressBarMenu(acceleratorStr: string): MenuItem {
+        /* eslint-disable jsdoc/require-jsdoc */
         return new MenuItem({
-            label: "Toggle address bar", // eslint-disable-line jsdoc/require-jsdoc
-            accelerator: acceleratorStr, // eslint-disable-line jsdoc/require-jsdoc
-            click: () => { this.mainApp.getCurrentWindow()?.webContents.send(IPC_MAIN_RENDERER, ""); }, // eslint-disable-line jsdoc/require-jsdoc
+            label: "Toggle address bar",
+            accelerator: acceleratorStr,
+            click: () => { this.mainApp.getCurrentWindow()?.webContents.send(IPC_MAIN_RENDERER, ""); },
         });
+        /* eslint-enable */
     }
-
 
     /**
      * Build Help submenu.
@@ -136,11 +136,13 @@ export abstract class ApplicationMenu {
      */
     public getHelpMenu(acceleratorStr: string): Menu {
         const helpMenu = new Menu();
+        /* eslint-disable jsdoc/require-jsdoc */
         helpMenu.append(new MenuItem({
-            role: "help", // eslint-disable-line jsdoc/require-jsdoc
-            //label: `${this.appName}-Help`, // eslint-disable-line jsdoc/require-jsdoc
-            accelerator: acceleratorStr, // eslint-disable-line jsdoc/require-jsdoc
+            role: "help",
+            // label: `${this.appName}-Help`, 
+            accelerator: acceleratorStr,
         }));
+        /* eslint-enable */
         return helpMenu;
     }
 

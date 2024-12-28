@@ -8,8 +8,7 @@ import * as $Utils from "./Utils";
  */
 export interface ISettings {
     /**
-     * Properties of a browser window.
-     * Currently only the offset and the size are stored.
+     * Properties of a browser window. Currently only the offset and the size are stored.
      */
     Window: {
         /**
@@ -21,8 +20,8 @@ export interface ISettings {
          */
         Top: number;
         /**
-         * Treat Left and Top as relative to the the current screen. The
-         * current screen is the one with the mouse cursor inside it.
+         * Treat Left and Top as relative to the the current screen. The current screen is the one
+         * with the mouse cursor inside it.
          */
         LeftTopOfCurrentScreen: boolean;
         /**
@@ -186,7 +185,7 @@ export interface ISettings {
     DarwinForceFocus: boolean;
     /**
      * Array of values passed on to Electron as additional command line switches/params.
-     * See https://www.electronjs.org/docs/latest/api/command-line-switches
+     * @see https://www.electronjs.org/docs/latest/api/command-line-switches
      */
     ElectronFlags: string[];
     /**
@@ -325,8 +324,7 @@ export function getDefaultSettings(): ISettings {
 }
 
 /**
- * Get current app settings object.
- * If reading from file fails, default settings are returned.
+ * Get current app settings object. If reading from file fails, default settings are returned.
  * @param configFile Full path of the settings file.
  * @returns The current app settings obtained from `configFile` or default settings.
  */

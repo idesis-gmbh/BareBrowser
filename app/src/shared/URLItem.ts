@@ -24,8 +24,8 @@ export interface IURLItem {
 }
 
 /**
- * Creates a URLItem object from a given string.
- * This can result in either a URL for the web (https://) or a file (file://).
+ * Creates a URLItem object from a given string. This can result in either a URL for the web
+ * (`https://`) or a file (`file://`).
  * @param url The URL string to be parsed.
  * @param scheme A custom protocol scheme.
  * @returns A URLItem object.

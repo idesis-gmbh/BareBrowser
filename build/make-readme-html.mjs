@@ -2,21 +2,21 @@
 // https://stackoverflow.com/questions/7694887/is-there-a-command-line-utility-for-rendering-github-flavored-markdown
 // jq --slurp --raw-input  '{"text": "\(.)", "mode": "markdown"}' < ./app/_root/README.md | curl -H "Accept: application/vnd.github.v3+json" --data @- https://api.github.com/markdown > ./app/_root/README.txt
 
-const fse = require("fs");
+import fse from "fs-extra";
 const readme = process.argv[2];
 const htmlTemplate = readme.replace(/.md$/, ".html");
 if (!fse.existsSync(readme) || !fse.existsSync(htmlTemplate)) {
-    return;
+    process.exit(0);
 }
 
 const placeHolder = "<!-- README.md -->";
 const htmlTemplateContent = fse.readFileSync(htmlTemplate).toString();
 if (htmlTemplateContent.indexOf(placeHolder) === -1) {
-    return;
+    process.exit(0);
 }
 
 try {
-    const { Octokit } = require("@octokit/core");
+    const { Octokit } = await import("@octokit/core");
 
     async function makeReadmeHTML() {
         let githubHTML = await new Octokit({

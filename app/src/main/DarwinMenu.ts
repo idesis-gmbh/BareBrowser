@@ -7,8 +7,7 @@ import { MainApplication } from "./MainApplication";
  * The menu for the application on Darwin platforms.
  */
 export class DarwinMenu extends ApplicationMenu {
-
-    // PasteAndMatchStyle commonly is only available on Darwin
+    // PasteAndMatchStyle commonly is only available on Darwin.
     private pasteAndMatchStyleMenu: MenuItem;
 
     /**
@@ -18,7 +17,7 @@ export class DarwinMenu extends ApplicationMenu {
      * @param settings The application settings.
      * @param appName The name of the application.
      */
-    constructor(protected mainApp: MainApplication, protected settings: ISettings, protected appName: string) {
+    constructor(protected override mainApp: MainApplication, protected override settings: ISettings, protected override appName: string) {
         super(mainApp, settings, appName);
         this.mainMenu = new Menu();
         this.mainMenu.append(this.buildAppMenu());
@@ -40,8 +39,9 @@ export class DarwinMenu extends ApplicationMenu {
      */
     private buildAppMenu(): MenuItem {
         const appMenu = new Menu();
+        /* eslint-disable jsdoc/require-jsdoc */
         appMenu.append(new MenuItem({
-            role: "about", // eslint-disable-line jsdoc/require-jsdoc
+            role: "about",
         }));
         // appMenu.append(this.getSeparator());
         // appMenu.append(new MenuItem({
@@ -50,27 +50,28 @@ export class DarwinMenu extends ApplicationMenu {
         // }));
         appMenu.append(this.getSeparator());
         appMenu.append(new MenuItem({
-            role: "services", // eslint-disable-line jsdoc/require-jsdoc
-            submenu: new Menu(), // eslint-disable-line jsdoc/require-jsdoc
+            role: "services",
+            submenu: new Menu(),
         }));
         appMenu.append(this.getSeparator());
         appMenu.append(new MenuItem({
-            role: "hide", // eslint-disable-line jsdoc/require-jsdoc
+            role: "hide",
         }));
         appMenu.append(new MenuItem({
-            role: "hideOthers", // eslint-disable-line jsdoc/require-jsdoc
+            role: "hideOthers",
         }));
         appMenu.append(new MenuItem({
-            role: "unhide", // eslint-disable-line jsdoc/require-jsdoc
+            role: "unhide",
         }));
         appMenu.append(this.getSeparator());
         appMenu.append(new MenuItem({
-            role: "quit", // eslint-disable-line jsdoc/require-jsdoc
+            role: "quit",
         }));
         return new MenuItem({
-            label: "App", // eslint-disable-line jsdoc/require-jsdoc
-            submenu: appMenu, // eslint-disable-line jsdoc/require-jsdoc
+            label: "App",
+            submenu: appMenu,
         });
+        /* eslint-enable */
     }
 
     /**
@@ -79,14 +80,16 @@ export class DarwinMenu extends ApplicationMenu {
      */
     private buildEditMenu(): MenuItem {
         const editMenu: Menu = super.getEditMenu();
+        /* eslint-disable jsdoc/require-jsdoc */
         this.pasteAndMatchStyleMenu = new MenuItem({
-            role: "pasteAndMatchStyle", // eslint-disable-line jsdoc/require-jsdoc
+            role: "pasteAndMatchStyle",
         });
         editMenu.append(this.pasteAndMatchStyleMenu);
         return new MenuItem({
-            role: "editMenu", // eslint-disable-line jsdoc/require-jsdoc
-            submenu: editMenu, // eslint-disable-line jsdoc/require-jsdoc
+            role: "editMenu",
+            submenu: editMenu,
         });
+        /* eslint-enable */
     }
 
     /**
@@ -95,36 +98,38 @@ export class DarwinMenu extends ApplicationMenu {
      */
     private buildWindowMenu(): MenuItem {
         const windowMenu = new Menu();
+        /* eslint-disable jsdoc/require-jsdoc */
         windowMenu.append(new MenuItem({
-            role: "minimize", // eslint-disable-line jsdoc/require-jsdoc
+            role: "minimize",
         }));
         windowMenu.append(new MenuItem({
-            role: "close", // eslint-disable-line jsdoc/require-jsdoc
+            role: "close",
         }));
         windowMenu.append(new MenuItem({
-            role: "zoom", // eslint-disable-line jsdoc/require-jsdoc
+            role: "zoom",
         }));
         windowMenu.append(new MenuItem({
-            role: "togglefullscreen", // eslint-disable-line jsdoc/require-jsdoc
-        }));
-        windowMenu.append(this.getSeparator());
-        windowMenu.append(new MenuItem({
-            role: "zoomIn", // eslint-disable-line jsdoc/require-jsdoc
-        }));
-        windowMenu.append(new MenuItem({
-            role: "zoomOut", // eslint-disable-line jsdoc/require-jsdoc
-        }));
-        windowMenu.append(new MenuItem({
-            role: "resetZoom", // eslint-disable-line jsdoc/require-jsdoc
+            role: "togglefullscreen",
         }));
         windowMenu.append(this.getSeparator());
         windowMenu.append(new MenuItem({
-            role: "front", // eslint-disable-line jsdoc/require-jsdoc
+            role: "zoomIn",
+        }));
+        windowMenu.append(new MenuItem({
+            role: "zoomOut",
+        }));
+        windowMenu.append(new MenuItem({
+            role: "resetZoom",
+        }));
+        windowMenu.append(this.getSeparator());
+        windowMenu.append(new MenuItem({
+            role: "front",
         }));
         return new MenuItem({
-            role: "window", // eslint-disable-line jsdoc/require-jsdoc
-            submenu: windowMenu, // eslint-disable-line jsdoc/require-jsdoc
+            role: "window",
+            submenu: windowMenu,
         });
+        /* eslint-enable */
     }
 
     /**
@@ -138,5 +143,4 @@ export class DarwinMenu extends ApplicationMenu {
     //         submenu: helpMenu,
     //     });
     // }
-
 }
