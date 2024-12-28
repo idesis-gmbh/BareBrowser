@@ -3,8 +3,8 @@
   "productName": "BareBrowser",
   "description": "A minimalist browser for specific tasks in controlled environments.",
   "companyname": "idesis GmbH",
-  "copyright": "©2023 idesis GmbH",
   "version": "3.0.4",
+  "copyright": "©2024 idesis GmbH",
   "-buildVersion": 4367,
   "identifier": "de.idesis.barebrowser",
   "identifierRoot": "",
@@ -17,7 +17,7 @@
   "homepage": "https://github.com/idesis-gmbh/BareBrowser",
   "author": {
     "name": "Michael Nitze",
-    "email": "michael.nitze@idesis.de"
+    "email": "michael.nitze@michael-nitze.de"
   },
   "repository": {
     "type": "git",
@@ -26,7 +26,7 @@
   "readme": "README.md",
   "bugs": {
     "url": "https://github.com/idesis-gmbh/BareBrowser/issues",
-    "email": "produktion@idesis.de"
+    "email": "michael.nitze@michael-nitze.de"
   },
   "private": false,
   "license": "MIT",
