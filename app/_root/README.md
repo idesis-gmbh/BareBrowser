@@ -45,7 +45,7 @@ BareBrowser runs on macOS, Windows and Linux platforms. The supported OS version
 version of the underlying Electron platform but in general the current release of BareBrowser should
 run on
 
-- macOS High Sierra (10.13) and newer,
+- macOS BigSur (macOS 11) and newer,
 - Windows 10 and newer,
 - Linux
     - Ubuntu 14.04 and newer
