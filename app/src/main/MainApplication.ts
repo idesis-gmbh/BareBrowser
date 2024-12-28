@@ -1,7 +1,6 @@
 import { spawn } from "child_process";
 import { app, BrowserWindow, ContextMenuParams, dialog, ipcMain, Menu, MenuItem, protocol, Rectangle, screen, session, webContents } from "electron";
 import { HandlerDetails } from "electron/main";
-import { Readable } from "stream";
 import { APP_INFO } from "../shared/AppInfo";
 import * as $Consts from "../shared/Consts";
 import { IPC, IPC_MAIN_RENDERER } from "../shared/IPC";
@@ -9,7 +8,7 @@ import { $FSE, $Path, $URL } from "../shared/Modules";
 import * as $Settings from "../shared/Settings";
 import { AnyObject } from "../shared/Types";
 import { getURLItem, isSameOrigin, IURLItem } from "../shared/URLItem";
-import { format, getDirectoryListing, getMimeTypeFromFileExtension, IDirectoryListing } from "../shared/Utils";
+import { format, getDirectoryListing, getMimeTypeFromFileExtension, IDirectoryListing, MIME_TYPES } from "../shared/Utils";
 import { ApplicationMenu } from "./ApplicationMenu";
 import { DarwinMenu } from "./DarwinMenu";
 import { LinuxWin32Menu } from "./LinuxWin32Menu";
@@ -1048,90 +1047,98 @@ export class MainApplication {
      * Register and handle BareBrowsers internal protocol.
      */
     private registerCustomProtocol(): void {
-        protocol.registerStreamProtocol(this.settings.Scheme, (request, callback) => {
+        protocol.handle(this.settings.Scheme, (request): GlobalResponse => {
             /**
-             * Execute callback with the content of the file or send 404 with message.
+             * Create and return a `Response` based on a message (string).
+             * @param message The content/message of the response.
+             * @param statusCode The status code of the response.
+             * @param contentType The content type to be used for the response.
+             * @returns A `Response` based on a message {string}.
+             */
+            const messageResponse = (message: string, statusCode: number, contentType: string): GlobalResponse => {
+                return new Response(
+                    message,
+                    {
+                        /* eslint-disable jsdoc/require-jsdoc */
+                        status: statusCode,
+                        headers: {
+                            "content-type": contentType
+                        }
+                        /* eslint-enable */
+                    }
+                );
+            };
+
+            /**
+             * Create and return a `Response` with the content of a file or a 404 response error
+             * containing an error message.
              * @param fileName The file name of the resource to load.
              * @param resourceName The original name of the resource.
-             * @param mimeType The mime type to return.
-             * @returns `true`, if the resource could be loaded.
+             * @param contentType The content type to be used for the response.
+             * @returns A `Response` with the result of the request.
              */
-            const maybeReturnFileConent = (fileName: string, resourceName: string, mimeType?: string): boolean => {
-                /* eslint-disable jsdoc/require-jsdoc */
-                if ($FSE.existsSync(fileName)) {
-                    if (!mimeType) {
-                        mimeType = getMimeTypeFromFileExtension($Path.extname(fileName));
-                    }
-                    callback({
-                        mimeType: mimeType,
-                        data: $FSE.createReadStream(fileName),
-                        // headers: { "Access-Control-Allow-Origin": "*" }
-                    });
-                    return true;
-                } else {
-                    callback({
-                        statusCode: 404,
-                        mimeType: "text/plain",
-                        data: Readable.from(Buffer.from(`404 - Resource not found: ${resourceName}\n=> ${fileName}`))
-                    });
-                    return false;
+            const fileContentResponse = (fileName: string, resourceName: string, contentType?: string): GlobalResponse => {
+                if (!$FSE.existsSync(fileName)) {
+                    return messageResponse(`404 - Resource not found: ${resourceName}\n=> ${fileName}`, 404, "text/plain");
                 }
-                /* eslint-enable */
+                return new Response(
+                    $FSE.readFileSync(fileName),
+                    {
+                        /* eslint-disable jsdoc/require-jsdoc */
+                        status: 200,
+                        headers: {
+                            "content-type": contentType ?? getMimeTypeFromFileExtension($Path.extname(fileName)) ?? MIME_TYPES.BINARY
+                        }
+                        /* eslint-enable */
+                    }
+                );
             };
+
             // Handle URL
             const originalURL = request.url;
             const parsedURL = new $URL.URL(originalURL);
             const host = parsedURL.host.toLowerCase();
             // Requested by, for example, README.html
             if (parsedURL.pathname !== "/") {
-                maybeReturnFileConent($Path.join(APP_INFO.APP_PATH_PKG, parsedURL.pathname.substring(1)), originalURL);
-                return;
+                return fileContentResponse($Path.join(APP_INFO.APP_PATH_PKG, parsedURL.pathname.substring(1)), originalURL);
             }
             // Select resource
             const windowEntry = this.getBrowserWindowEntry(this.getCurrentWindow()?.id);
             try {
-                /* eslint-disable jsdoc/require-jsdoc */
+                let response: Response | undefined = undefined;
                 switch (host) {
                     // Known internal URLs
                     case "home":
-                        maybeReturnFileConent(`${APP_INFO.APP_PATH_PKG}home.html`, originalURL/* , "text/html" */);
-                        return;
+                        return fileContentResponse(`${APP_INFO.APP_PATH_PKG}home.html`, originalURL, "text/html");
                     case "settings":
-                        callback({
-                            mimeType: "application/json",
-                            data: Readable.from(Buffer.from(JSON.stringify(this.settings, null, 2)))
-                        });
                         this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | Settings`);
-                        return;
+                        return messageResponse(JSON.stringify(this.settings, null, 2), 200, "application/json");
                     case "info":
-                        callback({
-                            mimeType: "application/json",
-                            data: Readable.from(Buffer.from(JSON.stringify(APP_INFO, null, 2)))
-                        });
                         this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | Info`);
-                        return;
+                        return messageResponse(JSON.stringify(APP_INFO, null, 2), 200, "application/json");
                     case "readme":
-                        maybeReturnFileConent(`${APP_INFO.APP_PATH_PKG}README.html`, originalURL/* , "text/html" */);
-                        return;
+                        return fileContentResponse(`${APP_INFO.APP_PATH_PKG}README.html`, originalURL, "text/html");
                     case "readme.md":
-                        if (maybeReturnFileConent(`${APP_INFO.APP_PATH_PKG}README.md`, originalURL/* , "text/plain" */)) {
+                        response = fileContentResponse(`${APP_INFO.APP_PATH_PKG}README.md`, originalURL, "text/plain");
+                        if (response.status === 200) {
                             this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | README.md`);
                         }
-                        return;
+                        return response;
                     case "license":
-                        if (maybeReturnFileConent(`${APP_INFO.APP_PATH_PKG}LICENSE`, originalURL, "text/plain")) {
+                        response = fileContentResponse(`${APP_INFO.APP_PATH_PKG}LICENSE`, originalURL, "text/plain");
+                        if (response.status === 200) {
                             this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | LICENSE`);
                         }
-                        return;
+                        return response;
                     case "changes":
-                        if (maybeReturnFileConent(`${APP_INFO.APP_PATH_PKG}CHANGES`, originalURL, "text/plain")) {
+                        response = fileContentResponse(`${APP_INFO.APP_PATH_PKG}CHANGES`, originalURL, "text/plain");
+                        if (response.status === 200) {
                             this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | CHANGES`);
                         }
-                        return;
+                        return response;
                     case "reload":
                     case "back":
                     case "forward":
-                        callback({ statusCode: 304, mimeType: "text/plain", data: Readable.from(Buffer.from("")) });
                         if (windowEntry) {
                             if (host === "reload") {
                                 setImmediate(() => this.handleRequest("<RELOAD>", "<RELOAD>", windowEntry.WebViewWebContentsID, NavigationType.RELOAD));
@@ -1141,32 +1148,21 @@ export class MainApplication {
                                 setImmediate(() => this.handleRequest("<FORWARD>", "<FORWARD>", windowEntry.WebViewWebContentsID, NavigationType.FORWARD));
                             }
                         }
-                        return;
+                        return messageResponse("", 200, "text/plain");
                     case "close":
-                        callback({ statusCode: 204, mimeType: "text/plain", data: Readable.from(Buffer.from("")) });
                         if (windowEntry) {
                             setImmediate(() => windowEntry.Window.close());
                         }
-                        return;
+                        return messageResponse("", 204, "text/plain");
                     // Unknown URL
                     default:
-                        callback({
-                            statusCode: 404,
-                            mimeType: "text/plain",
-                            data: Readable.from(Buffer.from(`404 - Unknown URL: ${parsedURL.toString()}`))
-                        });
                         this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | 404 not found.`);
-                        break;
+                        return messageResponse(`404 - Unknown URL: ${parsedURL.toString()}`, 404, "text/plain");
                 }
             } catch (error) {
-                callback({
-                    statusCode: 500,
-                    mimeType: "text/plain",
-                    data: Readable.from(Buffer.from(`Error loading resource: ${parsedURL.toString()}\n\n${error}`))
-                });
                 this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | Error`);
+                return messageResponse(`Error loading resource: ${parsedURL.toString()}\n\n${error}`, 500, "text/plain");
             }
-            /* eslint-enable */
         });
     }
 
