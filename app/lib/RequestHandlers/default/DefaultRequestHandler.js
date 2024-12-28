@@ -83,16 +83,16 @@ class DefaultRequestHandler {
                     break;
                 // Go back
                 case NAV_BACK:
-                    if (this.webContents.canGoBack()) {
+                    if (this.webContents.navigationHistory.canGoBack()) {
                         this.log("Going back");
-                        this.webContents.goBack();
+                        this.webContents.navigationHistory.goBack();
                     }
                     break;
                 // Go forward
                 case NAV_FORWARD:
-                    if (this.webContents.canGoForward()) {
+                    if (this.webContents.navigationHistory.canGoForward()) {
                         this.log("Going forward");
-                        this.webContents.goForward();
+                        this.webContents.navigationHistory.goForward();
                     }
                     break;
                 // Implicitly NAV_INTERNAL. Issued, for example, if the

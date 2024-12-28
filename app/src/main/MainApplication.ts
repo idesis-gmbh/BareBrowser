@@ -842,14 +842,14 @@ export class MainApplication {
                 break;
             case IPC.GO_BACK:
                 if (windowEntry) {
-                    if (windowEntry.WebViewWebContents.canGoBack()) {
+                    if (windowEntry.WebViewWebContents.navigationHistory.canGoBack()) {
                         this.handleRequest("<BACK>", "<BACK>", windowEntry.WebViewWebContentsID, NavigationType.BACK);
                     }
                 }
                 break;
             case IPC.GO_FORWARD:
                 if (windowEntry) {
-                    if (windowEntry.WebViewWebContents.canGoForward()) {
+                    if (windowEntry.WebViewWebContents.navigationHistory.canGoForward()) {
                         this.handleRequest("<FORWARD>", "<FORWARD>", windowEntry.WebViewWebContentsID, NavigationType.FORWARD);
                     }
                 }
