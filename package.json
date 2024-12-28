@@ -24,6 +24,12 @@
   },
   "license": "MIT",
   "scripts": {
+    "testJiveX_Initial": "./build/tmp/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron ./out/ \"http://rd-release53/jivexmobile/?authenticationUser=qa&password=qa&user=qa&mode=query&patientsName=*\"",
+    "testJiveX_a*": "./build/tmp/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron ./out/ \"http://rd-release53/jivexmobile/?authenticationUser=qa&password=qa&user=qa&mode=query&patientsName=a*\"",
+    "testJiveX_b*": "./build/tmp/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron ./out/ \"http://rd-release53/jivexmobile/?authenticationUser=qa&password=qa&user=qa&mode=query&patientsName=b*\"",
+    "testJiveX_Archive": "./build/tmp/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron ./out/ \"http://rd-release53/jivexmobile/?authenticationUser=qa&password=qa&user=qa&mode=query&patientsID=11624753553&view=archive\"",
+    "testBB": "./build/tmp/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron ./out/ \"http://rd-release53/jivexmobile/?login=Admin&password=Admin&mode=query&patientsName=Vergen (ÖöÄäÜü)\"",
+    "testBB2": "./build/tmp/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron ./out/ \"http://rd-release53/jivexmobile/?login=Admin&password=Admin&mode=query&patientsName=Vergen (ÖöÄäÜüß)\"",
     "test": "npm run cmd --  electron ./out/ 'https://github.com/idesis-gmbh/BareBrowser'",
     "test_settings": "npm run cmd --  electron ./out/ settings:",
     "test_info:": "npm run cmd --  electron ./out/ bb://info:",
@@ -146,7 +152,7 @@
   },
   "dependencies": {
     "@octokit/core": "6.1.2",
-    "electron-packager": "17.1.2",
+    "@electron/packager": "18.3.6",
     "fs-extra": "11.2.0",
     "npm-run-all": "4.1.5",
     "onchange": "7.1.0",
