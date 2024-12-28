@@ -1,3 +1,25 @@
+# 4.0.0
+
+## Bugs
+
+- Fixed internal window handling due to Electron API changes.
+
+## Changes
+
+- Updated dependencies/development dependencies and upgraded to Electron 33.3.0.
+- **BREAKING**: Request handlers now need to use `this.webContents.navigationHistory.canGoBack()`,
+  `this.webContents.navigationHistory.goBack()` etc. instead of `this.webContents.canGoBack()`,
+  `this.webContents.goBack()` etc. (caused by deprecations in the Electron API). See
+  [Planned Breaking API Changes for Electron `32.0`](https://www.electronjs.org/docs/latest/breaking-changes#planned-breaking-api-changes-320).
+  Using `this.webContents.canGoBack()` etc. will still work for some time but it is recommended to
+  adapt all your own or customized request handlers!
+- **BREAKING**: The minimum requirement to *build BareBrowser 4.0.0* is now Node.js 16.4.0.
+- **BREAKING**: The minimum requirement to *run BareBrowser 4.0.0 on macOS* is now macOS BigSur
+  (macOS 11). If you need to support older versions of macOS you can build BareBrowser with an older
+  version of Electron, for example Electron 31.x which is still supported, runs on macOS Catalina
+  (10.15) and is compatible with BareBrowser.
+
+
 # 3.0.4
 
 This is a pure maintenance release to keep up with newer Electron versions and to update some
