@@ -146,7 +146,7 @@
   },
   "dependencies": {
     "@octokit/core": "6.1.2",
-    "electron-packager": "17.1.2",
+    "@electron/packager": "18.3.6",
     "fs-extra": "11.2.0",
     "npm-run-all": "4.1.5",
     "onchange": "7.1.0",
