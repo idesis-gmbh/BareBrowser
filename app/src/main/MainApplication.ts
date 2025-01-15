@@ -1,7 +1,6 @@
 import { spawn } from "child_process";
-import { app, BrowserWindow, dialog, ipcMain, Menu, MenuItem, Params, protocol, Rectangle, screen, session, webContents } from "electron";
+import { app, BrowserWindow, ContextMenuParams, dialog, ipcMain, Menu, MenuItem, protocol, Rectangle, screen, session, webContents } from "electron";
 import { HandlerDetails } from "electron/main";
-import { Readable } from "stream";
 import { APP_INFO } from "../shared/AppInfo";
 import * as $Consts from "../shared/Consts";
 import { IPC, IPC_MAIN_RENDERER } from "../shared/IPC";
@@ -9,7 +8,7 @@ import { $FSE, $Path, $URL } from "../shared/Modules";
 import * as $Settings from "../shared/Settings";
 import { AnyObject } from "../shared/Types";
 import { getURLItem, isSameOrigin, IURLItem } from "../shared/URLItem";
-import { format, getDirectoryListing, getMimeTypeFromFileExtension, IDirectoryListing } from "../shared/Utils";
+import { format, getDirectoryListing, getMimeTypeFromFileExtension, IDirectoryListing, MIME_TYPES } from "../shared/Utils";
 import { ApplicationMenu } from "./ApplicationMenu";
 import { DarwinMenu } from "./DarwinMenu";
 import { LinuxWin32Menu } from "./LinuxWin32Menu";
@@ -26,26 +25,6 @@ interface ICmdLineArgs {
 }
 
 /**
- * Current Electron TypeScript definitions lack proper definitions for on 'close', 'closed' and
- * 'focus' window events.
- * @see `onWindowClose`, `onWindowClosed` and `onWindowFocus`.
- */
-interface IBrowserWindowEvent extends Electron.Event {
-    /** The event sending browser window. */
-    sender: Electron.BrowserWindow;
-}
-
-/**
- * Current Electron TypeScript definitions lack a proper definition for on 'context-menu' window
- * events.
- * @see `onRendererPopupMenu`.
- */
-interface IWebContentsEvent extends Electron.Event {
-    /** The event sending web contents. */
-    sender: Electron.WebContents;
-}
-
-/**
  * Holds a BrowserWindow, the webContents of the webview tag hosted by the browser window
  * and a group of request handlers.
  */
@@ -59,10 +38,42 @@ interface IWindowEntry {
 }
 
 /**
+ * Class that holds an instance of a browser window.
+ */
+class Renderer {
+    private window: BrowserWindow;
+
+    /**
+     * Create renderer with a browser window.
+     * @param owner The instance of `MainApplication` that owns this renderer.
+     * @param bwOptions Options for creating the browser window.
+     */
+    constructor(
+        private owner: MainApplication,
+        private bwOptions: Electron.BrowserWindowConstructorOptions
+    ) {
+        this.window = new BrowserWindow(this.bwOptions);
+        this.window.on("focus", () => this.owner.onWindowFocus(this.window));
+        this.window.on("close", () => this.owner.onWindowClose(this.window));
+        this.window.on("closed", () => this.owner.onWindowClosed(this.window));
+        this.window.webContents.on("context-menu", (ev: Electron.Event, params: ContextMenuParams) => {
+            ev.preventDefault();
+            this.owner.onRendererPopupMenu(this.window.webContents, params);
+        });
+    }
+
+    /**
+     * Get the browser window of this renderer instance.
+     */
+    public get Window(): BrowserWindow {
+        return this.window;
+    }
+}
+
+/**
  * The class for the main application part. Only one instamce will be created.
  */
 export class MainApplication {
-
     private appURLPath = APP_INFO.Platform === "win32" ? `file:///${APP_INFO.APP_PATH.replaceAll("\\", "/")}` : `file://${APP_INFO.APP_PATH}`;
     private userDataDirectory: string;
     private tempDir: string;
@@ -94,8 +105,8 @@ export class MainApplication {
         }
         // Next, check if another instance is aleady running.
         if (app.requestSingleInstanceLock()) {
-            // No other instance is running, in this case release the lock
-            // again unless the configuration demands single instance mode.
+            // No other instance is running, in this case release the lock again unless the
+            // configuration demands single instance mode.
             if (!this.settings.SingleInstance) {
                 app.releaseSingleInstanceLock();
             }
@@ -177,7 +188,9 @@ export class MainApplication {
                 contextIsolation: false,
             },
             show: !behindCurrent,
-            icon: APP_INFO.Platform === "linux" ? $Path.join(APP_INFO.APP_PATH_PKG, "dockicon.png") : undefined,
+            icon: APP_INFO.Platform === "linux"
+                ? $Path.join(APP_INFO.APP_PATH_PKG, "dockicon.png")
+                : undefined,
         };
         /* eslint-enable */
         // Place first window?
@@ -205,52 +218,45 @@ export class MainApplication {
             bwOptions.width = this.settings.Window.Width;
             bwOptions.height = this.settings.Window.Height;
         }
-        // Create the browser window ...
-        const window: BrowserWindow = new BrowserWindow(bwOptions);
+        // Create a renderer instance with a browser window ...
+        const renderer: Renderer = new Renderer(this, bwOptions);
         if (placeFirstWindow) {
             if (lastWinPos.State === 2) {
-                window.setFullScreen(true);
+                renderer.Window.setFullScreen(true);
             } else if (lastWinPos.State === 1) {
-                window.maximize();
+                renderer.Window.maximize();
             } else if (lastWinPos.State === -1) {
-                window.minimize();
+                renderer.Window.minimize();
             }
         }
-        window.setContentProtection(this.settings.ContentProtection);
-        // ... bind focus, close, closed and context menu handlers to it ...
-        window.on("focus", this.onWindowFocus.bind(this));
-        // @ts-ignore Why isn't this properly typed in electron.d.ts?
-        window.on("close", this.onWindowClose.bind(this));
-        window.on("closed", this.onWindowClosed.bind(this));
-        // @ts-ignore Why isn't this properly typed in electron.d.ts?
-        window.webContents.on("context-menu", this.onRendererPopupMenu.bind(this));
-        /* eslint-disable jsdoc/require-jsdoc */
+        renderer.Window.setContentProtection(this.settings.ContentProtection);
         // ... and load index.html.
         const urlObject: $URL.UrlObject = {
+            /* eslint-disable jsdoc/require-jsdoc */
             pathname: $Path.join(__dirname, "..", "index.html"),
             protocol: "file:",
             slashes: true,
+            /* eslint-enable */
         };
-        /* eslint-enable */
         // Set title to product name from ../package.json
-        this.setWindowTitle(window, APP_INFO.ProductName);
-        // Load
-        await window.loadURL($URL.format(urlObject));
+        this.setWindowTitle(renderer.Window, APP_INFO.ProductName);
+        // Load initial URL.
+        await renderer.Window.loadURL($URL.format(urlObject));
         if (behindCurrent) {
             const current = BrowserWindow.getFocusedWindow();
             if (current) {
-                window.showInactive();
+                renderer.Window.showInactive();
                 current.moveTop();
                 this.setForegoundWindow(current);
             } else {
                 // Safe fallback
-                window.show();
+                renderer.Window.show();
             }
         }
         // Tell renderer its own window id.
-        window.webContents.send(IPC_MAIN_RENDERER, IPC.WINDOW_CREATED, window.id);
+        renderer.Window.webContents.send(IPC_MAIN_RENDERER, IPC.WINDOW_CREATED, renderer.Window.id);
         console.log("Creating new window done.");
-        return window;
+        return renderer.Window;
     }
 
     /**
@@ -341,13 +347,12 @@ export class MainApplication {
      */
     private getInitialURLItem(): void {
         const cmdLineArgs = this.parseArgs(process.argv);
-        if (cmdLineArgs.URL !== "") {
-            let testURL: string;
-            if (cmdLineArgs.URL.startsWith("new:")) {
-                testURL = cmdLineArgs.URL.substring(4);
-            } else {
-                testURL = cmdLineArgs.URL;
-            }
+        if (cmdLineArgs.URL === "") {
+            this.currentUrlItem = getURLItem("", this.settings.Scheme);
+        } else {
+            const testURL = cmdLineArgs.URL.startsWith("new:")
+                ? cmdLineArgs.URL.substring(4)
+                : cmdLineArgs.URL;
             // on startupt these commands don't make sense, ignore.
             if ([
                 `${this.settings.Scheme}://reload`,
@@ -358,8 +363,6 @@ export class MainApplication {
                 cmdLineArgs.URL = "";
             }
             this.currentUrlItem = getURLItem(this.handleBuiltinURLs(cmdLineArgs.URL), this.settings.Scheme);
-        } else {
-            this.currentUrlItem = getURLItem("", this.settings.Scheme);
         }
     }
 
@@ -392,13 +395,11 @@ export class MainApplication {
                 case 0:
                     Menu.setApplicationMenu(null);
                     break;
-
                 // Menu for Linux/Windows allowed but initially hidden
                 case 1:
                     this.appMenu = new LinuxWin32Menu(this, this.settings, APP_INFO.ProductName);
                     Menu.setApplicationMenu(null);
                     break;
-
                 // Allow and show menu for Linux/Windows
                 case 2:
                     this.appMenu = new LinuxWin32Menu(this, this.settings, APP_INFO.ProductName);
@@ -417,33 +418,34 @@ export class MainApplication {
     private loadRequestHandlers(webContents: Electron.WebContents, browserWindow: BrowserWindow): RequestHandler[] {
         const handlers = [];
         for (const handler of this.settings.RequestHandlers) {
-            if (handler.Load) {
-                try {
-                    let requestHandlerSource: string;
-                    if ($Path.isAbsolute(handler.Source)) {
-                        requestHandlerSource = handler.Source;
-                    } else {
-                        // First, load from real file system
-                        requestHandlerSource = $Path.resolve(APP_INFO.APP_PATH, handler.Source);
-                        if (!$FSE.existsSync(requestHandlerSource)) {
-                            // Next, try to load from file system inside app.asar
-                            requestHandlerSource = $Path.resolve(APP_INFO.APP_PATH_PKG, handler.Source);
-                        }
+            if (!handler.Load) {
+                continue;
+            }
+            try {
+                let requestHandlerSource: string;
+                if ($Path.isAbsolute(handler.Source)) {
+                    requestHandlerSource = handler.Source;
+                } else {
+                    // First, load from real file system
+                    requestHandlerSource = $Path.resolve(APP_INFO.APP_PATH, handler.Source);
+                    if (!$FSE.existsSync(requestHandlerSource)) {
+                        // Next, try to load from file system inside app.asar
+                        requestHandlerSource = $Path.resolve(APP_INFO.APP_PATH_PKG, handler.Source);
                     }
-                    // eslint-disable-next-line @typescript-eslint/no-var-requires
-                    const handlerClass: typeof RequestHandler = require(requestHandlerSource) as typeof RequestHandler;
-                    const classInstance: RequestHandler = new handlerClass(
-                        handler.Config,
-                        this.settings,
-                        handler.Active,
-                        webContents,
-                        browserWindow,
-                    );
-                    classInstance.IsActive = handler.Active;
-                    handlers.push(classInstance);
-                } catch (error) {
-                    console.error(`Error loading URL handler from: ${handler.Source}\n${error as Error}`);
                 }
+                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                const handlerClass: typeof RequestHandler = require(requestHandlerSource) as typeof RequestHandler;
+                const classInstance: RequestHandler = new handlerClass(
+                    handler.Config,
+                    this.settings,
+                    handler.Active,
+                    webContents,
+                    browserWindow,
+                );
+                classInstance.IsActive = handler.Active;
+                handlers.push(classInstance);
+            } catch (error) {
+                console.error(`Error loading URL handler from: ${handler.Source}\n${error as Error}`);
             }
         }
         return handlers;
@@ -484,8 +486,7 @@ export class MainApplication {
     }
 
     /**
-     * Setup *after* app is ready.
-     * Most other settings must be applied earlier.
+     * Setup *after* app is ready. Most other settings must be applied earlier.
      */
     private postAppReadySetup(): void {
         this.setApplicationMenu();
@@ -541,7 +542,7 @@ export class MainApplication {
 
     /**
      * Move the given window to the foreground (make it the last entry in the internal window list).
-     * _Note:_ This doesn't focus the window.
+     * __Note:__ This doesn't focus the window.
      * @param window The window to be moved to the foreground.
      */
     private setForegoundWindow(window: BrowserWindow) {
@@ -556,35 +557,35 @@ export class MainApplication {
      * @returns The focused window or last focused window or undefined (should never happen).
      */
     public getCurrentWindow(): Electron.BrowserWindow | undefined {
-        return (this.windows.length > 0) ? this.windows[this.windows.length - 1].Window : undefined;
+        return this.windows.at(-1)?.Window;
     }
 
     /**
-     * Get an entry from the internal window list by a BrowserWindow id.
-     * @param windowId The id of a BrowserWindow. If the id isn't defined, the id of topmost window
+     * Get an entry from the internal window list by a browser window id.
+     * @param windowId The id of a browser window. If the id isn't defined, the id of topmost window
      * will be used.
      * @returns An entry from the internal window list or undefined.
      */
     private getBrowserWindowEntry(windowId: number | undefined): IWindowEntry | undefined {
         if (windowId === undefined) {
             const currentWindow = this.getCurrentWindow();
-            if (currentWindow) {
-                return this.windows[this.windows.findIndex(entry => entry.Window?.id === currentWindow.id)];
-            } else {
-                return;
-            }
+            return currentWindow
+                ? this.windows[this.windows.findIndex(entry => entry.Window?.id === currentWindow.id)]
+                : undefined;
         }
         return this.windows[this.windows.findIndex(entry => entry.Window?.id === windowId)];
     }
 
     /**
      * Set window title with numeric prefix ([<window id>]  )
-     * @param window The Browser window to set the titel for.
+     * @param window The Browser window to set the title for.
      * @param title The new window title.
      */
     private setWindowTitle(window: BrowserWindow | undefined, title: string): void {
         if (window) {
-            this.settings.AllowNewWindows ? window.setTitle(`[${window.id}]  ${title}`) : window.setTitle(title);
+            this.settings.AllowNewWindows
+                ? window.setTitle(`[${window.id}]  ${title}`)
+                : window.setTitle(title);
         }
     }
 
@@ -610,35 +611,37 @@ export class MainApplication {
             // Strip new:
             url = url.substring(4);
         }
-        if (url === "home:") {
-            return `${this.settings.Scheme}://home`;
-        } else if (url === "settings:") {
-            return `${this.settings.Scheme}://settings`;
-        } else if (url === "info:") {
-            return `${this.settings.Scheme}://info`;
-        } else if (url === "readme:") {
-            return `${this.settings.Scheme}://readme`;
-        } else if (url === "readme.md:") {
-            return `${this.settings.Scheme}://readme.md`;
-        } else if (url === "license:") {
-            return `${this.settings.Scheme}://license`;
-        } else if (url === "changes:") {
-            return `${this.settings.Scheme}://changes`;
-        } else if (url === "reload:") {
-            return `${this.settings.Scheme}://reload`;
-        } else if (url === "back:") {
-            return `${this.settings.Scheme}://back`;
-        } else if (url === "forward:") {
-            return `${this.settings.Scheme}://forward`;
-        } else if (url === "close:") {
-            return `${this.settings.Scheme}://close`;
-        } else {
-            return url;
+        switch (url) {
+            case "home:":
+                return `${this.settings.Scheme}://home`;
+            case "settings:":
+                return `${this.settings.Scheme}://settings`;
+            case "info:":
+                return `${this.settings.Scheme}://info`;
+            case "readme:":
+                return `${this.settings.Scheme}://readme`;
+            case "readme.md:":
+                return `${this.settings.Scheme}://readme.md`;
+            case "license:":
+                return `${this.settings.Scheme}://license`;
+            case "changes:":
+                return `${this.settings.Scheme}://changes`;
+            case "reload:":
+                return `${this.settings.Scheme}://reload`;
+            case "back:":
+                return `${this.settings.Scheme}://back`;
+            case "forward:":
+                return `${this.settings.Scheme}://forward`;
+            case "close:":
+                return `${this.settings.Scheme}://close`;
+            default:
+                return url;
         }
     }
 
     /**
-     * Called on Darwin by the two `onOpen` events. Gets the current window and loads the given URL in it.
+     * Called on Darwin by the two `onOpen` events. Gets the current window and loads the given URL
+     * in it.
      * @param fileOrURL The URL (or file) to be loaded.
      * @param isFile Indicates whether the given URL is a local file or not.
      * @param browserWindow The browser window which should handle the given URL.
@@ -648,27 +651,28 @@ export class MainApplication {
         // On Darwin yet determined by onOpen* so set it explicitly here
         this.currentUrlItem.IsFileURL = isFile;
         const targetWindow = browserWindow ? browserWindow : this.getCurrentWindow();
-        if (targetWindow) {
-            // Quit command received
-            if (this.currentUrlItem.URL === $Consts.CMD_QUIT) {
-                app.quit();
-                return;
-            }
-            if (this.settings.FocusOnNewURL) {
-                targetWindow.focus();
-                // eslint-disable-next-line jsdoc/require-jsdoc
-                app.focus({ steal: APP_INFO.Platform === "darwin" && this.settings.DarwinForceFocus });
-            }
-            const windowEntry = this.getBrowserWindowEntry(targetWindow.id);
-            if (windowEntry) {
-                this.handleRequest(this.currentUrlItem.URL, this.currentUrlItem.OriginalURL, windowEntry.WebViewWebContentsID, NavigationType.LOAD);
-            }
+        if (!targetWindow) {
+            return;
+        }
+        // Quit command received
+        if (this.currentUrlItem.URL === $Consts.CMD_QUIT) {
+            app.quit();
+            return;
+        }
+        if (this.settings.FocusOnNewURL) {
+            targetWindow.focus();
+            // eslint-disable-next-line jsdoc/require-jsdoc
+            app.focus({ steal: APP_INFO.Platform === "darwin" && this.settings.DarwinForceFocus });
+        }
+        const windowEntry = this.getBrowserWindowEntry(targetWindow.id);
+        if (windowEntry) {
+            this.handleRequest(this.currentUrlItem.URL, this.currentUrlItem.OriginalURL, windowEntry.WebViewWebContentsID, NavigationType.LOAD);
         }
     }
 
     /**
-     * Called by Electron app if another instance was started. This either loads the given URL
-     * in the current instance or quits the running instance by the special `quit` URL.
+     * Called by Electron app if another instance was started. This either loads the given URL in
+     * the current instance or quits the running instance by the special `quit` URL.
      * @param _event An Electron event.
      * @param args The arguments passed to the instance started elsewhere.
      * @param _workingDirectory The working directory of the instance started elsewhere.
@@ -772,8 +776,8 @@ export class MainApplication {
             wp.allowRunningInsecureContent = false;
         });
         // A different URL origin will cause a new handler chain to be started (through openFileOrURL).
-        webContents.on("will-navigate", (willNavigateEvent: Electron.Event, url: string) => {
-            const srcURL = (willNavigateEvent as Electron.Event & { sender: { getURL: () => string; }; }).sender.getURL(); // eslint-disable-line jsdoc/require-jsdoc
+        webContents.on("will-navigate", (willNavigateEvent, url: string) => {
+            const srcURL = willNavigateEvent.url;
             if (isSameOrigin(srcURL, url)) {
                 if (this.settings.LogRequests) { console.log(`WILL-NAVIGATE from ${srcURL} to ${new $URL.URL(url).toString()}, same origin, passing`); }
             } else {
@@ -796,13 +800,11 @@ export class MainApplication {
                 "save-to-disk",
                 "other"].includes(details.disposition)) {
                 this.currentUrlItem = getURLItem(this.handleBuiltinURLs(details.url), this.settings.Scheme);
-                if (this.settings.AllowNewWindows) {
-                    void this.createWindow(details.disposition === "background-tab");
-                } else {
-                    setImmediate(() => {
+                this.settings.AllowNewWindows
+                    ? void this.createWindow(details.disposition === "background-tab")
+                    : setImmediate(() => {
                         this.openFileOrURL(this.currentUrlItem.URL, this.currentUrlItem.IsFileURL);
                     });
-                }
             }
             // eslint-disable-next-line jsdoc/require-jsdoc
             return { action: "deny" };
@@ -811,7 +813,8 @@ export class MainApplication {
 
     /**
      * Handles IPC calls from the renderer processes. Communication is asynchronous.
-     * @param event The Electron event. Used to return values/objects back to the calling renderer process (optional).
+     * @param event The Electron event. Used to return values/objects back to the calling renderer
+     * process (optional).
      * @param args The arguments sent by the calling renderer process.
      */
     private onIPCMain(event: Electron.IpcMainEvent, ...args: unknown[]): void {
@@ -820,7 +823,7 @@ export class MainApplication {
         const params: unknown[] = args.slice(2);
         let windowEntry = this.getBrowserWindowEntry(windowId);
         // const ipcMessage = getIPCMessage(msgId);
-        switch (msgId) {
+        switch (<IPC>msgId) {
             case IPC.LOAD_URL:
                 if (windowEntry) {
                     const loadURL = getURLItem(this.handleBuiltinURLs(params[0] as string), this.settings.Scheme);
@@ -832,29 +835,25 @@ export class MainApplication {
                     this.handleRequest(loadURL.URL, loadURL.OriginalURL, windowEntry.WebViewWebContentsID, NavigationType.LOAD);
                 }
                 break;
-
             case IPC.RELOAD_URL:
                 if (windowEntry) {
                     this.handleRequest("<RELOAD>", "<RELOAD>", windowEntry.WebViewWebContentsID, NavigationType.RELOAD);
                 }
                 break;
-
             case IPC.GO_BACK:
                 if (windowEntry) {
-                    if (windowEntry.WebViewWebContents.canGoBack()) {
+                    if (windowEntry.WebViewWebContents.navigationHistory.canGoBack()) {
                         this.handleRequest("<BACK>", "<BACK>", windowEntry.WebViewWebContentsID, NavigationType.BACK);
                     }
                 }
                 break;
-
             case IPC.GO_FORWARD:
                 if (windowEntry) {
-                    if (windowEntry.WebViewWebContents.canGoForward()) {
+                    if (windowEntry.WebViewWebContents.navigationHistory.canGoForward()) {
                         this.handleRequest("<FORWARD>", "<FORWARD>", windowEntry.WebViewWebContentsID, NavigationType.FORWARD);
                     }
                 }
                 break;
-
             // Return the initial URLItem
             case IPC.QUERY_INITIAL_URL_ITEM:
                 event.returnValue = this.currentUrlItem;
@@ -867,12 +866,10 @@ export class MainApplication {
                     this.currentUrlItem.DoLoad = true;
                 }, 100);
                 break;
-
             // Return app settings
             case IPC.GET_SETTINGS:
                 event.returnValue = this.settings;
                 break;
-
             // Toggle main menu on Linux/Windows platforms
             case IPC.TOGGLE_MENU:
                 if (["linux", "win32"].includes(APP_INFO.Platform) && (this.settings.MenuState > 0) && (this.appMenu)) {
@@ -882,24 +879,20 @@ export class MainApplication {
                     event.returnValue = false;
                 }
                 break;
-
             // Create and open a new window. The calling renderer process will
             // request the (new) URLItem to be opened with another IPC call.
             case IPC.NEW_WINDOW:
                 const url: string = params[0] as string;
+                event.returnValue = url !== undefined;
                 if (url !== undefined) {
-                    event.returnValue = true;
                     this.currentUrlItem = getURLItem(this.handleBuiltinURLs(url), this.settings.Scheme);
                     if (this.settings.AllowNewWindows) {
                         void this.createWindow();
                     } else {
                         this.openFileOrURL(this.currentUrlItem.URL, this.currentUrlItem.IsFileURL);
                     }
-                } else {
-                    event.returnValue = false;
                 }
                 break;
-
             case IPC.TOGGLE_INTERNAL_DEV_TOOLS:
                 windowEntry = this.getBrowserWindowEntry(windowId);
                 if (windowEntry) {
@@ -907,7 +900,6 @@ export class MainApplication {
                     devToolsOpened ? windowEntry.Window.webContents.closeDevTools() : windowEntry.Window.webContents.openDevTools();
                 }
                 break;
-
             // Set the id of the webContents of the webview tag which is hosted in the browser window.
             case IPC.RENDERER_READY:
                 const _window = BrowserWindow.fromId(windowId);
@@ -923,21 +915,18 @@ export class MainApplication {
                     /* eslint-enable */
                 }
                 break;
-
             // Set new window title of calling renderer process
             case IPC.SET_WINDOW_TITLE:
                 if (windowEntry) {
                     this.setWindowTitle(windowEntry.Window, params[0] as string);
                 }
                 break;
-
             // Show context menu.
             case IPC.SHOW_CONTEXT_MENU:
                 if (windowEntry) {
-                    this.onWebViewPopupMenu(windowEntry, params[0] as Params);
+                    this.onWebViewPopupMenu(windowEntry.WebViewWebContents, params[0] as ContextMenuParams);
                 }
                 break;
-
             default:
                 event.returnValue = false;
                 console.warn(format("Unknown/unhandled IPC message received from renderer: %d %d. ", windowId, msgId, ...params));
@@ -946,8 +935,7 @@ export class MainApplication {
     }
 
     /**
-     * Handles permission requests from web pages.
-     * Permissions are granted based on app settings.
+     * Handles permission requests from web pages. Permissions are granted based on app settings.
      * @param _webContents The calling Electron webContents.
      * @param permission The requested permission.
      * @param callback A callback called with the boolean result of the permission check.
@@ -991,31 +979,28 @@ export class MainApplication {
         // eslint-disable-next-line jsdoc/require-jsdoc
         const urlObject = { URL: url };
         for (const handler of handlers) {
-            if (handler.IsActive) {
-                const currentHandlerName: string = handler.constructor.name;
-                const handleResult: RequestResult = handler.handleRequest(urlObject, originalURL, navType);
-                const msg = `Result from ${currentHandlerName} (${webContentsId}):`;
-                switch (handleResult) {
-                    case RequestResult.ERROR:
-                        logRequest(`${msg} ERROR (denying request and stopping).`, true);
-                        return false;
-
-                    case RequestResult.NONE:
-                        logRequest(`${msg} NONE (not handled, continuing with next handler)`);
-                        break;
-
-                    case RequestResult.CONTINUE:
-                        logRequest(`${msg} CONTINUE (handled, continuing with next handler)`);
-                        break;
-
-                    case RequestResult.ALLOW:
-                        logRequest(`${msg} ALLOW (request allowed, stopping)`);
-                        return true;
-
-                    case RequestResult.DENY:
-                        logRequest(`${msg} DENY (request denied, stopping)`);
-                        return false;
-                }
+            if (!handler.IsActive) {
+                continue;
+            }
+            const currentHandlerName: string = handler.constructor.name;
+            const handleResult: RequestResult = handler.handleRequest(urlObject, originalURL, navType);
+            const msg = `Result from ${currentHandlerName} (${webContentsId}):`;
+            switch (handleResult) {
+                case RequestResult.ERROR:
+                    logRequest(`${msg} ERROR (denying request and stopping).`, true);
+                    return false;
+                case RequestResult.NONE:
+                    logRequest(`${msg} NONE (not handled, continuing with next handler)`);
+                    break;
+                case RequestResult.CONTINUE:
+                    logRequest(`${msg} CONTINUE (handled, continuing with next handler)`);
+                    break;
+                case RequestResult.ALLOW:
+                    logRequest(`${msg} ALLOW (request allowed, stopping)`);
+                    return true;
+                case RequestResult.DENY:
+                    logRequest(`${msg} DENY (request denied, stopping)`);
+                    return false;
             }
         }
         return true;
@@ -1062,90 +1047,98 @@ export class MainApplication {
      * Register and handle BareBrowsers internal protocol.
      */
     private registerCustomProtocol(): void {
-        protocol.registerStreamProtocol(this.settings.Scheme, (request, callback) => {
+        protocol.handle(this.settings.Scheme, (request): GlobalResponse => {
             /**
-             * Execute callback with the content of the file or send 404 with message.
+             * Create and return a `Response` based on a message (string).
+             * @param message The content/message of the response.
+             * @param statusCode The status code of the response.
+             * @param contentType The content type to be used for the response.
+             * @returns A `Response` based on a message {string}.
+             */
+            const messageResponse = (message: string, statusCode: number, contentType: string): GlobalResponse => {
+                return new Response(
+                    message,
+                    {
+                        /* eslint-disable jsdoc/require-jsdoc */
+                        status: statusCode,
+                        headers: {
+                            "content-type": contentType
+                        }
+                        /* eslint-enable */
+                    }
+                );
+            };
+
+            /**
+             * Create and return a `Response` with the content of a file or a 404 response error
+             * containing an error message.
              * @param fileName The file name of the resource to load.
              * @param resourceName The original name of the resource.
-             * @param mimeType The mime type to return.
-             * @returns `true`, if the resource could be loaded.
+             * @param contentType The content type to be used for the response.
+             * @returns A `Response` with the result of the request.
              */
-            const maybeReturnFileConent = (fileName: string, resourceName: string, mimeType?: string): boolean => {
-                /* eslint-disable jsdoc/require-jsdoc */
-                if ($FSE.existsSync(fileName)) {
-                    if (!mimeType) {
-                        mimeType = getMimeTypeFromFileExtension($Path.extname(fileName));
-                    }
-                    callback({
-                        mimeType: mimeType,
-                        data: $FSE.createReadStream(fileName),
-                        // headers: { "Access-Control-Allow-Origin": "*" }
-                    });
-                    return true;
-                } else {
-                    callback({
-                        statusCode: 404,
-                        mimeType: "text/plain",
-                        data: Readable.from(Buffer.from(`404 - Resource not found: ${resourceName}\n=> ${fileName}`))
-                    });
-                    return false;
+            const fileContentResponse = (fileName: string, resourceName: string, contentType?: string): GlobalResponse => {
+                if (!$FSE.existsSync(fileName)) {
+                    return messageResponse(`404 - Resource not found: ${resourceName}\n=> ${fileName}`, 404, "text/plain;charset=utf-8");
                 }
-                /* eslint-enable */
+                return new Response(
+                    $FSE.readFileSync(fileName),
+                    {
+                        /* eslint-disable jsdoc/require-jsdoc */
+                        status: 200,
+                        headers: {
+                            "content-type": contentType ?? getMimeTypeFromFileExtension($Path.extname(fileName)) ?? MIME_TYPES.BINARY
+                        }
+                        /* eslint-enable */
+                    }
+                );
             };
+
             // Handle URL
             const originalURL = request.url;
             const parsedURL = new $URL.URL(originalURL);
             const host = parsedURL.host.toLowerCase();
             // Requested by, for example, README.html
             if (parsedURL.pathname !== "/") {
-                maybeReturnFileConent($Path.join(APP_INFO.APP_PATH_PKG, parsedURL.pathname.substring(1)), originalURL);
-                return;
+                return fileContentResponse($Path.join(APP_INFO.APP_PATH_PKG, parsedURL.pathname.substring(1)), originalURL);
             }
             // Select resource
             const windowEntry = this.getBrowserWindowEntry(this.getCurrentWindow()?.id);
             try {
-                /* eslint-disable jsdoc/require-jsdoc */
+                let response: Response | undefined = undefined;
                 switch (host) {
                     // Known internal URLs
                     case "home":
-                        maybeReturnFileConent(`${APP_INFO.APP_PATH_PKG}home.html`, originalURL/* , "text/html" */);
-                        return;
+                        return fileContentResponse(`${APP_INFO.APP_PATH_PKG}home.html`, originalURL, "text/html;charset=utf-8");
                     case "settings":
-                        callback({
-                            mimeType: "application/json",
-                            data: Readable.from(Buffer.from(JSON.stringify(this.settings, null, 2)))
-                        });
                         this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | Settings`);
-                        return;
+                        return messageResponse(JSON.stringify(this.settings, null, 2), 200, "application/json;charset=utf-8");
                     case "info":
-                        callback({
-                            mimeType: "application/json",
-                            data: Readable.from(Buffer.from(JSON.stringify(APP_INFO, null, 2)))
-                        });
                         this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | Info`);
-                        return;
+                        return messageResponse(JSON.stringify(APP_INFO, null, 2), 200, "application/json;charset=utf-8");
                     case "readme":
-                        maybeReturnFileConent(`${APP_INFO.APP_PATH_PKG}README.html`, originalURL/* , "text/html" */);
-                        return;
+                        return fileContentResponse(`${APP_INFO.APP_PATH_PKG}README.html`, originalURL, "text/html;charset=utf-8");
                     case "readme.md":
-                        if (maybeReturnFileConent(`${APP_INFO.APP_PATH_PKG}README.md`, originalURL/* , "text/plain" */)) {
+                        response = fileContentResponse(`${APP_INFO.APP_PATH_PKG}README.md`, originalURL, "text/plain;charset=utf-8");
+                        if (response.status === 200) {
                             this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | README.md`);
                         }
-                        return;
+                        return response;
                     case "license":
-                        if (maybeReturnFileConent(`${APP_INFO.APP_PATH_PKG}LICENSE`, originalURL, "text/plain")) {
+                        response = fileContentResponse(`${APP_INFO.APP_PATH_PKG}LICENSE`, originalURL, "text/plain;charset=utf-8");
+                        if (response.status === 200) {
                             this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | LICENSE`);
                         }
-                        return;
+                        return response;
                     case "changes":
-                        if (maybeReturnFileConent(`${APP_INFO.APP_PATH_PKG}CHANGES`, originalURL, "text/plain")) {
+                        response = fileContentResponse(`${APP_INFO.APP_PATH_PKG}CHANGES`, originalURL, "text/plain;charset=utf-8");
+                        if (response.status === 200) {
                             this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | CHANGES`);
                         }
-                        return;
+                        return response;
                     case "reload":
                     case "back":
                     case "forward":
-                        callback({ statusCode: 304, mimeType: "text/plain", data: Readable.from(Buffer.from("")) });
                         if (windowEntry) {
                             if (host === "reload") {
                                 setImmediate(() => this.handleRequest("<RELOAD>", "<RELOAD>", windowEntry.WebViewWebContentsID, NavigationType.RELOAD));
@@ -1155,39 +1148,27 @@ export class MainApplication {
                                 setImmediate(() => this.handleRequest("<FORWARD>", "<FORWARD>", windowEntry.WebViewWebContentsID, NavigationType.FORWARD));
                             }
                         }
-                        return;
+                        return messageResponse("", 200, "text/plain;charset=utf-8");
                     case "close":
-                        callback({ statusCode: 204, mimeType: "text/plain", data: Readable.from(Buffer.from("")) });
                         if (windowEntry) {
                             setImmediate(() => windowEntry.Window.close());
                         }
-                        return;
+                        return messageResponse("", 204, "text/plain;charset=utf-8");
                     // Unknown URL
                     default:
-                        callback({
-                            statusCode: 404,
-                            mimeType: "text/plain",
-                            data: Readable.from(Buffer.from(`404 - Unknown URL: ${parsedURL.toString()}`))
-                        });
                         this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | 404 not found.`);
-                        break;
+                        return messageResponse(`404 - Unknown URL: ${parsedURL.toString()}`, 404, "text/plain;charset=utf-8");
                 }
             } catch (error) {
-                callback({
-                    statusCode: 500,
-                    mimeType: "text/plain",
-                    data: Readable.from(Buffer.from(`Error loading resource: ${parsedURL.toString()}\n\n${error}`))
-                });
                 this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | Error`);
+                return messageResponse(`Error loading resource: ${parsedURL.toString()}\n\n${error}`, 500, "text/plain;charset=utf-8");
             }
-            /* eslint-enable */
         });
     }
 
     /**
-     * This method will be called when Electron has finished initialization and
-     * is ready to create browser windows. Some APIs like setting a menu can only
-     * be used after this event occurs.
+     * This method will be called when Electron has finished initialization and is ready to create
+     * browser windows. Some APIs like setting a menu can only be used after this event occurs.
      * @param _launchInfo Specific for mcOS/OS X, see Electron: App.on(event: 'ready',...
      */
     private onAppReady(_launchInfo: AnyObject): void {
@@ -1196,11 +1177,9 @@ export class MainApplication {
     }
 
     /**
-     * On activating the app.
-     * On darwin it's common to re-create a window in the app when the
-     * dock icon is clicked and there are no other windows open.
-     * Note:_ This is left here only for completeness.
-     * BareBrowser currently quits if the last browser window is closed.
+     * On activating the app. On darwin it's common to re-create a window in the app when the dock
+     * icon is clicked and there are no other windows open. __Note:__ This is left here only for
+     * completeness. BareBrowser currently quits if the last browser window is closed.
      * @param _event An Electron event
      * @param _hasVisibleWindows True if there are existing visible windows.
      */
@@ -1211,25 +1190,23 @@ export class MainApplication {
     }
 
     /**
-     * Called when the window is focused.
-     * Used to move the calling window to the end of the internal window list.
-     * @param event The event containing the calling BrowserWindow (`sender`).
+     * Called when the window is focused. Used to move the calling window to the end of the internal
+     * window list.
+     * @param window The calling BrowserWindow.
      */
-    private onWindowFocus(event: IBrowserWindowEvent): void {
-        this.setForegoundWindow(event.sender);
+    public onWindowFocus(window: BrowserWindow): void {
+        this.setForegoundWindow(window);
     }
 
     /**
      * Called when the window is going to be closed. Store window bounds and state.
-     * @param event The event containing the calling BrowserWindow (`sender`).
-     * @see IBrowserWindowCloseEvent;
+     * @param window The calling BrowserWindow.
      */
-    private onWindowClose(event: IBrowserWindowEvent): void {
+    public onWindowClose(window: BrowserWindow): void {
         // No need to store last window position and state.
         if (!this.settings.Window.LastWindowPosition.Restore || this.windows.length !== 1) {
             return;
         }
-        const window = event.sender;
         this.lastClosedWindowBounds = window.getBounds();
         if (window.isFullScreen()) {
             this.lastClosedWindowState = 2;
@@ -1243,43 +1220,43 @@ export class MainApplication {
     }
 
     /**
-     * Called when the window was closed.
-     * Remove the respective window entry object and dispose its members to avoid leaks.
-     * @param event The event containing the calling BrowserWindow (`sender`).
-     * @see IBrowserWindowCloseEvent;
+     * Called when the window was closed. Remove the respective window entry object and dispose its
+     * members to avoid leaks.
+     * @param window The calling BrowserWindow.
      */
-    private onWindowClosed(event: IBrowserWindowEvent): void {
-        const index: number = this.windows.findIndex(entry => entry.Window === event.sender);
-        if (index !== -1) {
-            const windowEntry = this.windows[index];
-            // @ts-ignore
-            windowEntry.Window = null;
-            for (let i = 0; i < windowEntry.RequestHandlers.length; i++) {
-                windowEntry.RequestHandlers[i].dispose();
-                // @ts-ignore
-                windowEntry.RequestHandlers[i] = null;
-            }
-            this.windows.splice(index, 1);
+    public onWindowClosed(window: BrowserWindow): void {
+        const index: number = this.windows.findIndex(entry => entry.Window === window);
+        if (index === -1) {
+            return;
         }
+        const windowEntry = this.windows[index];
+        // @ts-ignore
+        windowEntry.Window = null;
+        for (let i = 0; i < windowEntry.RequestHandlers.length; i++) {
+            windowEntry.RequestHandlers[i].dispose();
+            // @ts-ignore
+            windowEntry.RequestHandlers[i] = null;
+        }
+        this.windows.splice(index, 1);
     }
 
     /**
      * Shows a context menu if the user right clicks somewhere in the renderer window (for example
      * in the address bar).
-     * @param event The context menu event.
+     * @param webContents The web contents of the browser window (renderer).
      * @param contextMenuParams The context menu params as given by the renderer process.
      */
-    private onRendererPopupMenu(event: IWebContentsEvent, contextMenuParams: Electron.Params): void {
-        this.onContextMenuPopup(event.sender, contextMenuParams);
+    public onRendererPopupMenu(webContents: Electron.WebContents, contextMenuParams: ContextMenuParams): void {
+        this.onContextMenuPopup(webContents, contextMenuParams);
     }
 
     /**
      * Shows a context menu if the user right clicks somewhere in the loaded page.
-     * @param windowEntry The corresponding window entry.
+     * @param webContents The web contents of the loaded page.
      * @param contextMenuParams The context menu params as given by the renderer process.
      */
-    private onWebViewPopupMenu(windowEntry: IWindowEntry, contextMenuParams: Electron.Params): void {
-        this.onContextMenuPopup(windowEntry.WebViewWebContents, contextMenuParams);
+    private onWebViewPopupMenu(webContents: Electron.WebContents, contextMenuParams: ContextMenuParams): void {
+        this.onContextMenuPopup(webContents, contextMenuParams);
     }
 
     /**
@@ -1287,7 +1264,7 @@ export class MainApplication {
      * @param webContents The corresponding Electron webContents.
      * @param contextMenuParams The context menu params as given by the renderer process.
      */
-    private onContextMenuPopup(webContents: Electron.WebContents, contextMenuParams: Electron.Params): void {
+    private onContextMenuPopup(webContents: Electron.WebContents, contextMenuParams: ContextMenuParams): void {
         /* eslint-disable jsdoc/require-jsdoc */
         // `role` doesn't work properly in stand alone popup menus so let's steal its native
         // translations and use the usual keyboard shortcuts.
@@ -1406,11 +1383,12 @@ export class MainApplication {
      * @param _exitCode App exit code.
      */
     private onQuit(_event: Electron.Event, _exitCode: number): void {
-        if (this.settings.ClearTraces) {
-            // app.relaunch({ args: [APP_INFO.APP_PATH, $Consts.CMD_CLEAR_TRACES] })
-            // eslint-disable-next-line jsdoc/require-jsdoc
-            const childProcess = spawn(process.argv0, [APP_INFO.APP_PATH, $Consts.CMD_CLEAR_TRACES], { detached: true, stdio: "ignore", windowsHide: true });
-            childProcess.unref();
+        if (!this.settings.ClearTraces) {
+            return;
         }
+        // app.relaunch({ args: [APP_INFO.APP_PATH, $Consts.CMD_CLEAR_TRACES] })
+        // eslint-disable-next-line jsdoc/require-jsdoc
+        const childProcess = spawn(process.argv0, [APP_INFO.APP_PATH, $Consts.CMD_CLEAR_TRACES], { detached: true, stdio: "ignore", windowsHide: true });
+        childProcess.unref();
     }
 }

@@ -45,7 +45,7 @@ BareBrowser runs on macOS, Windows and Linux platforms. The supported OS version
 version of the underlying Electron platform but in general the current release of BareBrowser should
 run on
 
-- macOS High Sierra (10.13) and newer,
+- macOS BigSur (macOS 11) and newer,
 - Windows 10 and newer,
 - Linux
     - Ubuntu 14.04 and newer
@@ -752,9 +752,9 @@ class MyRequestHandler {
         this.webContents.loadURL(url, { userAgent: this.config.UserAgent });
         break;
       case NAV_BACK:
-        if (this.webContents.canGoBack()) {
+        if (this.webContents.navigationHistory.canGoBack()) {
             this.log("Going back");
-            this.webContents.goBack();
+            this.webContents.navigationHistory.goBack();
         }
         break;
       case NAV_FORWARD:
@@ -860,9 +860,9 @@ handleRequest(urlObj, originalURL, navType) {
       this.webContents.loadURL(url, { userAgent: this.config.UserAgent });
       break;
     case NAV_BACK:
-      if (this.webContents.canGoBack()) {
+      if (this.webContents.navigationHistory.canGoBack()) {
           this.log("Going back");
-          this.webContents.goBack();
+          this.webContents.navigationHistory.goBack();
       }
       break;
     case NAV_FORWARD:
@@ -1055,9 +1055,7 @@ For all available request handlers see also the file `settings.json`.
 
 ### Requirements
 
-[Node.js](https://nodejs.org) 13.0.0 or higher is required. If you want to build Windows versions
-on the Mac or Linux you also need [Wine](https://www.winehq.org) installed on your system, on the
-Mac, for example, via [Homebrew](https://brew.sh).
+[Node.js](https://nodejs.org) 16.4.0 or higher is required.
 
 
 ### Source code structure
@@ -1129,8 +1127,8 @@ Configuration is entirely done in `./app/package.json`:
   "productName": "BareBrowser",
   "description": "A minimalist browser for specific tasks in controlled environments.",
   "companyname": "idesis GmbH",
-  "copyright": "©2023 idesis GmbH",
-  "version": "3.0.3",
+  "copyright": "©2024 idesis GmbH",
+  "version": "4.0.0",
   "-buildVersion": 4367,
   "identifier": "de.idesis.barebrowser",
   "identifierRoot": "",
@@ -1143,7 +1141,7 @@ Configuration is entirely done in `./app/package.json`:
   "homepage": "https://github.com/idesis-gmbh/BareBrowser",
   "author": {
     "name": "Michael Nitze",
-    "email": "michael.nitze@idesis.de"
+    "email": "michael.nitze@michael-nitze.de"
   },
   "repository": {
     "type": "git",
@@ -1152,25 +1150,25 @@ Configuration is entirely done in `./app/package.json`:
   "readme": "README.md",
   "bugs": {
     "url": "https://github.com/idesis-gmbh/BareBrowser/issues",
-    "email": "produktion@idesis.de"
+    "email": "michael.nitze@michael-nitze.de"
   },
   "private": false,
   "license": "MIT",
   "main": "./bin/MainProcess.js",
   "dependencies": {
-    "fs-extra": "11.1.1",
+    "fs-extra": "11.2.0",
     "mousetrap": "1.6.5"
   },
   "devDependencies": {
-    "@types/fs-extra": "11.0.2",
-    "@types/mousetrap": "1.6.12",
-    "@types/node": "18.14.6",
-    "@typescript-eslint/eslint-plugin": "6.7.5",
-    "@typescript-eslint/parser": "6.7.5",
-    "electron": "24.8.8",
-    "eslint-plugin-jsdoc": "46.8.2",
-    "eslint": "8.51.0",
-    "typescript": "5.2.2"
+    "@types/fs-extra": "11.0.4",
+    "@types/mousetrap": "1.6.15",
+    "@types/node": "20.17.10",
+    "@typescript-eslint/eslint-plugin": "7.17.0",
+    "@typescript-eslint/parser": "7.17.0",
+    "electron": "33.3.0",
+    "eslint": "8.57.1",
+    "eslint-plugin-jsdoc": "48.8.3",
+    "typescript": "5.7.2"
   },
   "config": {
     "arch": "x64,arm64,armv7l,ia32",
@@ -1331,7 +1329,7 @@ explorer.
 
 ## License
 
-MIT ©2023 [idesis GmbH](https://www.idesis.de), Max-Keith-Straße 66 (E 11), D-45136 Essen.
+MIT ©2024 [idesis GmbH](https://www.idesis.de), Max-Keith-Straße 66 (E 11), D-45136 Essen.
 
 Development kindly supported by [VISUS Health IT GmbH](https://www.visus.com), Gesundheitscampus-Süd
 15, D-44801 Bochum.

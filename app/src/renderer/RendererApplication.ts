@@ -70,17 +70,20 @@ export class RendererApplication {
     private buildUI(): void {
         const fragment: DocumentFragment = new DocumentFragment();
         this.addressBar = this.getAddressBar();
-        this.addressBar.appendChild(this.getNavigationButtons());
-        this.addressBar.appendChild(this.getURLField());
+        this.addressBar.append(
+            this.getNavigationButtons(),
+            this.getURLField()
+        );
         this.spinner = this.getSpinner();
         this.addressBar.appendChild(this.spinner);
         this.errorInfo = this.getErrorInfo();
         this.webView = this.getWebView();
         this.addressHint = this.getAddressHint();
-        fragment.appendChild(this.addressBar);
-        fragment.appendChild(this.errorInfo);
-        fragment.appendChild(this.webView);
-        fragment.appendChild(this.addressHint);
+        fragment.append(
+            this.addressBar,
+            this.errorInfo,
+            this.webView,
+            this.addressHint);
         document.body.appendChild(fragment);
     }
 
@@ -103,9 +106,9 @@ export class RendererApplication {
     }
 
     /**
-     * Hide error message;
-     * @param updateWindowTitle `true` if the window title should be updated 
-     * (currently only when the error message is clicked on).
+     * Hide error message.
+     * @param updateWindowTitle `true` if the window title should be updated  (currently only when
+     * the error message is clicked on).
      */
     private clearError(updateWindowTitle: boolean): void {
         if (updateWindowTitle) {
@@ -166,8 +169,8 @@ export class RendererApplication {
             ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.RELOAD_URL);
             // // Get the current scroll offset from the web view.
             // void this.webView.send(IPC_WEBVIEW_RENDERER, IPC.GET_SCROLL_OFFSET);
-            // // Flag to ensure that DOMReady (see below) only does something
-            // // when the event was caused by a reload.
+            // // Flag to ensure that DOMReady (see below) only does something when the event was
+            // // caused by a reload.
             // this.reloadIssued = true;
             // this.webView.reload(); // this.webView.src = this.webView.src;
         });
@@ -199,7 +202,7 @@ export class RendererApplication {
      * @param originalURL The original URL (e. g. from the command line or equal to `url`).
      */
     private loadURL(url: string, originalURL: string): void {
-        // Blank URL
+        // Blank URL.
         if (url === this.blankPageContent) {
             this.webView.setAttribute("src", this.blankPageContent);
             return;
@@ -251,10 +254,9 @@ export class RendererApplication {
     }
 
     /**
-     * Called when a web page logs something to the browser console.
-     * The message is enhanced with additional infos and again written
-     * to the console of the hosting browser window. In future versions
-     * this should be redirected/copied to a log file.
+     * Called when a web page logs something to the browser console. The message is enhanced with
+     * additional infos and again written to the console of the hosting browser window.
+     * @todo In future versions this should be redirected/copied to a log file.
      * @param event An Electron ConsoleMessageEvent.
      */
     private onWebViewConsoleMessage(event: Electron.ConsoleMessageEvent): void {
@@ -268,15 +270,12 @@ export class RendererApplication {
             case 1:
                 console.log(logMessage);
                 break;
-
             case 2:
                 console.warn(logMessage);
                 break;
-
             case 3:
                 console.error(logMessage);
                 break;
-
             default:
                 console.log(logMessage);
                 break;
@@ -303,8 +302,8 @@ export class RendererApplication {
     }
 
     /**
-     * Called when the page has finished loading.
-     * Sets the focus to the webview tag to enable keyboard navigation in the page.
+     * Called when the page has finished loading. Sets the focus to the webview tag to enable
+     * keyboard navigation in the page.
      * @param _event An Electron event.
      */
     // private onWebViewDidFinishLoad(_event: Electron.Event): void {
@@ -314,8 +313,8 @@ export class RendererApplication {
     // }    
 
     /**
-     * Called when the page has finished loading.
-     * Sets the focus to the webview tag to enable keyboard navigation in the page.
+     * Called when the page has finished loading. Sets the focus to the webview tag to enable
+     * keyboard navigation in the page.
      * @param _event An Electron event.
      */
     private onWebViewDidStopLoading(_event: Electron.Event): void {
@@ -325,8 +324,8 @@ export class RendererApplication {
     }
 
     /**
-     * Called when the DOM in the web view is ready. Tries to scroll to the last
-     * offset but only if the event occurs during a page *reload*.
+     * Called when the DOM in the web view is ready. Tries to scroll to the last offset but only if
+     * the event occurs during a page *reload*.
      * @param _event An Electron event.
      */
     // private onWebViewDOMReady(_event: Electron.Event): void {
@@ -338,7 +337,7 @@ export class RendererApplication {
     // }
 
     /**
-     * Called when the navigaion to a URL has finished. Used to update parts of the user interface.
+     * Called when the navigation to a URL has finished. Used to update parts of the user interface.
      * @param event An Electron DidNavigateEvent.
      */
     private onWebViewDidNavigate(event: Electron.DidNavigateEvent): void {
@@ -353,8 +352,8 @@ export class RendererApplication {
     }
 
     /**
-     * Called when the navigation to a target inside the page has finished.
-     * Used to update parts of the user interface.
+     * Called when the navigation to a target inside the page has finished. Used to update parts of
+     * the user interface.
      * @param event An Electron DidNavigateInPageEvent.
      */
     private onWebViewDidNavigateInPage(event: Electron.DidNavigateInPageEvent): void {
@@ -374,7 +373,8 @@ export class RendererApplication {
     }
 
     /**
-     * Called when the user hovers over a link of the embedded page or focuses a link with the keyboard.
+     * Called when the user hovers over a link of the embedded page or focuses a link with the
+     * keyboard.
      * @param event An Electron UpdateTargetUrlEvent.
      */
     private onWebViewUpdateTargetURL(event: Electron.UpdateTargetUrlEvent): void {
@@ -403,37 +403,34 @@ export class RendererApplication {
     private getNavigationButtons(): HTMLDivElement {
         const navigationButtonsContainer: HTMLDivElement = document.createElement("div");
         navigationButtonsContainer.setAttribute("id", "navigationButtonsContainer");
-
         this.goBackButton = document.createElement("button");
         this.goBackButton.setAttribute("id", "goBack");
         this.goBackButton.disabled = true;
         this.goBackButton.title = "Go back";
-        this.goBackButton.disabled = true;
         this.goBackButton.appendChild(document.createTextNode("<"));
         this.goBackButton.addEventListener("click", this.goBack.bind(this), false);
-        navigationButtonsContainer.appendChild(this.goBackButton);
-
         this.goForwardButton = document.createElement("button");
         this.goForwardButton.setAttribute("id", "goForward");
         this.goForwardButton.disabled = true;
         this.goForwardButton.title = "Go forward";
         this.goForwardButton.appendChild(document.createTextNode(">"));
         this.goForwardButton.addEventListener("click", this.goForward.bind(this), false);
-        navigationButtonsContainer.appendChild(this.goForwardButton);
-
         const goButton: HTMLButtonElement = document.createElement("button");
         goButton.setAttribute("id", "goButton");
         goButton.title = "Open URL";
         goButton.appendChild(document.createTextNode("Go"));
         goButton.addEventListener("click", this.loadURLItemListener.bind(this), false);
-        navigationButtonsContainer.appendChild(goButton);
-
+        navigationButtonsContainer.append(
+            this.goBackButton,
+            this.goForwardButton,
+            goButton
+        );
         return navigationButtonsContainer;
     }
 
     /**
-     * Build the navigation buttons.
-     * @returns The DOM element(s) for the navigation buttons.
+     * Build the progress indicator.
+     * @returns The DOM element(s) for the progress indicator.
      */
     private getSpinner(): HTMLDivElement {
         const spinnerContainer: HTMLDivElement = document.createElement("div");
@@ -534,13 +531,13 @@ export class RendererApplication {
     private onIPCFromMain(_event: Electron.IpcRendererEvent, ...args: unknown[]): void {
         const msgId: number = args[0] as number;
         const params: unknown[] = args.slice(1);
-        switch (msgId) {
+        switch (<IPC>msgId) {
             case IPC.WINDOW_CREATED:
                 this.windowID = params[0] as number;
-                // This is the earliest possible moment to tell the main process once, that this renderer is ready.
+                // This is the earliest possible moment to tell the main process once, that this
+                // renderer is ready.
                 this.setRendererReady();
                 break;
-
             default:
                 console.warn(format("Unknown/unhandled IPC message received from main: %d. ", msgId, ...params));
                 break;
@@ -549,10 +546,10 @@ export class RendererApplication {
 
     /**
      * Handles IPC messages from the web view. Communication is asynchronous.
-     * - It stores the current scroll offset from the web view. This is the result
-     *   from sending "getScrollOffset" to the web view.
-     * - It receives any keyboard event from the web view and dispatches it to this
-     *   browser window which then can handlie it with Mousetrap.
+     * - It stores the current scroll offset from the web view. This is the result from sending
+     *   `getScrollOffset` to the web view.
+     * - It receives any keyboard event from the web view and dispatches it to this browser window
+     *   which then can handlie it with Mousetrap.
      * @param event An Electron IpcMessageEvent.
      */
     private onWebViewIPCMessage(event: Electron.IpcMessageEvent): void {
@@ -561,7 +558,7 @@ export class RendererApplication {
         }
         const msgId = event.args[0] as number;
         const params: unknown[] = event.args.slice(1);
-        switch (msgId) {
+        switch (<IPC>msgId) {
             case IPC.SET_SCROLL_OFFSET:
                 this.webViewScrollOffset.x = Number(params[0]);
                 this.webViewScrollOffset.y = Number(params[1]);

@@ -8,7 +8,6 @@ import { MainApplication } from "./MainApplication";
  * The menu for the application on Linux/Windows platforms.
  */
 export class LinuxWin32Menu extends ApplicationMenu {
-
     /**
      * Build the main menu for Linux/Windows platforms.
      * appName is used for the help menu item label name.
@@ -16,7 +15,7 @@ export class LinuxWin32Menu extends ApplicationMenu {
      * @param settings The application settings.
      * @param appName The name of the application.
      */
-    constructor(protected mainApp: MainApplication, protected settings: ISettings, protected appName: string) {
+    constructor(protected override mainApp: MainApplication, protected override settings: ISettings, protected override appName: string) {
         super(mainApp, settings, appName);
         this.mainMenu = new Menu();
         this.mainMenu.append(this.buildFileMenu());
@@ -31,8 +30,9 @@ export class LinuxWin32Menu extends ApplicationMenu {
      */
     private buildFileMenu(): MenuItem {
         const fileMenu = new Menu();
+        /* eslint-disable jsdoc/require-jsdoc */
         fileMenu.append(new MenuItem({
-            role: "about", // eslint-disable-line jsdoc/require-jsdoc
+            role: "about",
         }));
         fileMenu.append(this.getSeparator());
         // fileMenu.append(new MenuItem({
@@ -41,14 +41,15 @@ export class LinuxWin32Menu extends ApplicationMenu {
         // }));
         // fileMenu.append(this.getSeparator());
         fileMenu.append(new MenuItem({
-            role: "quit", // eslint-disable-line jsdoc/require-jsdoc
+            role: "quit",
             // Why does this have to be set manually for role quit?
-            accelerator: APP_INFO.Platform === "linux" ? "Ctrl+Q" : "Alt+F4", // eslint-disable-line jsdoc/require-jsdoc
+            accelerator: APP_INFO.Platform === "linux" ? "Ctrl+Q" : "Alt+F4",
         }));
         return new MenuItem({
-            role: "fileMenu", // eslint-disable-line jsdoc/require-jsdoc
-            submenu: fileMenu, // eslint-disable-line jsdoc/require-jsdoc
+            role: "fileMenu",
+            submenu: fileMenu,
         });
+        /* eslint-enable */
     }
 
     /**
@@ -57,10 +58,12 @@ export class LinuxWin32Menu extends ApplicationMenu {
      */
     private buildEditMenu(): MenuItem {
         const editMenu: Menu = super.getEditMenu();
+        /* eslint-disable jsdoc/require-jsdoc */
         return new MenuItem({
-            role: "editMenu", // eslint-disable-line jsdoc/require-jsdoc
-            submenu: editMenu, // eslint-disable-line jsdoc/require-jsdoc
+            role: "editMenu",
+            submenu: editMenu,
         });
+        /* eslint-enable */
     }
 
     /**
@@ -69,31 +72,33 @@ export class LinuxWin32Menu extends ApplicationMenu {
      */
     private buildWindowMenu(): MenuItem {
         const windowMenu = new Menu();
+        /* eslint-disable jsdoc/require-jsdoc */
         windowMenu.append(new MenuItem({
-            role: "minimize", // eslint-disable-line jsdoc/require-jsdoc
+            role: "minimize",
         }));
         windowMenu.append(new MenuItem({
-            role: "close", // eslint-disable-line jsdoc/require-jsdoc
+            role: "close",
         }));
         windowMenu.append(new MenuItem({
-            role: "togglefullscreen", // eslint-disable-line jsdoc/require-jsdoc
+            role: "togglefullscreen",
         }));
         windowMenu.append(this.getSeparator());
         windowMenu.append(new MenuItem({
-            role: "zoomIn", // eslint-disable-line jsdoc/require-jsdoc
+            role: "zoomIn",
         }));
         windowMenu.append(new MenuItem({
-            role: "zoomOut", // eslint-disable-line jsdoc/require-jsdoc
+            role: "zoomOut",
         }));
         windowMenu.append(new MenuItem({
-            role: "resetZoom", // eslint-disable-line jsdoc/require-jsdoc
+            role: "resetZoom",
         }));
         // windowMenu.append(this.getSeparator());
         // windowMenu.append(this.getShowAddressBarMenu("mod+t"));
         return new MenuItem({
-            role: "window", // eslint-disable-line jsdoc/require-jsdoc
-            submenu: windowMenu, // eslint-disable-line jsdoc/require-jsdoc
+            role: "window",
+            submenu: windowMenu,
         });
+        /* eslint-enable */
     }
 
     /**
@@ -103,13 +108,12 @@ export class LinuxWin32Menu extends ApplicationMenu {
     // private buildHelpMenu(): MenuItem {
     //     const helpMenu: Menu = super.getHelpMenu("F1");
     //     helpMenu.insert(0, new MenuItem({
-    //         role: "about", // eslint-disable-line jsdoc/require-jsdoc
+    //         role: "about", 
     //     }));
     //     helpMenu.insert(1, super.getSeparator());
     //     return new MenuItem({
-    //         role: "help", // eslint-disable-line jsdoc/require-jsdoc
-    //         submenu: helpMenu, // eslint-disable-line jsdoc/require-jsdoc
+    //         role: "help", 
+    //         submenu: helpMenu, 
     //     });
     // }
-
 }
