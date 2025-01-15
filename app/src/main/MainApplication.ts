@@ -1079,7 +1079,7 @@ export class MainApplication {
              */
             const fileContentResponse = (fileName: string, resourceName: string, contentType?: string): GlobalResponse => {
                 if (!$FSE.existsSync(fileName)) {
-                    return messageResponse(`404 - Resource not found: ${resourceName}\n=> ${fileName}`, 404, "text/plain");
+                    return messageResponse(`404 - Resource not found: ${resourceName}\n=> ${fileName}`, 404, "text/plain;charset=utf-8");
                 }
                 return new Response(
                     $FSE.readFileSync(fileName),
@@ -1109,29 +1109,29 @@ export class MainApplication {
                 switch (host) {
                     // Known internal URLs
                     case "home":
-                        return fileContentResponse(`${APP_INFO.APP_PATH_PKG}home.html`, originalURL, "text/html");
+                        return fileContentResponse(`${APP_INFO.APP_PATH_PKG}home.html`, originalURL, "text/html;charset=utf-8");
                     case "settings":
                         this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | Settings`);
-                        return messageResponse(JSON.stringify(this.settings, null, 2), 200, "application/json");
+                        return messageResponse(JSON.stringify(this.settings, null, 2), 200, "application/json;charset=utf-8");
                     case "info":
                         this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | Info`);
-                        return messageResponse(JSON.stringify(APP_INFO, null, 2), 200, "application/json");
+                        return messageResponse(JSON.stringify(APP_INFO, null, 2), 200, "application/json;charset=utf-8");
                     case "readme":
-                        return fileContentResponse(`${APP_INFO.APP_PATH_PKG}README.html`, originalURL, "text/html");
+                        return fileContentResponse(`${APP_INFO.APP_PATH_PKG}README.html`, originalURL, "text/html;charset=utf-8");
                     case "readme.md":
-                        response = fileContentResponse(`${APP_INFO.APP_PATH_PKG}README.md`, originalURL, "text/plain");
+                        response = fileContentResponse(`${APP_INFO.APP_PATH_PKG}README.md`, originalURL, "text/plain;charset=utf-8");
                         if (response.status === 200) {
                             this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | README.md`);
                         }
                         return response;
                     case "license":
-                        response = fileContentResponse(`${APP_INFO.APP_PATH_PKG}LICENSE`, originalURL, "text/plain");
+                        response = fileContentResponse(`${APP_INFO.APP_PATH_PKG}LICENSE`, originalURL, "text/plain;charset=utf-8");
                         if (response.status === 200) {
                             this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | LICENSE`);
                         }
                         return response;
                     case "changes":
-                        response = fileContentResponse(`${APP_INFO.APP_PATH_PKG}CHANGES`, originalURL, "text/plain");
+                        response = fileContentResponse(`${APP_INFO.APP_PATH_PKG}CHANGES`, originalURL, "text/plain;charset=utf-8");
                         if (response.status === 200) {
                             this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | CHANGES`);
                         }
@@ -1148,20 +1148,20 @@ export class MainApplication {
                                 setImmediate(() => this.handleRequest("<FORWARD>", "<FORWARD>", windowEntry.WebViewWebContentsID, NavigationType.FORWARD));
                             }
                         }
-                        return messageResponse("", 200, "text/plain");
+                        return messageResponse("", 200, "text/plain;charset=utf-8");
                     case "close":
                         if (windowEntry) {
                             setImmediate(() => windowEntry.Window.close());
                         }
-                        return messageResponse("", 204, "text/plain");
+                        return messageResponse("", 204, "text/plain;charset=utf-8");
                     // Unknown URL
                     default:
                         this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | 404 not found.`);
-                        return messageResponse(`404 - Unknown URL: ${parsedURL.toString()}`, 404, "text/plain");
+                        return messageResponse(`404 - Unknown URL: ${parsedURL.toString()}`, 404, "text/plain;charset=utf-8");
                 }
             } catch (error) {
                 this.setWindowTitle(windowEntry?.Window, `${APP_INFO.ProductName} | Error`);
-                return messageResponse(`Error loading resource: ${parsedURL.toString()}\n\n${error}`, 500, "text/plain");
+                return messageResponse(`Error loading resource: ${parsedURL.toString()}\n\n${error}`, 500, "text/plain;charset=utf-8");
             }
         });
     }
