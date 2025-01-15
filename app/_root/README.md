@@ -752,9 +752,9 @@ class MyRequestHandler {
         this.webContents.loadURL(url, { userAgent: this.config.UserAgent });
         break;
       case NAV_BACK:
-        if (this.webContents.canGoBack()) {
+        if (this.webContents.navigationHistory.canGoBack()) {
             this.log("Going back");
-            this.webContents.goBack();
+            this.webContents.navigationHistory.goBack();
         }
         break;
       case NAV_FORWARD:
@@ -860,9 +860,9 @@ handleRequest(urlObj, originalURL, navType) {
       this.webContents.loadURL(url, { userAgent: this.config.UserAgent });
       break;
     case NAV_BACK:
-      if (this.webContents.canGoBack()) {
+      if (this.webContents.navigationHistory.canGoBack()) {
           this.log("Going back");
-          this.webContents.goBack();
+          this.webContents.navigationHistory.goBack();
       }
       break;
     case NAV_FORWARD:
