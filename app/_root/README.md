@@ -1127,8 +1127,8 @@ Configuration is entirely done in `./app/package.json`:
   "productName": "BareBrowser",
   "description": "A minimalist browser for specific tasks in controlled environments.",
   "companyname": "idesis GmbH",
-  "copyright": "©2024 idesis GmbH",
-  "version": "4.0.0",
+  "copyright": "©2025 idesis GmbH",
+  "version": "4.0.1",
   "-buildVersion": 4367,
   "identifier": "de.idesis.barebrowser",
   "identifierRoot": "",
@@ -1329,7 +1329,7 @@ explorer.
 
 ## License
 
-MIT ©2024 [idesis GmbH](https://www.idesis.de), Max-Keith-Straße 66 (E 11), D-45136 Essen.
+MIT ©2025 [idesis GmbH](https://www.idesis.de), Max-Keith-Straße 66 (E 11), D-45136 Essen.
 
 Development kindly supported by [VISUS Health IT GmbH](https://www.visus.com), Gesundheitscampus-Süd
 15, D-44801 Bochum.
