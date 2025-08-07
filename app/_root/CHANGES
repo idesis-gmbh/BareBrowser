@@ -1,3 +1,17 @@
+# 4.0.2
+
+This is a pure maintenance release to keep up with newer Electron versions and to update some
+dependencies with security problems.
+
+## Bugs
+
+- Fixed buffer type for internal custom protocol.
+
+## Changes
+
+- Updated dependencies and upgraded to Electron 37.2.6.
+
+
 # 4.0.1
 
 This is a pure maintenance release to keep up with newer Electron versions and to update some
@@ -167,9 +181,9 @@ builtin URL `bb://readme` of a standard BareBrowser distribution for detailed in
 
 ## New
 
-- Complete redesign of the handling of URLs. Any URL handling is now delegated 
-  to URL handlers. Every handler is a dynamically loaded small piece of JavaScript 
-  and can easily be developed by users. This makes the browser more customizable 
+- Complete redesign of the handling of URLs. Any URL handling is now delegated
+  to URL handlers. Every handler is a dynamically loaded small piece of JavaScript
+  and can easily be developed by users. This makes the browser more customizable
   and to some extent scriptable.
 - Refactorings of most of the code base.
 - Loading indicator.
