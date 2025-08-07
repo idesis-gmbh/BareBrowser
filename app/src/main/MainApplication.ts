@@ -1081,8 +1081,10 @@ export class MainApplication {
                 if (!$FSE.existsSync(fileName)) {
                     return messageResponse(`404 - Resource not found: ${resourceName}\n=> ${fileName}`, 404, "text/plain;charset=utf-8");
                 }
+                const buf = $FSE.readFileSync(fileName);
+                const arrayBuffer = <ArrayBuffer>buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
                 return new Response(
-                    $FSE.readFileSync(fileName),
+                    arrayBuffer,
                     {
                         /* eslint-disable jsdoc/require-jsdoc */
                         status: 200,
