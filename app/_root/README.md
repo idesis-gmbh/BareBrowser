@@ -1009,7 +1009,7 @@ For all available request handlers see also the file `settings.json`.
   used as a simple whitelist ad blocker. A more realistic use case is to restrict access to a
   limited set of URLs inside an organization. The configuration of this handler already contains
   some sample rules for `github.com` and `heise.de`:
-  
+
     ```json
     "Config": {
       "Filter": [
@@ -1055,7 +1055,7 @@ For all available request handlers see also the file `settings.json`.
 
 ### Requirements
 
-[Node.js](https://nodejs.org) 16.4.0 or higher is required.
+[Node.js](https://nodejs.org) 18 or higher is required, the recommended version is 22 or higher.
 
 
 ### Source code structure
@@ -1127,8 +1127,8 @@ Configuration is entirely done in `./app/package.json`:
   "productName": "BareBrowser",
   "description": "A minimalist browser for specific tasks in controlled environments.",
   "companyname": "idesis GmbH",
-  "copyright": "©2025 idesis GmbH",
-  "version": "4.0.1",
+  "copyright": "©2026 idesis GmbH",
+  "version": "4.0.2",
   "-buildVersion": 4367,
   "identifier": "de.idesis.barebrowser",
   "identifierRoot": "",
@@ -1156,19 +1156,19 @@ Configuration is entirely done in `./app/package.json`:
   "license": "MIT",
   "main": "./bin/MainProcess.js",
   "dependencies": {
-    "fs-extra": "11.2.0",
+    "fs-extra": "11.3.1",
     "mousetrap": "1.6.5"
   },
   "devDependencies": {
     "@types/fs-extra": "11.0.4",
     "@types/mousetrap": "1.6.15",
-    "@types/node": "20.17.10",
+    "@types/node": "22.17",
     "@typescript-eslint/eslint-plugin": "7.17.0",
     "@typescript-eslint/parser": "7.17.0",
-    "electron": "33.3.0",
+    "electron": "37.2.6",
     "eslint": "8.57.1",
     "eslint-plugin-jsdoc": "48.8.3",
-    "typescript": "5.7.2"
+    "typescript": "5.9.2"
   },
   "config": {
     "arch": "x64,arm64,armv7l,ia32",
@@ -1329,7 +1329,7 @@ explorer.
 
 ## License
 
-MIT ©2025 [idesis GmbH](https://www.idesis.de), Max-Keith-Straße 66 (E 11), D-45136 Essen.
+MIT ©2026 [idesis GmbH](https://www.idesis.de), Max-Keith-Straße 66 (E 11), D-45136 Essen.
 
 Development kindly supported by [VISUS Health IT GmbH](https://www.visus.com), Gesundheitscampus-Süd
 15, D-44801 Bochum.
