@@ -89,7 +89,7 @@ export function getURLItem(url: string, scheme?: string): IURLItem {
 function getURL(url: string): $URL.URL | undefined {
     try {
         return new $URL.URL(url);
-    } catch (error) {
+    } catch (_error) {
         return undefined;
     }
 }
