@@ -20,7 +20,6 @@
             "**/build/tmp/js/tsconfigall.tsbuildinfo": true,
             "**/build/tmp/package.json": true,
             "**/build/tmp/package-lock.json": true,
-            "**/build/tmp/eslintrc.json": true,
             "**/build/tmp/appicon.icns": true,
             "**/build/tmp/appicon.ico": true,
             "**/build/tsconfig*.json": true,
@@ -38,15 +37,11 @@
                 "source.organizeImports": "explicit"
             }
         },
-        "eslint.options": {
-            "overrideConfigFile":"./build/tmp/eslintrc.json",
-        },
         "eslint.validate": [
             "typescript"
         ],
         "eslint.enable": true,
         "-eslint.format.enable": true,
-        "eslint.nodePath": "./build/tmp",
     },
     "extensions": {
         "recommendations": [
