@@ -310,7 +310,7 @@ export class RendererApplication {
     //     console.log("DID-FINISH-LOAD");
     //     this.spinner.style.visibility = "hidden";
     //     this.webView.focus();
-    // }    
+    // }
 
     /**
      * Called when the page has finished loading. Sets the focus to the webview tag to enable
@@ -515,7 +515,7 @@ export class RendererApplication {
         webView.addEventListener("page-title-updated", this.onWebViewPageTitleUpdated.bind(this), false);
         webView.addEventListener("update-target-url", this.onWebViewUpdateTargetURL.bind(this), false);
         webView.addEventListener("ipc-message", this.onWebViewIPCMessage.bind(this), false);
-        webView.addEventListener('context-menu', (e: Electron.ContextMenuEvent) => {
+        webView.addEventListener("context-menu", (e: Electron.ContextMenuEvent) => {
             e.preventDefault();
             e.stopImmediatePropagation();
             ipcRenderer.send(IPC_MAIN_RENDERER, this.windowID, IPC.SHOW_CONTEXT_MENU, e.params);
