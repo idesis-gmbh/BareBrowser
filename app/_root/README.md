@@ -1276,7 +1276,7 @@ all start with a capital letter. These are the tasks you'd normaly use during de
 `npm run <task>`):
 
 | Task            | Purpose                                                                                                                                                   |
-| :-------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| :-------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Watch`         | Starts all of the watch tasks which are configured in `package.json` in parallel.                                                                         |
 | `Start:Build`   | Runs the current compiled state of BareBrowser from the directory `./out`.                                                                                |
 | `Start:Release` | Runs the packaged BareBrowser from the directory `./release` (created by the `Make*` tasks). \*                                                           |
@@ -1288,7 +1288,7 @@ all start with a capital letter. These are the tasks you'd normaly use during de
 | `Make:Linux`    | Packages BareBrowser for Linux. \***                                                                                                                      |
 | `Make:Windows`  | Packages BareBrowser for Windows.                                                                                                                         |
 | `Make:All`      | Packages BareBrowser for the Mac, Linux and Windows. \****                                                                                                |
-| `Lint`          | Executes source code linting with ESLint (based on the settings in `./app/src/eslintrc.json`.)                                                            |
+| `Lint`          | Executes source code linting with ESLint (based on the settings in `./app/src/eslint.config.mjs`; one preceeding run of `Build` is required to enable linting). |
 
 \* `Start:Release` currently will always pick a release that matches the current Node.js processor
 architecture. If, for example, you are developing on a Mac with Apple Silicon and `config.arch` is
@@ -1322,8 +1322,8 @@ up-to-date state in `./out`, ready for running with `Start:Build`.
   safer because it ensures, that everything was cleaned and setup properly.
 
 The repo contains a Visual Studio Code workspace file (`BareBrowser.code-workspace`). It contains
-the necessary settings to enable live linting based on `./app/src/eslintrc.json` in VS Code and a
-filter setting to hide most of the files/directories not needed during development from the file
+the necessary settings to enable live linting based on `./app/src/eslint.config.mjs` in VS Code and
+a filter setting to hide most of the files/directories not needed during development from the file
 explorer.
 
 
