@@ -290,7 +290,7 @@ export class MainApplication {
         // Remove initial user data dir
         $FSE.removeSync(initialUserDataDir);
         // Augment APP_INFO
-        // @ts-ignore
+        // @ts-expect-error ---
         APP_INFO.UserDataDir = this.userDataDirectory;
     }
 
@@ -433,8 +433,7 @@ export class MainApplication {
                         requestHandlerSource = $Path.resolve(APP_INFO.APP_PATH_PKG, handler.Source);
                     }
                 }
-                // eslint-disable-next-line @typescript-eslint/no-var-requires
-                const handlerClass: typeof RequestHandler = require(requestHandlerSource) as typeof RequestHandler;
+                const handlerClass: typeof RequestHandler = require(requestHandlerSource) as typeof RequestHandler; // eslint-disable-line @typescript-eslint/no-require-imports
                 const classInstance: RequestHandler = new handlerClass(
                     handler.Config,
                     this.settings,
@@ -522,7 +521,7 @@ export class MainApplication {
         for (const entry of userDataFiles.Files) {
             try {
                 $FSE.removeSync(entry);
-            } catch (error) {
+            } catch (_error) {
                 leftOvers.Files.push(entry);
             }
         }
@@ -531,7 +530,7 @@ export class MainApplication {
         for (const entry of userDataFiles.Directories) {
             try {
                 $FSE.removeSync(entry);
-            } catch (error) {
+            } catch (_error) {
                 leftOvers.Directories.push(entry);
             }
         }
@@ -1082,7 +1081,7 @@ export class MainApplication {
                     return messageResponse(`404 - Resource not found: ${resourceName}\n=> ${fileName}`, 404, "text/plain;charset=utf-8");
                 }
                 const buf = $FSE.readFileSync(fileName);
-                const arrayBuffer = <ArrayBuffer>buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+                const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
                 return new Response(
                     arrayBuffer,
                     {
@@ -1232,11 +1231,11 @@ export class MainApplication {
             return;
         }
         const windowEntry = this.windows[index];
-        // @ts-ignore
+        // @ts-expect-error ---
         windowEntry.Window = null;
         for (let i = 0; i < windowEntry.RequestHandlers.length; i++) {
             windowEntry.RequestHandlers[i].dispose();
-            // @ts-ignore
+            // @ts-expect-error ---
             windowEntry.RequestHandlers[i] = null;
         }
         this.windows.splice(index, 1);

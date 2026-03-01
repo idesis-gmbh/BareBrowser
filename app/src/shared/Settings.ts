@@ -418,28 +418,27 @@ export function mergeSettings(from: ISettings, to: ISettings): void {
         if (Object.prototype.hasOwnProperty.call(from, fromKey)) {
             // Not in current settings => add.
             if (!Object.prototype.hasOwnProperty.call(to, fromKey)) {
-                // @ts-ignore
+                // @ts-expect-error ---
                 to[fromKey] = from[<keyof ISettings>fromKey];
             }
-            // @ts-ignore
+            // @ts-expect-error ---
             // Array and not array => add. Note: This is currently *very* primitive since it doesn't
             // go through the array elements.
             else if ((Array.isArray(from[fromKey]) && !Array.isArray(to[fromKey]))) {
-                // @ts-ignore
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                // @ts-expect-error ---
                 to[fromKey] = from[fromKey];
             }
-            // @ts-ignore
+            // @ts-expect-error ---
             // Different type.
             else if (typeof from[fromKey] !== typeof to[fromKey]) {
-                // @ts-ignore
+                // @ts-expect-error ---
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 to[fromKey] = from[fromKey];
             }
-            // @ts-ignore
+            // @ts-expect-error ---
             // Dive into sub object.
             else if (typeof from[fromKey] === "object") {
-                // @ts-ignore
+                // @ts-expect-error ---
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 mergeSettings(from[fromKey], to[fromKey]);
             }

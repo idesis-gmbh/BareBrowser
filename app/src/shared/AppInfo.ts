@@ -47,7 +47,7 @@ export interface IAppInfo {
     /* eslint-enable */
 }
 
-/** 
+/**
  * The structure of the file `package.json` for the app. Used to create objects based on `IAppInfo`.
  * @see IAppInfo.
  */
@@ -79,8 +79,8 @@ interface IAppPackageJSON {
 const __platform__ = process.platform;
 const __exeName__ = $Path.basename(process.execPath).toLowerCase();
 const __isPackaged__ = process.type === "browser"
-    ? __platform__ === 'win32' ? __exeName__ !== "electron.exe" : __exeName__ !== "electron"
-    : __platform__ === 'win32' ? __exeName__ !== "electron.exe" : __exeName__ !== "electron helper (renderer)";
+    ? __platform__ === "win32" ? __exeName__ !== "electron.exe" : __exeName__ !== "electron"
+    : __platform__ === "win32" ? __exeName__ !== "electron.exe" : __exeName__ !== "electron helper (renderer)";
 
 // Get app root path (packaged).
 let __appPathPkg__ = "";
@@ -98,7 +98,7 @@ if (process.type === "browser") {
 }
 // Get app root path (unpackaged).
 const __appPath__ = __isPackaged__
-    ? $Path.join($Path.resolve(__appPathPkg__, `../app.asar.unpacked/`), $Path.sep)
+    ? $Path.join($Path.resolve(__appPathPkg__, "../app.asar.unpacked/"), $Path.sep)
     : __appPathPkg__;
 
 // Load `package.json` of the app.
