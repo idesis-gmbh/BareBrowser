@@ -1128,7 +1128,7 @@ Configuration is entirely done in `./app/package.json`:
   "description": "A minimalist browser for specific tasks in controlled environments.",
   "companyname": "idesis GmbH",
   "copyright": "©2026 idesis GmbH",
-  "version": "4.0.2",
+  "version": "5.0.0",
   "-buildVersion": 4367,
   "identifier": "de.idesis.barebrowser",
   "identifierRoot": "",
@@ -1275,19 +1275,19 @@ traditional makefile with small subtasks. Nevertheless there are a few tasks at 
 all start with a capital letter. These are the tasks you'd normaly use during development (with
 `npm run <task>`):
 
-| Task            | Purpose                                                                                                                                                   |
+| Task            | Purpose                                                                                                                                                         |
 | :-------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Watch`         | Starts all of the watch tasks which are configured in `package.json` in parallel.                                                                         |
-| `Start:Build`   | Runs the current compiled state of BareBrowser from the directory `./out`.                                                                                |
-| `Start:Release` | Runs the packaged BareBrowser from the directory `./release` (created by the `Make*` tasks). \*                                                           |
-| `Build`         | Complete refresh of the build system files, based on the settings in `./app/package.json`.                                                                |
-| `Compile`       | Compiles the complete source code (main and renderer process, preload script).                                                                            |
-| `Clean`         | Cleans everything (including the `release` directory). After cleaning you must run the `Build` and `Compile` tasks again to be able to use `Start:Build`. |
-| `Make`          | Packages BareBrowser for your platform (auto-detected).                                                                                                   |
-| `Make:Mac`      | Packages BareBrowser for the Mac. \**                                                                                                                     |
-| `Make:Linux`    | Packages BareBrowser for Linux. \***                                                                                                                      |
-| `Make:Windows`  | Packages BareBrowser for Windows.                                                                                                                         |
-| `Make:All`      | Packages BareBrowser for the Mac, Linux and Windows. \****                                                                                                |
+| `Watch`         | Starts all of the watch tasks which are configured in `package.json` in parallel.                                                                               |
+| `Start:Build`   | Runs the current compiled state of BareBrowser from the directory `./out`.                                                                                      |
+| `Start:Release` | Runs the packaged BareBrowser from the directory `./release` (created by the `Make*` tasks). \*                                                                 |
+| `Build`         | Complete refresh of the build system files, based on the settings in `./app/package.json`.                                                                      |
+| `Compile`       | Compiles the complete source code (main and renderer process, preload script).                                                                                  |
+| `Clean`         | Cleans everything (including the `release` directory). After cleaning you must run the `Build` and `Compile` tasks again to be able to use `Start:Build`.       |
+| `Make`          | Packages BareBrowser for your platform (auto-detected).                                                                                                         |
+| `Make:Mac`      | Packages BareBrowser for the Mac. \**                                                                                                                           |
+| `Make:Linux`    | Packages BareBrowser for Linux. \***                                                                                                                            |
+| `Make:Windows`  | Packages BareBrowser for Windows.                                                                                                                               |
+| `Make:All`      | Packages BareBrowser for the Mac, Linux and Windows. \****                                                                                                      |
 | `Lint`          | Executes source code linting with ESLint (based on the settings in `./app/src/eslint.config.mjs`; one preceeding run of `Build` is required to enable linting). |
 
 \* `Start:Release` currently will always pick a release that matches the current Node.js processor
