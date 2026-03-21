@@ -32,19 +32,19 @@
   "license": "MIT",
   "main": "./bin/MainProcess.js",
   "dependencies": {
-    "fs-extra": "11.3.3",
+    "fs-extra": "11.3.4",
     "mousetrap": "1.6.5"
   },
   "devDependencies": {
     "@types/fs-extra": "11.0.4",
     "@types/mousetrap": "1.6.15",
     "@types/node": "24.1.0",
-    "electron": "40.6.1",
-    "eslint-plugin-jsdoc": "62.7.1",
-    "eslint": "10.0.2",
+    "electron": "40.8.5",
+    "eslint-plugin-jsdoc": "62.9.0",
+    "eslint": "10.1.0",
     "globals": "17.4.0",
-    "typescript-eslint": "8.56.1",
-    "typescript": "5.9.3"
+    "typescript-eslint": "8.58.0",
+    "typescript": "6.0.2"
   },
   "config": {
     "arch": "x64,arm64,armv7l,ia32",
