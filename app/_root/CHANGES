@@ -1,3 +1,14 @@
+# 5.0.1
+
+This is a pure maintenance release to keep up with newer Electron versions and to update some
+dependencies with security problems.
+
+## Changes
+
+- Updated to TypeScript 6.
+- Updated dependencies and upgraded to Electron 41.3.0.
+
+
 # 5.0.0
 
 This is a pure maintenance release to keep up with newer Electron versions and to update some
