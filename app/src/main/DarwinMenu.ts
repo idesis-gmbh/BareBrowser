@@ -1,7 +1,7 @@
 import { Menu, MenuItem } from "electron";
-import { ISettings } from "../shared/Settings";
-import { ApplicationMenu } from "./ApplicationMenu";
-import { MainApplication } from "./MainApplication";
+import { ISettings } from "../shared/Settings.js";
+import { ApplicationMenu } from "./ApplicationMenu.js";
+import { MainApplication } from "./MainApplication.js";
 
 /**
  * The menu for the application on Darwin platforms.

@@ -1,11 +1,11 @@
 import { ipcRenderer, Point } from "electron";
 import * as ShortCuts from "mousetrap";
-import { APP_INFO } from "../shared/AppInfo";
-import { getIPCMessage, IPC, IPC_MAIN_RENDERER, IPC_WEBVIEW_RENDERER } from "../shared/IPC";
-import { ISettings } from "../shared/Settings";
-import { AnyObject } from "../shared/Types";
-import { IURLItem } from "../shared/URLItem";
-import { format } from "../shared/Utils";
+import { APP_INFO } from "../shared/AppInfo.js";
+import { getIPCMessage, IPC, IPC_MAIN_RENDERER, IPC_WEBVIEW_RENDERER } from "../shared/IPC.js";
+import { ISettings } from "../shared/Settings.js";
+import { AnyObject } from "../shared/Types.js";
+import { IURLItem } from "../shared/URLItem.js";
+import { format } from "../shared/Utils.js";
 
 /**
  * The class for the renderer application part. Creates a browser window and handles anything else.

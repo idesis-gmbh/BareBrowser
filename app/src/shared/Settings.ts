@@ -1,7 +1,7 @@
 import { app } from "electron";
-import { APP_INFO } from "./AppInfo";
-import { AnyObject } from "./Types";
-import * as $Utils from "./Utils";
+import { APP_INFO } from "./AppInfo.js";
+import { AnyObject } from "./Types.js";
+import * as $Utils from "./Utils.js";
 
 /**
  * Interface for app settings.

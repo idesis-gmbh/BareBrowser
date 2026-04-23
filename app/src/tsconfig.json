@@ -45,15 +45,12 @@
         // "noUncheckedIndexedAccess": true,         /* Include 'undefined' in index signature results */
 
         /* Module Resolution Options */
-        "moduleResolution": "node",               /** Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6). */
-        // 'baseUrl' and 'paths' enable the use of builtin definitions (like in Electron) and definitions from @types/*
-        "baseUrl": "../../build/tmp/",            /* Base directory to resolve non-absolute module names. */
+        // "moduleResolution": "node",               /** Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6). */
         "paths": {                                /* A series of entries which re-map imports to lookup locations relative to the 'baseUrl'. */
             "*": [
-                "node_modules/@types/*",
-                "node_modules/*"
+                "../../build/tmp/node_modules/electron/*",
             ]
-        },                           
+        },
         // "rootDirs": [],                        /* List of root folders whose combined content represents the structure of the project at runtime. */
         // "typeRoots": [],                       /* List of folders to include type definitions from. */
         // "types": [],                           /* Type declaration files to be included in compilation. */

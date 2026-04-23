@@ -1,7 +1,7 @@
 import { Menu, MenuItem } from "electron";
-import { IPC_MAIN_RENDERER } from "../shared/IPC";
-import { ISettings } from "../shared/Settings";
-import { MainApplication } from "./MainApplication";
+import { IPC_MAIN_RENDERER } from "../shared/IPC.js";
+import { ISettings } from "../shared/Settings.js";
+import { MainApplication } from "./MainApplication.js";
 
 /**
  * General application menu (items) on all platforms.
@@ -139,7 +139,7 @@ export abstract class ApplicationMenu {
         /* eslint-disable jsdoc/require-jsdoc */
         helpMenu.append(new MenuItem({
             role: "help",
-            // label: `${this.appName}-Help`, 
+            // label: `${this.appName}-Help`,
             accelerator: acceleratorStr,
         }));
         /* eslint-enable */

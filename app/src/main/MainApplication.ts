@@ -1,18 +1,18 @@
 import { spawn } from "child_process";
 import { app, BrowserWindow, ContextMenuParams, dialog, ipcMain, Menu, MenuItem, protocol, Rectangle, screen, session, webContents } from "electron";
 import { HandlerDetails } from "electron/main";
-import { APP_INFO } from "../shared/AppInfo";
-import * as $Consts from "../shared/Consts";
-import { IPC, IPC_MAIN_RENDERER } from "../shared/IPC";
-import { $FSE, $Path, $URL } from "../shared/Modules";
-import * as $Settings from "../shared/Settings";
-import { AnyObject } from "../shared/Types";
-import { getURLItem, isSameOrigin, IURLItem } from "../shared/URLItem";
-import { format, getDirectoryListing, getMimeTypeFromFileExtension, IDirectoryListing, MIME_TYPES } from "../shared/Utils";
-import { ApplicationMenu } from "./ApplicationMenu";
-import { DarwinMenu } from "./DarwinMenu";
-import { LinuxWin32Menu } from "./LinuxWin32Menu";
-import { NavigationType, RequestHandler, RequestResult } from "./RequestHandler";
+import { APP_INFO } from "../shared/AppInfo.js";
+import * as $Consts from "../shared/Consts.js";
+import { IPC, IPC_MAIN_RENDERER } from "../shared/IPC.js";
+import { $FSE, $Path, $URL } from "../shared/Modules.js";
+import * as $Settings from "../shared/Settings.js";
+import { AnyObject } from "../shared/Types.js";
+import { getURLItem, isSameOrigin, IURLItem } from "../shared/URLItem.js";
+import { format, getDirectoryListing, getMimeTypeFromFileExtension, IDirectoryListing, MIME_TYPES } from "../shared/Utils.js";
+import { ApplicationMenu } from "./ApplicationMenu.js";
+import { DarwinMenu } from "./DarwinMenu.js";
+import { LinuxWin32Menu } from "./LinuxWin32Menu.js";
+import { NavigationType, RequestHandler, RequestResult } from "./RequestHandler.js";
 
 /**
  * Primitive command-line object.
