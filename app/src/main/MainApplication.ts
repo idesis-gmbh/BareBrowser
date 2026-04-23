@@ -1335,6 +1335,10 @@ export class MainApplication {
      * @param _event An Electron event.
      */
     private onBeforeQuit(_event: Electron.Event): void {
+        // Seems to lead to crashes if DevTools are open.
+        for (const windowEntry of this.windows) {
+            windowEntry.Window.webContents.isDevToolsOpened() && windowEntry.Window.webContents.closeDevTools();
+        }
         // No need to store last window position and state.
         if (!this.settings.Window.LastWindowPosition.Restore) {
             return;
