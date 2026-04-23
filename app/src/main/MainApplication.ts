@@ -157,7 +157,7 @@ export class MainApplication {
                 .replace(/'$/, "");
         }
         /* eslint-disable jsdoc/require-jsdoc */
-        return <ICmdLineArgs>{
+        return {
             URL: URL,
             WindowID: Math.trunc(windowId)
         };
@@ -818,11 +818,11 @@ export class MainApplication {
      */
     private onIPCMain(event: Electron.IpcMainEvent, ...args: unknown[]): void {
         const windowId: number = args[0] as number;
-        const msgId: number = args[1] as number;
+        const msgId: IPC = args[1] as IPC;
         const params: unknown[] = args.slice(2);
         let windowEntry = this.getBrowserWindowEntry(windowId);
         // const ipcMessage = getIPCMessage(msgId);
-        switch (<IPC>msgId) {
+        switch (msgId) {
             case IPC.LOAD_URL:
                 if (windowEntry) {
                     const loadURL = getURLItem(this.handleBuiltinURLs(params[0] as string), this.settings.Scheme);

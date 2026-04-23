@@ -529,9 +529,9 @@ export class RendererApplication {
      * @param args The arguments sent by the main process.
      */
     private onIPCFromMain(_event: Electron.IpcRendererEvent, ...args: unknown[]): void {
-        const msgId: number = args[0] as number;
+        const msgId: IPC = args[0] as IPC;
         const params: unknown[] = args.slice(1);
-        switch (<IPC>msgId) {
+        switch (msgId) {
             case IPC.WINDOW_CREATED:
                 this.windowID = params[0] as number;
                 // This is the earliest possible moment to tell the main process once, that this
@@ -556,9 +556,9 @@ export class RendererApplication {
         if (event.channel !== IPC_WEBVIEW_RENDERER) {
             return;
         }
-        const msgId = event.args[0] as number;
+        const msgId = event.args[0] as IPC;
         const params: unknown[] = event.args.slice(1);
-        switch (<IPC>msgId) {
+        switch (msgId) {
             case IPC.SET_SCROLL_OFFSET:
                 this.webViewScrollOffset.x = Number(params[0]);
                 this.webViewScrollOffset.y = Number(params[1]);
