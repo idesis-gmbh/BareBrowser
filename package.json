@@ -145,15 +145,15 @@
   },
   "dependencies": {
     "@octokit/core": "7.0.6",
-    "@electron/packager": "20.0.0",
-    "fs-extra": "11.3.4",
-    "npm-run-all2": "8.0.4",
+    "@electron/packager": "20.0.1",
+    "fs-extra": "11.3.5",
+    "npm-run-all2": "9.0.2",
     "onchange": "7.1.0",
     "png2icons": "2.0.1",
     "removeNPMAbsolutePaths": "3.0.1",
-    "rollup": "4.60.2",
+    "rollup": "4.62.0",
     "shx": "0.4.0",
-    "terser": "5.46.1",
+    "terser": "5.48.0",
     "tsc-watch": "7.2.0"
   }
 }
