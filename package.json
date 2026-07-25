@@ -145,8 +145,8 @@
   },
   "dependencies": {
     "@octokit/core": "7.0.6",
-    "@electron/packager": "20.0.2",
-    "fs-extra": "11.3.6",
+    "@electron/packager": "20.0.4",
+    "fs-extra": "11.4.0",
     "npm-run-all2": "9.0.2",
     "onchange": "7.1.0",
     "png2icons": "2.0.1",
