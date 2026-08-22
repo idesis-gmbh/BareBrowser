@@ -144,16 +144,16 @@
     "make": "node -e \"require('child_process').spawnSync((process.platform == 'win32') ? 'npm.cmd' : 'npm', ['run', 'm:' + process.platform], {shell: true, stdio: 'inherit'});\""
   },
   "dependencies": {
-    "@octokit/core": "7.0.6",
-    "@electron/packager": "20.0.4",
+    "@octokit/core": "7.0.7",
+    "@electron/packager": "20.3.0",
     "fs-extra": "11.4.0",
-    "npm-run-all2": "9.0.2",
+    "npm-run-all2": "9.0.3",
     "onchange": "7.1.0",
     "png2icons": "2.0.1",
     "removeNPMAbsolutePaths": "3.0.1",
-    "rollup": "4.62.2",
+    "rollup": "4.62.5",
     "shx": "0.4.0",
-    "terser": "5.49.0",
+    "terser": "5.50.0",
     "tsc-watch": "7.2.1"
   }
 }
