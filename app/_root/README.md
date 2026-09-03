@@ -1156,18 +1156,18 @@ Configuration is entirely done in `./app/package.json` which looks like this:
   "license": "MIT",
   "main": "./bin/MainProcess.js",
   "dependencies": {
-    "fs-extra": "11.3.5",
+    "fs-extra": "11.4.0",
     "mousetrap": "1.6.5"
   },
   "devDependencies": {
     "@types/fs-extra": "11.0.4",
     "@types/mousetrap": "1.6.15",
-    "@types/node": "24.1.0",
-    "electron": "42.4.0",
-    "eslint-plugin-jsdoc": "63.0.2",
-    "eslint": "10.5.0",
-    "globals": "17.6.0",
-    "typescript-eslint": "8.61.0",
+    "@types/node": "24.13.3",
+    "electron": "43.5.1",
+    "eslint-plugin-jsdoc": "64.3.4",
+    "eslint": "10.9.1",
+    "globals": "17.12.0",
+    "typescript-eslint": "8.69.0",
     "typescript": "6.0.3"
   },
   "config": {
