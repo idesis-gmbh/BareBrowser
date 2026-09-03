@@ -1,5 +1,8 @@
 {
     "extends": "../app/src/tsconfig.json",
+    "compilerOptions": {
+        "tsBuildInfoFile": "tmp/js/tsconfigpreload.tsbuildinfo"
+    },
     "files": [
         "../app/src/preload/preload.ts"
     ]
