@@ -1,5 +1,5 @@
 import { format as nodeFormat } from "util";
-import { $FSE, $Path } from "./Modules";
+import { $FSE, $Path } from "./Modules.js";
 
 /**
  * Check a given value if it has the same type as `defaultValue`. If the types don't match, a

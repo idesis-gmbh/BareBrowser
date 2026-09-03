@@ -1,6 +1,6 @@
 import { BrowserWindow } from "electron";
-import { ISettings } from "../shared/Settings";
-import { AnyObject } from "../shared/Types";
+import { ISettings } from "../shared/Settings.js";
+import { AnyObject } from "../shared/Types.js";
 
 /**
  * Request handlers/request handling.

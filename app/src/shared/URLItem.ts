@@ -1,5 +1,5 @@
-import * as $Consts from "../shared/Consts";
-import { $Path, $URL } from "./Modules";
+import * as $Consts from "../shared/Consts.js";
+import { $Path, $URL } from "./Modules.js";
 
 /**
  * Interface for URL items.

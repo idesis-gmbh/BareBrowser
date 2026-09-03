@@ -1,5 +1,5 @@
 import { dialog } from "electron";
-import { MainApplication } from "./main/MainApplication";
+import { MainApplication } from "./main/MainApplication.js";
 
 /**
  * Something similar can be found in the Electron sample app, but according to

@@ -1,8 +1,8 @@
 import { Menu, MenuItem } from "electron";
-import { APP_INFO } from "../shared/AppInfo";
-import { ISettings } from "../shared/Settings";
-import { ApplicationMenu } from "./ApplicationMenu";
-import { MainApplication } from "./MainApplication";
+import { APP_INFO } from "../shared/AppInfo.js";
+import { ISettings } from "../shared/Settings.js";
+import { ApplicationMenu } from "./ApplicationMenu.js";
+import { MainApplication } from "./MainApplication.js";
 
 /**
  * The menu for the application on Linux/Windows platforms.
@@ -108,12 +108,12 @@ export class LinuxWin32Menu extends ApplicationMenu {
     // private buildHelpMenu(): MenuItem {
     //     const helpMenu: Menu = super.getHelpMenu("F1");
     //     helpMenu.insert(0, new MenuItem({
-    //         role: "about", 
+    //         role: "about",
     //     }));
     //     helpMenu.insert(1, super.getSeparator());
     //     return new MenuItem({
-    //         role: "help", 
-    //         submenu: helpMenu, 
+    //         role: "help",
+    //         submenu: helpMenu,
     //     });
     // }
 }

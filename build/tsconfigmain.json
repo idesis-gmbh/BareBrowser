@@ -1,5 +1,8 @@
 {
     "extends": "../app/src/tsconfig.json",
+    "compilerOptions": {
+        "tsBuildInfoFile": "tmp/js/tsconfigmain.tsbuildinfo"
+    },
     "files": [
         "../app/src/MainProcess.ts"
     ]

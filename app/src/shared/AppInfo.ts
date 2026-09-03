@@ -1,5 +1,5 @@
-import { $OS, $Path } from "./Modules";
-import { requireJSONFile } from "./Utils";
+import { $OS, $Path } from "./Modules.js";
+import { requireJSONFile } from "./Utils.js";
 
 /**
  * General app information.

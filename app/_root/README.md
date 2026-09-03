@@ -45,12 +45,12 @@ BareBrowser runs on macOS, Windows and Linux platforms. The supported OS version
 version of the underlying Electron platform but in general the current release of BareBrowser should
 run on
 
-- macOS BigSur (macOS 11) and newer,
+- macOS Monterey (macOS 12) and newer,
 - Windows 10 and newer,
-- Linux
-    - Ubuntu 14.04 and newer
-    - Fedora 24 and newer
-    - Debian 8 and newer.
+- Linux (usually supported)
+    - Ubuntu 18.04 and newer
+    - Debian 10 and newer
+    - Fedora 32 and newer.
 
 In order to support older OS versions you could change the underlying Electron platform to older
 (and unsupported) versions, see [Building](#building).
@@ -1055,7 +1055,7 @@ For all available request handlers see also the file `settings.json`.
 
 ### Requirements
 
-[Node.js](https://nodejs.org) 18 or higher is required, the recommended version is 22 or higher.
+[Node.js](https://nodejs.org) 22.12.0 or higher is required.
 
 
 ### Source code structure
@@ -1119,7 +1119,7 @@ The content of `./app`:
 
 ### Configure your own version
 
-Configuration is entirely done in `./app/package.json`:
+Configuration is entirely done in `./app/package.json` which looks like this:
 
 ```json
 {
@@ -1128,7 +1128,7 @@ Configuration is entirely done in `./app/package.json`:
   "description": "A minimalist browser for specific tasks in controlled environments.",
   "companyname": "idesis GmbH",
   "copyright": "©2026 idesis GmbH",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "-buildVersion": 4367,
   "identifier": "de.idesis.barebrowser",
   "identifierRoot": "",
@@ -1156,19 +1156,19 @@ Configuration is entirely done in `./app/package.json`:
   "license": "MIT",
   "main": "./bin/MainProcess.js",
   "dependencies": {
-    "fs-extra": "11.3.3",
+    "fs-extra": "11.4.0",
     "mousetrap": "1.6.5"
   },
   "devDependencies": {
     "@types/fs-extra": "11.0.4",
     "@types/mousetrap": "1.6.15",
-    "@types/node": "24.1.0",
-    "electron": "40.6.1",
-    "eslint-plugin-jsdoc": "62.7.1",
-    "eslint": "10.0.2",
-    "globals": "17.4.0",
-    "typescript-eslint": "8.56.1",
-    "typescript": "5.9.3"
+    "@types/node": "24.13.3",
+    "electron": "43.5.1",
+    "eslint-plugin-jsdoc": "64.3.4",
+    "eslint": "10.9.1",
+    "globals": "17.12.0",
+    "typescript-eslint": "8.69.0",
+    "typescript": "6.0.3"
   },
   "config": {
     "arch": "x64,arm64,armv7l,ia32",

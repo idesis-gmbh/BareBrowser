@@ -1,6 +1,6 @@
 import { ipcRenderer } from "electron";
 import { Point } from "electron/main";
-import { IPC, IPC_WEBVIEW_RENDERER } from "../shared/IPC";
+import { IPC, IPC_WEBVIEW_RENDERER } from "../shared/IPC.js";
 
 /**
  * Communication between the webview tag and the browser window.
