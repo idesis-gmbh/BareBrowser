@@ -146,14 +146,17 @@
   "dependencies": {
     "@electron/packager": "20.3.0",
     "@octokit/core": "7.0.8",
-    "fs-extra": "11.4.0",
-    "npm-run-all2": "9.0.3",
+    "fs-extra": "11.4.1",
+    "npm-run-all2": "9.0.4",
     "onchange": "7.1.0",
     "png2icons": "2.0.1",
     "removeNPMAbsolutePaths": "3.0.1",
-    "rollup": "4.63.1",
+    "rollup": "4.67.4",
     "shx": "0.4.0",
     "terser": "5.51.2",
     "tsc-watch": "7.2.1"
+  },
+  "allowScripts": {
+    "fsevents@2.3.3": true
   }
 }
